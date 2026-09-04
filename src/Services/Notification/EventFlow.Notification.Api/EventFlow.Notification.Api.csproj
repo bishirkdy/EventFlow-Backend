@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EventFlow.Notification.Application\EventFlow.Notification.Application.csproj" />
+    <ProjectReference Include="..\EventFlow.Notification.Infrastructure\EventFlow.Notification.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

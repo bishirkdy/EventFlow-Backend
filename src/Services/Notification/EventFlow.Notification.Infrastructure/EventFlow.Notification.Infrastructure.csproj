@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EventFlow.Notification.Application\EventFlow.Notification.Application.csproj" />
+    <ProjectReference Include="..\EventFlow.Notification.Domain\EventFlow.Notification.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

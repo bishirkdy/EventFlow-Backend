@@ -1,0 +1,69 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/BuildingBlocks/">
+    <Project Path="src/BuildingBlocks/EventFlow.Contracts/EventFlow.Contracts.csproj" Id="54342a5c-fcf4-40b1-9b1c-0f753cb2ba92" />
+    <Project Path="src/BuildingBlocks/EventFlow.Infrastructure/EventFlow.Infrastructure.csproj" Id="34fb9141-a5f6-456a-aa66-27d6e714e2d1" />
+    <Project Path="src/BuildingBlocks/EventFlow.SharedKernel/EventFlow.SharedKernel.csproj" Id="685461f1-c58e-4bff-b1fe-f746ff1e65d0" />
+  </Folder>
+  <Folder Name="/src/Services/" />
+  <Folder Name="/src/Services/Analytics/">
+    <Project Path="src/Services/Analytics/EventFlow.Analytics.Api/EventFlow.Analytics.Api.csproj" />
+    <Project Path="src/Services/Analytics/EventFlow.Analytics.Application/EventFlow.Analytics.Application.csproj" />
+    <Project Path="src/Services/Analytics/EventFlow.Analytics.Domain/EventFlow.Analytics.Domain.csproj" />
+    <Project Path="src/Services/Analytics/EventFlow.Analytics.Infrastructure/EventFlow.Analytics.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Attendance/">
+    <Project Path="src/Services/Attendance/EventFlow.Attendance.Api/EventFlow.Attendance.Api.csproj" />
+    <Project Path="src/Services/Attendance/EventFlow.Attendance.Application/EventFlow.Attendance.Application.csproj" />
+    <Project Path="src/Services/Attendance/EventFlow.Attendance.Domain/EventFlow.Attendance.Domain.csproj" />
+    <Project Path="src/Services/Attendance/EventFlow.Attendance.Infrastructure/EventFlow.Attendance.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Certificate/">
+    <Project Path="src/Services/Certificate/EventFlow.Certificate.Api/EventFlow.Certificate.Api.csproj" />
+    <Project Path="src/Services/Certificate/EventFlow.Certificate.Application/EventFlow.Certificate.Application.csproj" />
+    <Project Path="src/Services/Certificate/EventFlow.Certificate.Domain/EventFlow.Certificate.Domain.csproj" />
+    <Project Path="src/Services/Certificate/EventFlow.Certificate.Infrastructure/EventFlow.Certificate.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Event/">
+    <Project Path="src/Services/Event/EventFlow.Event.Api/EventFlow.Event.Api.csproj" />
+    <Project Path="src/Services/Event/EventFlow.Event.Application/EventFlow.Event.Application.csproj" />
+    <Project Path="src/Services/Event/EventFlow.Event.Domain/EventFlow.Event.Domain.csproj" />
+    <Project Path="src/Services/Event/EventFlow.Event.Infrastructure/EventFlow.Event.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Feedback/">
+    <Project Path="src/Services/Feedback/EventFlow.Feedback.Api/EventFlow.Feedback.Api.csproj" />
+    <Project Path="src/Services/Feedback/EventFlow.Feedback.Application/EventFlow.Feedback.Application.csproj" />
+    <Project Path="src/Services/Feedback/EventFlow.Feedback.Domain/EventFlow.Feedback.Domain.csproj" />
+    <Project Path="src/Services/Feedback/EventFlow.Feedback.Infrastructure/EventFlow.Feedback.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Identity/">
+    <Project Path="src/Services/Identity/EventFlow.Identity.Api/EventFlow.Identity.Api.csproj" />
+    <Project Path="src/Services/Identity/EventFlow.Identity.Application/EventFlow.Identity.Application.csproj" />
+    <Project Path="src/Services/Identity/EventFlow.Identity.Domain/EventFlow.Identity.Domain.csproj" />
+    <Project Path="src/Services/Identity/EventFlow.Identity.Infrastructure/EventFlow.Identity.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Media/">
+    <Project Path="src/Services/Media/EventFlow.Media.Api/EventFlow.Media.Api.csproj" />
+    <Project Path="src/Services/Media/EventFlow.Media.Application/EventFlow.Media.Application.csproj" />
+    <Project Path="src/Services/Media/EventFlow.Media.Domain/EventFlow.Media.Domain.csproj" />
+    <Project Path="src/Services/Media/EventFlow.Media.Infrastructure/EventFlow.Media.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Notification/">
+    <Project Path="src/Services/Notification/EventFlow.Notification.Api/EventFlow.Notification.Api.csproj" />
+    <Project Path="src/Services/Notification/EventFlow.Notification.Application/EventFlow.Notification.Application.csproj" />
+    <Project Path="src/Services/Notification/EventFlow.Notification.Domain/EventFlow.Notification.Domain.csproj" />
+    <Project Path="src/Services/Notification/EventFlow.Notification.Infrastructure/EventFlow.Notification.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Registration/">
+    <Project Path="src/Services/Registration/EventFlow.Registration.Api/EventFlow.Registration.Api.csproj" Id="04a138ee-be8e-4883-a878-009efb66aa0c" />
+    <Project Path="src/Services/Registration/EventFlow.Registration.Application/EventFlow.Registration.Application.csproj" Id="03ab1ce7-106e-4f70-93d9-7d75bd5611e6" />
+    <Project Path="src/Services/Registration/EventFlow.Registration.Domain/EventFlow.Registration.Domain.csproj" Id="c8d225ea-0b62-452a-af3c-a77b2dacc31a" />
+    <Project Path="src/Services/Registration/EventFlow.Registration.Infrastructure/EventFlow.Registration.Infrastructure.csproj" Id="cc52a40e-8629-4d89-bcf9-76067f6104fa" />
+  </Folder>
+  <Folder Name="/src/Services/Schedule/">
+    <Project Path="src/Services/Schedule/EventFlow.Schedule.Api/EventFlow.Schedule.Api.csproj" />
+    <Project Path="src/Services/Schedule/EventFlow.Schedule.Application/EventFlow.Schedule.Application.csproj" />
+    <Project Path="src/Services/Schedule/EventFlow.Schedule.Domain/EventFlow.Schedule.Domain.csproj" />
+    <Project Path="src/Services/Schedule/EventFlow.Schedule.Infrastructure/EventFlow.Schedule.Infrastructure.csproj" />
+  </Folder>
+</Solution>
