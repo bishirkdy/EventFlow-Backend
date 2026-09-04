@@ -1,4 +1,8 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
   <Folder Name="/src/" />
   <Folder Name="/src/BuildingBlocks/">
     <Project Path="src/BuildingBlocks/EventFlow.Contracts/EventFlow.Contracts.csproj" Id="54342a5c-fcf4-40b1-9b1c-0f753cb2ba92" />
