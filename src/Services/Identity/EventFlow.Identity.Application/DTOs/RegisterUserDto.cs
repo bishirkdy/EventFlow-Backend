@@ -4,6 +4,8 @@ namespace EventFlow.Identity.Application.DTOs
         string Email,
         string UserName,
         string FirstName,
-        string LastName
+        string LastName,
+        string Password
+
     );
 }
