@@ -10,4 +10,13 @@
     <ProjectReference Include="..\EventFlow.Identity.Domain\EventFlow.Identity.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\" />
+    <Folder Include="Queries\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediatR" />
+  </ItemGroup>
+
 </Project>
