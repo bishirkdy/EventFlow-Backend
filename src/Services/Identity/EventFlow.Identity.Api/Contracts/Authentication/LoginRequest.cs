@@ -1,6 +1,5 @@
-﻿namespace EventFlow.Identity.Api.Contracts.Authentication
+namespace EventFlow.Identity.Api.Contracts.Authentication
 {
-    public class LoginRequest
-    {
-    }
+    // Defines the HTTP request contract for user login.
+    public sealed record LoginRequest(string Email,string Password);
 }

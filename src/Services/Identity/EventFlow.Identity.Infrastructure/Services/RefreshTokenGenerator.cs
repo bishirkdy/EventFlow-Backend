@@ -1,11 +1,12 @@
 
+using EventFlow.Identity.Application.Abstractions.Services;
 using System.Security.Cryptography;
 
 namespace EventFlow.Identity.Infrastructure.Services
 {
-    public static class RefreshTokenGenerator
+    public class RefreshTokenGenerator : IRefreshTokenGenerator
     {
-        public static string Generate()
+        public string Generate()
         {
             var bytes = RandomNumberGenerator.GetBytes(64);
 

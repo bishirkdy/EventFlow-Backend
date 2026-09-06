@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Commands\RefreshAccessToken\" />
     <Folder Include="Services\" />
     <Folder Include="Queries\" />
   </ItemGroup>
@@ -19,6 +20,7 @@
     <PackageReference Include="MediatR" />
 	  <PackageReference Include="FluentValidation" />
 	  <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+	  <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
 </Project>

@@ -3,6 +3,7 @@ using EventFlow.Identity.Application.Abstractions.Repositories;
 using EventFlow.Identity.Application.Abstractions.Services;
 using EventFlow.Identity.Application.Behaviors;
 using EventFlow.Identity.Application.Commands.RegisterUser;
+using EventFlow.Identity.Application.Configuration;
 using EventFlow.Identity.Infrastructure.Persistence;
 using EventFlow.Identity.Infrastructure.Repositories;
 using EventFlow.Identity.Infrastructure.Services;
@@ -10,6 +11,8 @@ using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace EventFlow.Identity.Api
 {
@@ -34,10 +37,44 @@ namespace EventFlow.Identity.Api
                 option.RegisterServicesFromAssemblies(typeof(RegisterUserCommand).Assembly);
             });
             builder.Services.AddValidatorsFromAssembly(typeof(RegisterUserCommand).Assembly);
+            builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
             
             builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IRefreshTokenRepository,RefreshTokenRepository>();
             builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
             builder.Services.AddTransient(typeof(IPipelineBehavior<,>),typeof(ValidationBehavior<,>));
+            builder.Services.AddScoped<IRefreshTokenGenerator, RefreshTokenGenerator>();
+
+            builder.Services
+    .AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
+    {
+        var jwtOptions =
+            builder.Configuration
+                .GetSection(JwtOptions.SectionName)
+                .Get<JwtOptions>()!;
+
+        options.TokenValidationParameters =
+            new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = jwtOptions.Issuer,
+
+                ValidateAudience = true,
+                ValidAudience = jwtOptions.Audience,
+
+                ValidateIssuerSigningKey = true,
+
+                IssuerSigningKey =
+                    new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(
+                            jwtOptions.SecretKey)),
+
+                ValidateLifetime = true,
+
+                ClockSkew = TimeSpan.Zero
+            };
+    });
 
             var app = builder.Build();
 
@@ -51,6 +88,7 @@ namespace EventFlow.Identity.Api
 
             app.UseMiddleware<ExceptionHandlerMiddleware>();
             app.UseHttpsRedirection();
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();

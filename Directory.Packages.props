@@ -8,6 +8,7 @@
     <PackageVersion Include="MediatR" Version="14.2.0" />
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.11" />
 
      <!-- Database -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.11" />

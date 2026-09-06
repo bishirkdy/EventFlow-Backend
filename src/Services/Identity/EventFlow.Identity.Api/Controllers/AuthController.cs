@@ -1,4 +1,5 @@
 using EventFlow.Identity.Api.Contracts.Authentication;
+using EventFlow.Identity.Application.Commands.Login;
 using EventFlow.Identity.Application.Commands.RegisterUser;
 using EventFlow.Identity.Application.DTOs;
 using EventFlow.Identity.Application.DTOs.Authentication;
@@ -20,6 +21,17 @@ namespace EventFlow.Identity.Api.Controllers
             var command = new RegisterUserCommand(request.UserName,request.Email,request.Password,request.FirstName,request.LastName);
             var result = await sender.Send(command, cancellationToken);
             return StatusCode(StatusCodes.Status201Created,result);
+        }
+
+        [HttpPost("login")]
+        [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
+        public async Task<ActionResult<LoginResponse>> Login(LoginRequest request, CancellationToken cancellationToken)
+        {
+            var command = new LoginUserCommand(request.Email,request.Password);
+
+            var result = await sender.Send(command,cancellationToken);
+
+            return Ok(result);
         }
     }
 }
