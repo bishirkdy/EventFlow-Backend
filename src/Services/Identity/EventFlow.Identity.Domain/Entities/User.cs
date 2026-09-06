@@ -1,25 +1,52 @@
+using EventFlow.Identity.Domain.Common;
+
 namespace EventFlow.Identity.Domain.Entities
 {
+    //It contains user data and user state, but not authentication workflows.
     public class User : BaseEntity
     {
-        public string Email { get; private set; } = string.Empty;
-        public string UserName { get; private set; } = string.Empty;
-        public string FirstName { get; private set; } = string.Empty;
-        public string LastName { get; private set; } = string.Empty;
-        public bool IsActive { get; private set; }
-        private User(){}
+        private User()
+        {
+        }
 
-        public User(string email,string userName,string firstName,string lastName)
+        public User(string userName,string email,string firstName,string lastName,string passwordHash)
         {
             Id = Guid.NewGuid();
 
-            Email = email;
             UserName = userName;
+            Email = email;
             FirstName = firstName;
             LastName = lastName;
+            PasswordHash = passwordHash;
 
             IsActive = true;
             CreatedAt = DateTime.UtcNow;
+        }
+
+        public string UserName { get; private set; } = null!;
+        public string Email { get; private set; } = null!;
+        public string PasswordHash { get; private set; } = null!;
+        public string FirstName { get; private set; } = null!;
+        public string LastName { get; private set; } = null!;
+        public bool IsActive { get; private set; }
+
+        public void UpdateName(string firstName, string lastName)
+        {
+            FirstName = firstName;
+            LastName = lastName;
+            SetUpdatedAt();
+        }
+
+        public void Deactivate()
+        {
+            IsActive = false;
+            SetUpdatedAt();
+        }
+
+        public void Activate()
+        {
+            IsActive = true;
+            SetUpdatedAt();
         }
     }
 }

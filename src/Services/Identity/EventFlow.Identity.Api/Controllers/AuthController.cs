@@ -1,7 +1,10 @@
+using EventFlow.Identity.Api.Contracts.Authentication;
 using EventFlow.Identity.Application.Commands.RegisterUser;
 using EventFlow.Identity.Application.DTOs;
+using EventFlow.Identity.Application.DTOs.Authentication;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxTokenParser;
 
 namespace EventFlow.Identity.Api.Controllers
 {
@@ -11,11 +14,12 @@ namespace EventFlow.Identity.Api.Controllers
     {
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterUserDto request, CancellationToken cancellationToken)
+        [ProducesResponseType(typeof(RegisterUserResponse),StatusCodes.Status201Created)]
+        public async Task<IActionResult> Register(RegisterUserRequest request, CancellationToken cancellationToken)
         {
-            var command =  new RegisterUserCommand(request);
-            var userId = await sender.Send(command, cancellationToken);
-            return Ok(userId);
+            var command = new RegisterUserCommand(request.UserName,request.Email,request.Password,request.FirstName,request.LastName);
+            var result = await sender.Send(command, cancellationToken);
+            return StatusCode(StatusCodes.Status201Created,result);
         }
     }
 }

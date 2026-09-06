@@ -16,7 +16,7 @@ namespace EventFlow.Identity.Infrastructure.Services
 
         public bool Verify(string password, string passwordHash)
         {
-            var result = _hasher.VerifyHashedPassword(null , passwordHash, password);
+            var result = _hasher.VerifyHashedPassword(null! , passwordHash, password);
             return result == PasswordVerificationResult.Success;
         }
 
