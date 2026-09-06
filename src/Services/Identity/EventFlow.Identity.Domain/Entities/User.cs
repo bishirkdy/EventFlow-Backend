@@ -30,6 +30,9 @@ namespace EventFlow.Identity.Domain.Entities
         public string LastName { get; private set; } = null!;
         public bool IsActive { get; private set; }
 
+        // Navigation property for refresh tokens belonging to this user
+        public ICollection<RefreshToken> RefreshTokens { get; private set; } = new List<RefreshToken>();
+
         public void UpdateName(string firstName, string lastName)
         {
             FirstName = firstName;
