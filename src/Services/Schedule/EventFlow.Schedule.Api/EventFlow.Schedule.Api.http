@@ -1,6 +1,0 @@
-@EventFlow.Schedule.Api_HostAddress = http://localhost:5235
-
-GET {{EventFlow.Schedule.Api_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

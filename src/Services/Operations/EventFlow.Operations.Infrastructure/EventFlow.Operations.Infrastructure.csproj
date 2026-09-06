@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EventFlow.Operations.Application\EventFlow.Operations.Application.csproj" />
+    <ProjectReference Include="..\EventFlow.Operations.Domain\EventFlow.Operations.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
