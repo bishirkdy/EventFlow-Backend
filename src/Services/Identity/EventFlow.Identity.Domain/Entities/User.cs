@@ -32,6 +32,8 @@ namespace EventFlow.Identity.Domain.Entities
 
         // Navigation property for refresh tokens belonging to this user
         public ICollection<RefreshToken> RefreshTokens { get; private set; } = new List<RefreshToken>();
+        public ICollection<UserEventRole> UserEventRoles { get; private set; }= new List<UserEventRole>();
+
 
         public void UpdateName(string firstName, string lastName)
         {

@@ -1,9 +1,12 @@
 
+using EventFlow.Identity.Api.Middleware;
+using EventFlow.Identity.Application.Abstractions.Authorization;
 using EventFlow.Identity.Application.Abstractions.Repositories;
 using EventFlow.Identity.Application.Abstractions.Services;
 using EventFlow.Identity.Application.Behaviors;
 using EventFlow.Identity.Application.Commands.RegisterUser;
 using EventFlow.Identity.Application.Configuration;
+using EventFlow.Identity.Infrastructure.Authorization;
 using EventFlow.Identity.Infrastructure.Persistence;
 using EventFlow.Identity.Infrastructure.Repositories;
 using EventFlow.Identity.Infrastructure.Services;
@@ -44,6 +47,11 @@ namespace EventFlow.Identity.Api
             builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
             builder.Services.AddTransient(typeof(IPipelineBehavior<,>),typeof(ValidationBehavior<,>));
             builder.Services.AddScoped<IRefreshTokenGenerator, RefreshTokenGenerator>();
+            builder.Services.AddScoped<IJwtService, JwtService>();
+            builder.Services.AddScoped<IPermissionService,PermissionService>();
+            builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+            builder.Services.AddScoped<IPermissionRepository,PermissionRepository>();
+            builder.Services.AddScoped<IUserEventRoleRepository,UserEventRoleRepository>();
 
             builder.Services
     .AddAuthentication("Bearer")
@@ -86,7 +94,7 @@ namespace EventFlow.Identity.Api
                 app.UseSwaggerUI();
             }
 
-            app.UseMiddleware<ExceptionHandlerMiddleware>();
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();

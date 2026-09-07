@@ -13,7 +13,6 @@
   <ItemGroup>
     <Folder Include="Commands\RefreshAccessToken\" />
     <Folder Include="Services\" />
-    <Folder Include="Queries\" />
   </ItemGroup>
 
   <ItemGroup>
