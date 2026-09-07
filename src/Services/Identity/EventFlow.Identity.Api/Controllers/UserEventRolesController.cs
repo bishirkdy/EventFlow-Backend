@@ -1,4 +1,5 @@
 using EventFlow.Identity.Application.Commands.AssignUserRole;
+using EventFlow.Identity.Application.Queries.GetUserEventRoles;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -35,10 +36,28 @@ namespace EventFlow.Identity.Api.Controllers
                 Id = roleId
             });
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetRoles(
+    Guid eventId,
+    Guid userId,
+    CancellationToken cancellationToken)
+        {
+            // Purpose: Get the user's roles for this event.
+            var result = await _mediator.Send(
+                new GetUserEventRolesQuery(
+                    userId,
+                    eventId),
+                cancellationToken);
+
+            return Ok(result);
+        }
     }
 
     public class AssignUserRoleRequest
     {
         public Guid RoleId { get; set; }
     }
+
+
 }

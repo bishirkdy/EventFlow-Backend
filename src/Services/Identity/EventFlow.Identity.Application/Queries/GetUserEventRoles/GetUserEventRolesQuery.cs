@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using EventFlow.Identity.Application.DTOs.UserEventRoles;
+using MediatR;
+    
 
 namespace EventFlow.Identity.Application.Queries.GetUserEventRoles
 {
-    internal class GetUserEventRolesQuery
-    {
-    }
+    public record GetUserEventRolesQuery(
+        Guid UserId,
+        Guid EventId
+    ) : IRequest<List<UserEventRoleResponse>>;
 }
