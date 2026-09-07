@@ -48,10 +48,13 @@ namespace EventFlow.Identity.Api
             builder.Services.AddTransient(typeof(IPipelineBehavior<,>),typeof(ValidationBehavior<,>));
             builder.Services.AddScoped<IRefreshTokenGenerator, RefreshTokenGenerator>();
             builder.Services.AddScoped<IJwtService, JwtService>();
+
+            // Purpose: Register permission authorization service.
             builder.Services.AddScoped<IPermissionService,PermissionService>();
             builder.Services.AddScoped<IRoleRepository, RoleRepository>();
             builder.Services.AddScoped<IPermissionRepository,PermissionRepository>();
             builder.Services.AddScoped<IUserEventRoleRepository,UserEventRoleRepository>();
+
 
             builder.Services
     .AddAuthentication("Bearer")

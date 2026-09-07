@@ -13,6 +13,8 @@ namespace EventFlow.Identity.Infrastructure.Authorization
         {
             _context = context;
         }
+        // Purpose: Find the user's role for this event
+        // and check whether that role has the requested permission.
 
         public async Task<bool> HasPermissionAsync(
             Guid userId,

@@ -33,6 +33,7 @@ public sealed class RefreshToken : BaseEntity
     public bool IsRevoked => RevokedAt.HasValue;
     public bool IsActive => !IsExpired && !IsRevoked;
 
+    // Invalidate this refresh token.
     public void Revoke()
     {
         if (!IsRevoked)
@@ -41,4 +42,6 @@ public sealed class RefreshToken : BaseEntity
             SetUpdatedAt();
         }
     }
+
+    public User User { get; private set; } = null!;
 }

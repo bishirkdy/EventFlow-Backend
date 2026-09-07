@@ -1,4 +1,6 @@
+using EventFlow.Identity.Api.Contracts.Authentication;
 using EventFlow.Identity.Application.Commands.AssignUserRole;
+using EventFlow.Identity.Application.Commands.LogoutUser;
 using EventFlow.Identity.Application.Commands.RemoveUserRole;
 using EventFlow.Identity.Application.Queries.GetUserEventRoles;
 using MediatR;
@@ -67,6 +69,19 @@ namespace EventFlow.Identity.Api.Controllers
                     userId,
                     eventId,
                     roleId),
+                cancellationToken);
+
+            return NoContent();
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout(
+    [FromBody] RefreshTokenRequest request,
+    CancellationToken cancellationToken)
+        {
+            // Purpose: Revoke the user's refresh token.
+            await _mediator.Send(
+                new LogoutUserCommand(request.RefreshToken),
                 cancellationToken);
 
             return NoContent();
