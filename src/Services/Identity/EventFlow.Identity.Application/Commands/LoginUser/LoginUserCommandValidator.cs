@@ -1,11 +1,10 @@
 using EventFlow.Identity.Application.Commands.Login;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Text;
+
 
 namespace EventFlow.Identity.Application.Commands.LoginUser
 {
+    //Validation for login
     public sealed class LoginUserCommandValidator: AbstractValidator<LoginUserCommand>
     {
         public LoginUserCommandValidator()

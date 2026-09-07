@@ -5,42 +5,25 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EventFlow.Identity.Infrastructure.Repositories
 {
-    public sealed class RefreshTokenRepository : IRefreshTokenRepository
+    public sealed class RefreshTokenRepository(IdentityDbContext context) : IRefreshTokenRepository
     {
-        private readonly IdentityDbContext _context;
 
-        public RefreshTokenRepository(IdentityDbContext context)
+        //Add refreash token repo
+        public async Task AddAsync(RefreshToken refreshToken,CancellationToken cancellationToken)
         {
-            _context = context;
+            await context.RefreshTokens.AddAsync(refreshToken,cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task AddAsync(
-            RefreshToken refreshToken,
-            CancellationToken cancellationToken)
+        //Get refreshtoken 
+        public async Task<RefreshToken?> GetByTokenAsync(string token,CancellationToken cancellationToken)
         {
-            await _context.RefreshTokens.AddAsync(
-                refreshToken,
-                cancellationToken);
-
-            await _context.SaveChangesAsync(
-                cancellationToken);
+            return await context.RefreshTokens.FirstOrDefaultAsync(x => x.Token == token,cancellationToken);
         }
 
-        public async Task<RefreshToken?> GetByTokenAsync(
-            string token,
-            CancellationToken cancellationToken)
+        public async Task SaveChangesAsync(CancellationToken cancellationToken)
         {
-            return await _context.RefreshTokens
-                .FirstOrDefaultAsync(
-                    x => x.Token == token,
-                    cancellationToken);
-        }
-
-        public async Task SaveChangesAsync(
-            CancellationToken cancellationToken)
-        {
-            await _context.SaveChangesAsync(
-                cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
         }
     }
 }

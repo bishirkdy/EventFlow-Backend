@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EventFlow.Identity.Infrastructure.Persistence.Configurations
 {
-    public class RoleConfiguration : IEntityTypeConfiguration<Role>
+    public sealed class RoleConfiguration : IEntityTypeConfiguration<Role>
     {
         public void Configure(EntityTypeBuilder<Role> builder)
         {

@@ -4,5 +4,6 @@ using MediatR;
 
 namespace EventFlow.Identity.Application.Commands.LogoutUser
 {
-    public record LogoutUserCommand(string RefreshToken) : IRequest;
+    //Command for logout
+    public sealed record LogoutUserCommand(string RefreshToken) : IRequest;
 }

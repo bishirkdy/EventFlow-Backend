@@ -26,6 +26,10 @@
 	  <!-- Identity -->
 	<PackageVersion Include="Microsoft.Extensions.Identity.Core" Version="10.0.11" />
 
+	  <!-- Common -->
+	<PackageVersion Include="AutoMapper" Version="16.2.0" />
+
+	  
   </ItemGroup>
 
      

@@ -1,7 +1,5 @@
 // Represents a refresh token issued to a user.
-// Refresh tokens allow the client to obtain a new JWT
 // access token without requiring the user to log in again.
-
 using EventFlow.Identity.Domain.Common;
 
 namespace EventFlow.Identity.Domain.Entities;
@@ -12,10 +10,7 @@ public sealed class RefreshToken : BaseEntity
     {
     }
 
-    public RefreshToken(
-        Guid userId,
-        string token,
-        DateTime expiresAt)
+    public RefreshToken(Guid userId,string token,DateTime expiresAt)
     {
         Id = Guid.NewGuid();
         UserId = userId;
@@ -33,6 +28,8 @@ public sealed class RefreshToken : BaseEntity
     public bool IsRevoked => RevokedAt.HasValue;
     public bool IsActive => !IsExpired && !IsRevoked;
 
+    public User User { get; private set; } = null!;
+
     // Invalidate this refresh token.
     public void Revoke()
     {
@@ -42,6 +39,4 @@ public sealed class RefreshToken : BaseEntity
             SetUpdatedAt();
         }
     }
-
-    public User User { get; private set; } = null!;
 }

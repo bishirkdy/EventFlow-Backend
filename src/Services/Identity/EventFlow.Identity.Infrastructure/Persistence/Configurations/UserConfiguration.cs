@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace EventFlow.Identity.Infrastructure.Persistence.Configurations
 {
     // Defines the database mapping and constraints for the User entity.
-    public class UserConfiguration : IEntityTypeConfiguration<User>
+    public sealed class UserConfiguration : IEntityTypeConfiguration<User>
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {

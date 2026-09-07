@@ -1,3 +1,4 @@
+using EventFlow.Identity.Api.Common;
 using EventFlow.Identity.Api.Contracts.Authentication;
 using EventFlow.Identity.Application.Commands.Login;
 using EventFlow.Identity.Application.Commands.RegisterUser;
@@ -15,12 +16,18 @@ namespace EventFlow.Identity.Api.Controllers
     {
 
         [HttpPost("register")]
-        [ProducesResponseType(typeof(RegisterUserResponse),StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ApiResponse<RegisterUserResponse>),StatusCodes.Status201Created)]
         public async Task<IActionResult> Register(RegisterUserRequest request, CancellationToken cancellationToken)
         {
             var command = new RegisterUserCommand(request.UserName,request.Email,request.Password,request.FirstName,request.LastName);
             var result = await sender.Send(command, cancellationToken);
-            return StatusCode(StatusCodes.Status201Created,result);
+            var response = new ApiResponse<RegisterUserResponse>
+            {
+                Success = true,
+                Message = "User registered successfully",
+                Data = result
+            };
+            return StatusCode(StatusCodes.Status201Created,response);
         }
 
         [HttpPost("login")]

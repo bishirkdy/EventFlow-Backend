@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace EventFlow.Identity.Infrastructure.Repositories
 {
     // Implements the user persistence operations defined by IUserRepository.
-    public class UserRepository(IdentityDbContext context) : IUserRepository
+    public sealed class UserRepository(IdentityDbContext context) : IUserRepository
     {
         public async Task<User?> GetByIdAsync(Guid userId, CancellationToken cancellationToken)
         {

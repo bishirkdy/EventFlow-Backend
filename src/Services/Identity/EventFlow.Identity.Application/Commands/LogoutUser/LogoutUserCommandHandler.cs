@@ -6,46 +6,30 @@ using MediatR;
 
 namespace EventFlow.Identity.Application.Commands.LogoutUser
 {
-    public class LogoutUserCommandHandler
-        : IRequestHandler<LogoutUserCommand>
+    //Handle logout using refresh token
+    public sealed class LogoutUserCommandHandler(IRefreshTokenRepository refreshTokenRepository): IRequestHandler<LogoutUserCommand>
     {
-        private readonly IRefreshTokenRepository _refreshTokenRepository;
-
-        public LogoutUserCommandHandler(
-            IRefreshTokenRepository refreshTokenRepository)
+        public async Task Handle(LogoutUserCommand request, CancellationToken cancellationToken)
         {
-            _refreshTokenRepository = refreshTokenRepository;
-        }
-
-        public async Task Handle(
-            LogoutUserCommand request,
-            CancellationToken cancellationToken)
-        {
-            // Purpose: Find the refresh token in the database.
-            var refreshToken =
-                await _refreshTokenRepository.GetByTokenAsync(
-                    request.RefreshToken,
-                    cancellationToken);
+            //  Find the refresh token in the database.
+            var refreshToken = await refreshTokenRepository.GetByTokenAsync(request.RefreshToken, cancellationToken);
 
             if (refreshToken is null)
             {
-                throw new UnauthorizedException(
-                    "Invalid refresh token.");
+                throw new UnauthorizedException("Invalid refresh token.");
             }
 
-            // Purpose: Prevent revoking an already inactive token.
+            //  Prevent revoking an already inactive token.
             if (!refreshToken.IsActive)
             {
-                throw new UnauthorizedException(
-                    "Refresh token is no longer active.");
+                throw new UnauthorizedException("Refresh token is no longer active.");
             }
 
-            // Purpose: Revoke the refresh token.
+            // Revoke the refresh token.
             refreshToken.Revoke();
 
-            // Purpose: Save the revoked state.
-            await _refreshTokenRepository.SaveChangesAsync(
-                cancellationToken);
+            // Save the revoked state.
+            await refreshTokenRepository.SaveChangesAsync(cancellationToken);
         }
     }
 }

@@ -6,8 +6,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EventFlow.Identity.Infrastructure.Persistence.Configurations
 {
-    public class PermissionConfiguration
-        : IEntityTypeConfiguration<Permission>
+    public sealed class PermissionConfiguration: IEntityTypeConfiguration<Permission>
     {
         public void Configure(EntityTypeBuilder<Permission> builder)
         {

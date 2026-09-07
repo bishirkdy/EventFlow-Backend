@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 
 namespace EventFlow.Identity.Application.Commands.LoginUser
 {
+    //Handler for login
     public sealed class LoginUserCommandHandler: IRequestHandler<LoginUserCommand, LoginResponse>
     {
         private readonly IUserRepository _userRepository;
@@ -37,73 +38,47 @@ namespace EventFlow.Identity.Application.Commands.LoginUser
             _refreshTokenGenerator = refreshTokenGenerator;
         }
 
-        public async Task<LoginResponse> Handle(
-            LoginUserCommand request,
-            CancellationToken cancellationToken)
+        public async Task<LoginResponse> Handle(LoginUserCommand request,CancellationToken cancellationToken)
         {
-            // Normalize email before searching.
-            var email = request.Email
-                .Trim()
-                .ToLowerInvariant();
+            // Normalize email before searching
+            var email = request.Email.Trim().ToLowerInvariant();
 
             // Find the user.
-            var user = await _userRepository.GetByEmailAsync(
-                email,
-                cancellationToken);
+            var user = await _userRepository.GetByEmailAsync(email, cancellationToken);
 
-            // Use the same error for unknown email/password.
-            // This avoids revealing whether an account exists.
+            // Use the same error for unknown email/password. This avoids revealing whether an account exists.
             if (user is null)
             {
-                throw new UnauthorizedException(
-                    "Invalid email or password.");
+                throw new UnauthorizedException("Invalid email or password.");
             }
 
             // Check whether the account is active.
             if (!user.IsActive)
             {
-                throw new UnauthorizedException(
-                    "This account is inactive.");
+                throw new UnauthorizedException("This account is inactive.");
             }
 
             // Verify the supplied password against the stored hash.
-            var passwordValid = _passwordHasher.Verify(
-                request.Password,
-                user.PasswordHash);
+            var passwordValid = _passwordHasher.Verify(request.Password,user.PasswordHash);
 
             if (!passwordValid)
             {
-                throw new UnauthorizedException(
-                    "Invalid email or password.");
+                throw new UnauthorizedException("Invalid email or password.");
             }
 
             // Generate short-lived access token.
             var accessToken = _jwtService.GenerateAccessToken(user);
-
-            var accessTokenExpiresAt =
-                DateTime.UtcNow.AddMinutes(
-                    _jwtOptions.AccessTokenExpirationMinutes);
+            var accessTokenExpiresAt =DateTime.UtcNow.AddMinutes(_jwtOptions.AccessTokenExpirationMinutes);
 
             // Generate long-lived refresh token.
             var refreshTokenValue = _refreshTokenGenerator.Generate();
-
-            var refreshToken = new RefreshToken(
-                user.Id,
-                refreshTokenValue,
-                DateTime.UtcNow.AddDays(
-                    _jwtOptions.RefreshTokenExpirationDays));
+            var refreshToken = new RefreshToken(user.Id, refreshTokenValue, DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenExpirationDays));
 
             // Persist refresh token.
-            await _refreshTokenRepository.AddAsync(
-                refreshToken,
-                cancellationToken);
+            await _refreshTokenRepository.AddAsync(refreshToken,cancellationToken);
 
-            // Return authentication result.
-            return new LoginResponse(
-                user.Id,
-                accessToken,
-                refreshTokenValue,
-                accessTokenExpiresAt);
+            // Return authentication result.         
+            return new LoginResponse(user.Id,accessToken,refreshTokenValue,accessTokenExpiresAt);
         }
     }
 }

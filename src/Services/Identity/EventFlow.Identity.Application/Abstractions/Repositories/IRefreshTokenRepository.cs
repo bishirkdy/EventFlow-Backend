@@ -3,6 +3,7 @@ using EventFlow.Identity.Domain.Entities;
 
 namespace EventFlow.Identity.Application.Abstractions.Repositories
 {
+    //Refreash token handling interface
     public interface IRefreshTokenRepository
     {
         Task AddAsync(RefreshToken refreshToken, CancellationToken cancellationToken);

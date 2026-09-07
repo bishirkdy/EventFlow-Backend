@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EventFlow.Identity.Infrastructure.Persistence.Configurations
 {
-    // Defines how RefreshToken is stored in PostgreSQL.
     public sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
     {
         public void Configure(
@@ -30,7 +29,7 @@ namespace EventFlow.Identity.Infrastructure.Persistence.Configurations
                 .IsUnique();
 
             // User → RefreshTokens relationship.
-            builder.HasOne<User>()
+            builder.HasOne(x => x.User)
                 .WithMany(x => x.RefreshTokens)
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);

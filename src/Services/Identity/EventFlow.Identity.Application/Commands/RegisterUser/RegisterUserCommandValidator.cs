@@ -1,6 +1,7 @@
 using FluentValidation;
 namespace EventFlow.Identity.Application.Commands.RegisterUser
 {
+    //Validation for registration
     public sealed class RegisterUserCommandValidator : AbstractValidator<RegisterUserCommand>
     {
         public RegisterUserCommandValidator()

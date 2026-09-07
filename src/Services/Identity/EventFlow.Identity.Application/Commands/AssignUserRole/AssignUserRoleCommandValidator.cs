@@ -4,12 +4,11 @@ using FluentValidation;
 
 namespace EventFlow.Identity.Application.Commands.AssignUserRole
 {
-    public class AssignUserRoleCommandValidator
-        : AbstractValidator<AssignUserRoleCommand>
+    public sealed class AssignUserRoleCommandValidator: AbstractValidator<AssignUserRoleCommand>
     {
         public AssignUserRoleCommandValidator()
         {
-            // Purpose: Validate required identifiers.
+            // Validate required identifiers.
 
             RuleFor(x => x.UserId)
                 .NotEmpty()

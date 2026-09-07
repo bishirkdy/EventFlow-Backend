@@ -5,23 +5,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EventFlow.Identity.Infrastructure.Repositories
 {
-    public class PermissionRepository : IPermissionRepository
+    public sealed class PermissionRepository(IdentityDbContext context) : IPermissionRepository
     {
-        private readonly IdentityDbContext _context;
 
-        public PermissionRepository(IdentityDbContext context)
+        // Retrieves a permission by its ID.
+        public async Task<Permission?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            _context = context;
-        }
-
-        public async Task<Permission?> GetByIdAsync(
-            Guid id,
-            CancellationToken cancellationToken = default)
-        {
-            return await _context.Permissions
-                .FirstOrDefaultAsync(
-                    x => x.Id == id,
-                    cancellationToken);
+            return await context.Permissions.FirstOrDefaultAsync(x => x.Id == id,cancellationToken);
         }
     }
 }

@@ -5,24 +5,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EventFlow.Identity.Infrastructure.Authorization
 {
-    public class PermissionService : IPermissionService
+    public class PermissionService(IdentityDbContext context) : IPermissionService
     {
-        private readonly IdentityDbContext _context;
 
-        public PermissionService(IdentityDbContext context)
-        {
-            _context = context;
-        }
-        // Purpose: Find the user's role for this event
+        //  Find the user's role for this event
         // and check whether that role has the requested permission.
-
-        public async Task<bool> HasPermissionAsync(
-            Guid userId,
-            Guid eventId,
-            string permission,
-            CancellationToken cancellationToken = default)
+        public async Task<bool> HasPermissionAsync(Guid userId,Guid eventId,string permission,CancellationToken cancellationToken = default)
         {
-            return await _context.UserEventRoles
+            return await context.UserEventRoles
                 .Where(x =>
                     x.UserId == userId &&
                     x.EventId == eventId)

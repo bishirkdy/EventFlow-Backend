@@ -7,9 +7,10 @@ namespace EventFlow.Identity.Infrastructure.Persistence
 {
     public static class IdentitySeedData
     {
+        private static readonly DateTime SeedDate = new DateTime(2026, 9, 7, 0, 0, 0, DateTimeKind.Utc);
         public static void Seed(ModelBuilder modelBuilder)
         {
-            // Purpose: Fixed IDs make seed data stable across migrations.
+            // Fixed IDs make seed data stable across migrations.
             var organizerRoleId = Guid.Parse("10000000-0000-0000-0000-000000000001");
             var eventAdminRoleId = Guid.Parse("10000000-0000-0000-0000-000000000002");
             var staffRoleId = Guid.Parse("10000000-0000-0000-0000-000000000003");
@@ -31,28 +32,28 @@ namespace EventFlow.Identity.Infrastructure.Persistence
                Id = organizerRoleId,
                Name = "Organizer",
                Description = "Event organizer",
-               CreatedAt = DateTime.UtcNow
+               CreatedAt = SeedDate
            },
            new
            {
                Id = eventAdminRoleId,
                Name = "EventAdmin",
                Description = "Event administrator",
-               CreatedAt = DateTime.UtcNow
+               CreatedAt = SeedDate
            },
            new
            {
                Id = staffRoleId,
                Name = "Staff",
                Description = "Event staff",
-               CreatedAt = DateTime.UtcNow
+               CreatedAt = SeedDate
            },
            new
            {
                Id = participantRoleId,
                Name = "Participant",
                Description = "Event participant",
-               CreatedAt = DateTime.UtcNow
+               CreatedAt = SeedDate
            }
        );
 
@@ -62,49 +63,49 @@ namespace EventFlow.Identity.Infrastructure.Persistence
                     Id = eventCreateId,
                     Name = "event.create",
                     Description = "Create event",
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = SeedDate
                 },
                 new
                 {
                     Id = eventViewId,
                     Name = "event.view",
                     Description = "View event",
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = SeedDate
                 },
                 new
                 {
                     Id = eventUpdateId,
                     Name = "event.update",
                     Description = "Update event",
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = SeedDate
                 },
                 new
                 {
                     Id = participantViewId,
                     Name = "participant.view",
                     Description = "View participants",
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = SeedDate
                 },
                 new
                 {
                     Id = participantApproveId,
                     Name = "participant.approve",
                     Description = "Approve participants",
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = SeedDate
                 },
                 new
                 {
                     Id = attendanceViewId,
                     Name = "attendance.view",
                     Description = "View attendance",
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = SeedDate
                 },
                 new
                 {
                     Id = attendanceManageId,
                     Name = "attendance.manage",
                     Description = "Manage attendance",
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = SeedDate
                 }
             );
 

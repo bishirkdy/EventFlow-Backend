@@ -4,8 +4,6 @@ using MediatR;
 
 namespace EventFlow.Identity.Application.Queries.GetUserEventRoles
 {
-    public record GetUserEventRolesQuery(
-        Guid UserId,
-        Guid EventId
-    ) : IRequest<List<UserEventRoleResponse>>;
+    //Query to get user role of event
+    public sealed record GetUserEventRolesQuery(Guid UserId,Guid EventId) : IRequest<List<UserEventRoleResponse>>;
 }
