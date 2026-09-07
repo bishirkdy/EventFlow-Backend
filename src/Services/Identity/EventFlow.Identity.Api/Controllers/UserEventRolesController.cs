@@ -1,4 +1,5 @@
 using EventFlow.Identity.Application.Commands.AssignUserRole;
+using EventFlow.Identity.Application.Commands.RemoveUserRole;
 using EventFlow.Identity.Application.Queries.GetUserEventRoles;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -52,12 +53,31 @@ namespace EventFlow.Identity.Api.Controllers
 
             return Ok(result);
         }
+
+        [HttpDelete("{roleId}")]
+        public async Task<IActionResult> RemoveRole(
+    Guid eventId,
+    Guid userId,
+    Guid roleId,
+    CancellationToken cancellationToken)
+        {
+            // Purpose: Remove a role from a user for this event.
+            await _mediator.Send(
+                new RemoveUserRoleCommand(
+                    userId,
+                    eventId,
+                    roleId),
+                cancellationToken);
+
+            return NoContent();
+        }
     }
 
     public class AssignUserRoleRequest
     {
         public Guid RoleId { get; set; }
     }
+
 
 
 }
