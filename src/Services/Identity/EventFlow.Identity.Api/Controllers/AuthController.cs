@@ -1,12 +1,11 @@
 using EventFlow.Identity.Api.Common;
 using EventFlow.Identity.Api.Contracts.Authentication;
 using EventFlow.Identity.Application.Commands.Login;
+using EventFlow.Identity.Application.Commands.LogoutUser;
 using EventFlow.Identity.Application.Commands.RegisterUser;
-using EventFlow.Identity.Application.DTOs;
 using EventFlow.Identity.Application.DTOs.Authentication;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using static Microsoft.CodeAnalysis.CSharp.SyntaxTokenParser;
 
 namespace EventFlow.Identity.Api.Controllers
 {
@@ -40,5 +39,17 @@ namespace EventFlow.Identity.Api.Controllers
 
             return Ok(result);
         }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
+        {
+            // Purpose: Revoke the user's refresh token.
+            await sender.Send(
+                new LogoutUserCommand(request.RefreshToken),
+                cancellationToken);
+
+            return NoContent();
+        }
     }
 }
+

@@ -74,18 +74,6 @@ namespace EventFlow.Identity.Api.Controllers
             return NoContent();
         }
 
-        [HttpPost("logout")]
-        public async Task<IActionResult> Logout(
-    [FromBody] RefreshTokenRequest request,
-    CancellationToken cancellationToken)
-        {
-            // Purpose: Revoke the user's refresh token.
-            await _mediator.Send(
-                new LogoutUserCommand(request.RefreshToken),
-                cancellationToken);
-
-            return NoContent();
-        }
     }
 
     public class AssignUserRoleRequest

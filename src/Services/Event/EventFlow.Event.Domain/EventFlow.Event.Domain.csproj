@@ -10,4 +10,8 @@
     <ProjectReference Include="..\..\..\BuildingBlocks\EventFlow.SharedKernel\EventFlow.SharedKernel.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Exceptions\" />
+  </ItemGroup>
+
 </Project>

@@ -8,6 +8,17 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EventFlow.Event.Domain\EventFlow.Event.Domain.csproj" />
+
+	  <PackageReference Include="MediatR" />
+	  <PackageReference Include="FluentValidation" />
+	  <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+	  <PackageReference Include="Microsoft.Extensions.Options" />
+	  <PackageReference Include="AutoMapper" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Abstractions\Messaging\" />
+    <Folder Include="Abstractions\Services\" />
   </ItemGroup>
 
 </Project>

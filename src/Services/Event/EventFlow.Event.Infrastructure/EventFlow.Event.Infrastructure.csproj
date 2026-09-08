@@ -9,6 +9,10 @@
   <ItemGroup>
     <ProjectReference Include="..\EventFlow.Event.Application\EventFlow.Event.Application.csproj" />
     <ProjectReference Include="..\EventFlow.Event.Domain\EventFlow.Event.Domain.csproj" />
+
+	  <PackageReference Include="Microsoft.EntityFrameworkCore" />
+	  <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
   </ItemGroup>
 
 </Project>

@@ -8,8 +8,7 @@ namespace EventFlow.Identity.Infrastructure.Authorization
     public class PermissionService(IdentityDbContext context) : IPermissionService
     {
 
-        //  Find the user's role for this event
-        // and check whether that role has the requested permission.
+        // Find the user's role for this event and check whether that role has the requested permission.
         public async Task<bool> HasPermissionAsync(Guid userId,Guid eventId,string permission,CancellationToken cancellationToken = default)
         {
             return await context.UserEventRoles
@@ -18,8 +17,7 @@ namespace EventFlow.Identity.Infrastructure.Authorization
                     x.EventId == eventId)
                 .SelectMany(x => x.Role.RolePermissions)
                 .AnyAsync(
-                    x => x.Permission.Name == permission,
-                    cancellationToken);
+                    x => x.Permission.Name == permission, cancellationToken);
         }
     }
 }

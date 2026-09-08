@@ -1,6 +1,11 @@
-﻿namespace EventFlow.Event.Api.Requests.Events
+namespace EventFlow.Event.Api.Requests.Events
 {
-    public class CreateEventRequest
-    {
-    }
+    public sealed record CreateEventRequest(
+        string Name,
+        string? Description,
+        string EventType,
+        string? SubType,
+        DateTime StartDate,
+        DateTime EndDate,
+        string TimeZone);
 }
