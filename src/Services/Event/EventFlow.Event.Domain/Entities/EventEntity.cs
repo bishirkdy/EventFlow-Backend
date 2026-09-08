@@ -85,5 +85,7 @@ namespace EventFlow.Event.Domain.Entities
                 throw new ArgumentException("Event end date must be greater than start date.");
             }
         }
+
+
     }
 }

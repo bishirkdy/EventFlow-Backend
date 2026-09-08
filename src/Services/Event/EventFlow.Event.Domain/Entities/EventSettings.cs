@@ -50,5 +50,19 @@ namespace EventFlow.Event.Domain.Entities
 
             UpdatedAt = DateTime.UtcNow;
         }
+
+        public void Reset()
+        {
+            // Restore default settings
+            RegistrationEnabled = true;
+            AttendanceEnabled = true;
+            FeedbackEnabled = false;
+            CertificateEnabled = false;
+            GalleryEnabled = false;
+            DefaultLanguage = "en";
+
+            // Update audit timestamp
+            UpdatedAt = DateTime.UtcNow;
+        }
     }
 }
