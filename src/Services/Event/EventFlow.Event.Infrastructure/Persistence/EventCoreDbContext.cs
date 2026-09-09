@@ -14,6 +14,8 @@ namespace EventFlow.Event.Infrastructure.Persistence
         public DbSet<Section> Sections => Set<Section>();
         public DbSet<Session> Sessions => Set<Session>();
         public DbSet<EventFeature> EventFeatures => Set<EventFeature>();
+        public DbSet<Venue> Venues => Set<Venue>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
