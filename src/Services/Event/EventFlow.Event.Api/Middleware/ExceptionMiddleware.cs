@@ -1,42 +1,72 @@
-namespace EventFlow.Event.Api.Middleware
+using EventFlow.Event.Application.Exceptions;
+using FluentValidation;
+
+namespace EventFlow.Event.Api.Middleware;
+
+public sealed class ExceptionMiddleware
 {
-    public sealed class ExceptionMiddleware
+    private readonly RequestDelegate _next;
+    private readonly ILogger<ExceptionMiddleware> _logger;
+
+    public ExceptionMiddleware(RequestDelegate next,ILogger<ExceptionMiddleware> logger)
     {
-        private readonly RequestDelegate _next;
-        private readonly ILogger<ExceptionMiddleware> _logger;
+        _next = next;
+        _logger = logger;
+    }
 
-        public ExceptionMiddleware(RequestDelegate next,ILogger<ExceptionMiddleware> logger)
+    public async Task InvokeAsync(HttpContext context)
+    {
+        try
         {
-            _next = next;
-            _logger = logger;
+            // Continue request pipeline
+            await _next(context);
         }
-
-        public async Task InvokeAsync(HttpContext context)
+        catch (Exception ex)
         {
-            try
-            {
-                await _next(context);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An unhandled exception occurred.");
+            // Log exception
+            _logger.LogError(ex, "An unhandled exception occurred.");
 
-                await HandleExceptionAsync(context, ex);
-            }
+            // Handle exception centrally
+            await HandleExceptionAsync(context, ex);
         }
+    }
 
-        private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private static async Task HandleExceptionAsync(HttpContext context,Exception exception)
+    {
+        // Set response content type
+        context.Response.ContentType = "application/json";
+
+        // Determine HTTP status code
+        context.Response.StatusCode = exception switch
         {
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            ValidationException => StatusCodes.Status400BadRequest,
+            NotFoundException => StatusCodes.Status404NotFound,
+            ConflictException => StatusCodes.Status409Conflict,
+            ArgumentException => StatusCodes.Status400BadRequest,
+            InvalidOperationException => StatusCodes.Status400BadRequest,
+            _ => StatusCodes.Status500InternalServerError
+        };
 
-            var response = new
-            {
-                statusCode = context.Response.StatusCode,
-                message = "An unexpected error occurred."
-            };
+        // Determine response message
+        var message = exception switch
+        {
+            ValidationException => "One or more validation errors occurred.",
+            NotFoundException =>exception.Message,
+            ConflictException =>exception.Message,
+            ArgumentException =>exception.Message,
+            InvalidOperationException =>exception.Message,
+            _ => "An unexpected error occurred."
+        };
 
-            await context.Response.WriteAsJsonAsync(response);
-        }
+        // Create standard API response
+        var response = new
+        {
+            success = false,
+            message,
+            data = (object?)null
+        };
+
+        // Write response as JSON
+        await context.Response.WriteAsJsonAsync(response);
     }
 }
