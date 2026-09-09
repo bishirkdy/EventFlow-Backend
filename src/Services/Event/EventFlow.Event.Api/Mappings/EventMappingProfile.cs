@@ -1,4 +1,5 @@
 using AutoMapper;
+using EventFlow.Event.Api.Requests.EventPages;
 using EventFlow.Event.Api.Requests.Events;
 using EventFlow.Event.Api.Requests.EventSettings;
 using EventFlow.Event.Api.Requests.Sections;
@@ -6,6 +7,7 @@ using EventFlow.Event.Api.Requests.Sessions;
 using EventFlow.Event.Api.Requests.Venues;
 using EventFlow.Event.Api.Responses.Events;
 using EventFlow.Event.Application.Features.EventFeature.Queries.GetEventFeatures;
+using EventFlow.Event.Application.Features.EventPages.Commands;
 using EventFlow.Event.Application.Features.Events.Commands.CreateEvent;
 using EventFlow.Event.Application.Features.Events.Commands.UpdateEvent;
 using EventFlow.Event.Application.Features.Events.Queries.GetEventById;
@@ -46,6 +48,9 @@ namespace EventFlow.Event.Api.Mappings
             //Venue
             CreateMap<CreateVenueRequest, CreateVenueCommand>();
             CreateMap<UpdateVenueRequest, UpdateVenueCommand>();
+
+            //Event page
+            CreateMap<CreateEventPageRequest, CreateEventPageCommand>();
 
         }
     }

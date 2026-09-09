@@ -1,5 +1,6 @@
 using EventFlow.Event.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.Tracing;
 using System.Security;
 
 namespace EventFlow.Event.Infrastructure.Persistence
@@ -15,6 +16,7 @@ namespace EventFlow.Event.Infrastructure.Persistence
         public DbSet<Session> Sessions => Set<Session>();
         public DbSet<EventFeature> EventFeatures => Set<EventFeature>();
         public DbSet<Venue> Venues => Set<Venue>();
+        public DbSet<EventPage> EventPages => Set<EventPage>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
