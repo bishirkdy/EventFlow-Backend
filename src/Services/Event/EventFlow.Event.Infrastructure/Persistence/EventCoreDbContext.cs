@@ -17,6 +17,7 @@ namespace EventFlow.Event.Infrastructure.Persistence
         public DbSet<Venue> Venues => Set<Venue>();
         public DbSet<EventPage> EventPages => Set<EventPage>();
         public DbSet<PageSection> PageSections => Set<PageSection>();
+        public DbSet<NavigationMenu> NavigationMenus => Set<NavigationMenu>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

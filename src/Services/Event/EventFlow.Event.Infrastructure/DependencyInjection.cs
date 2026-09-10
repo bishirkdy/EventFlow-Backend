@@ -26,7 +26,9 @@ namespace EventFlow.Event.Infrastructure
             services.AddScoped<ISessionRepository, SessionRepository>();
             services.AddScoped<IEventFeatureRepository, EventFeatureRepository>();
             services.AddScoped<IVenueRepository, VenueRepository>();
+            services.AddScoped<IEventPageRepository, EventPageRepository>();
             services.AddScoped<IPageSectionRepository, PageSectionRepository>();
+            services.AddScoped<INavigationMenuRepository, NavigationMenuRepository>();
 
             return services;
         }
