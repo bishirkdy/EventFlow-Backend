@@ -2,6 +2,8 @@ using AutoMapper;
 using EventFlow.Event.Api.Requests.EventPages;
 using EventFlow.Event.Api.Requests.Events;
 using EventFlow.Event.Api.Requests.EventSettings;
+using EventFlow.Event.Api.Requests.NavigationItem;
+using EventFlow.Event.Api.Requests.NavigationItems;
 using EventFlow.Event.Api.Requests.NavigationMenu;
 using EventFlow.Event.Api.Requests.PageSection;
 using EventFlow.Event.Api.Requests.Sections;
@@ -14,6 +16,8 @@ using EventFlow.Event.Application.Features.Events.Commands.CreateEvent;
 using EventFlow.Event.Application.Features.Events.Commands.UpdateEvent;
 using EventFlow.Event.Application.Features.Events.Queries.GetEventById;
 using EventFlow.Event.Application.Features.EventSettings.Commands.UpdateEventSettings;
+using EventFlow.Event.Application.Features.NavigationItem.Commands.CreateNavigationItem;
+using EventFlow.Event.Application.Features.NavigationItem.Commands.UpdateNavigationItem;
 using EventFlow.Event.Application.Features.NavigationMenu.Commands.CreateNavigationMenu;
 using EventFlow.Event.Application.Features.NavigationMenu.Commands.UpdateNavigationMenu;
 using EventFlow.Event.Application.Features.PageSection.Commands.CreatePageSection;
@@ -66,6 +70,9 @@ namespace EventFlow.Event.Api.Mappings
             CreateMap<CreateNavigationMenuRequest, CreateNavigationMenuCommand>();
             CreateMap<UpdateNavigationMenuRequest, UpdateNavigationMenuCommand>();
 
+            //Navigation items mapping
+            CreateMap<CreateNavigationItemRequest, CreateNavigationItemCommand>();
+            CreateMap<UpdateNavigationItemRequest, UpdateNavigationItemCommand>();
         }
     }
 }
