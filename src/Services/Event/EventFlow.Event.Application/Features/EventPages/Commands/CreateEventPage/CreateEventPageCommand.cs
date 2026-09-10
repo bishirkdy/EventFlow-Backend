@@ -1,8 +1,6 @@
-
-
 using MediatR;
 
-namespace EventFlow.Event.Application.Features.EventPages.Commands
+namespace EventFlow.Event.Application.Features.EventPages.Commands.CreateEventPage
 {
     public sealed record CreateEventPageCommand(
         Guid EventId,

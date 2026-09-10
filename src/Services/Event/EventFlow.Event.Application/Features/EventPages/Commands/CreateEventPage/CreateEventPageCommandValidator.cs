@@ -1,7 +1,6 @@
-
 using FluentValidation;
 
-namespace EventFlow.Event.Application.Features.EventPages.Commands
+namespace EventFlow.Event.Application.Features.EventPages.Commands.CreateEventPage
 {
     public sealed class CreateEventPageCommandValidator: AbstractValidator<CreateEventPageCommand>
     {

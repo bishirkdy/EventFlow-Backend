@@ -2,16 +2,19 @@ using AutoMapper;
 using EventFlow.Event.Api.Requests.EventPages;
 using EventFlow.Event.Api.Requests.Events;
 using EventFlow.Event.Api.Requests.EventSettings;
+using EventFlow.Event.Api.Requests.PageSection;
 using EventFlow.Event.Api.Requests.Sections;
 using EventFlow.Event.Api.Requests.Sessions;
 using EventFlow.Event.Api.Requests.Venues;
 using EventFlow.Event.Api.Responses.Events;
 using EventFlow.Event.Application.Features.EventFeature.Queries.GetEventFeatures;
-using EventFlow.Event.Application.Features.EventPages.Commands;
+using EventFlow.Event.Application.Features.EventPages.Commands.CreateEventPage;
 using EventFlow.Event.Application.Features.Events.Commands.CreateEvent;
 using EventFlow.Event.Application.Features.Events.Commands.UpdateEvent;
 using EventFlow.Event.Application.Features.Events.Queries.GetEventById;
 using EventFlow.Event.Application.Features.EventSettings.Commands.UpdateEventSettings;
+using EventFlow.Event.Application.Features.PageSection.Commands.CreatePageSection;
+using EventFlow.Event.Application.Features.PageSection.Commands.UpdatePageSection;
 using EventFlow.Event.Application.Features.Sections.Commands.CreateSection;
 using EventFlow.Event.Application.Features.Sections.Commands.UpdateSection;
 using EventFlow.Event.Application.Features.Sessions.Commands.CreateSession;
@@ -51,6 +54,10 @@ namespace EventFlow.Event.Api.Mappings
 
             //Event page
             CreateMap<CreateEventPageRequest, CreateEventPageCommand>();
+
+            //Event page section
+            CreateMap<CreatePageSectionRequest, CreatePageSectionCommand>();
+            CreateMap<UpdatePageSectionRequest, UpdatePageSectionCommand>();
 
         }
     }

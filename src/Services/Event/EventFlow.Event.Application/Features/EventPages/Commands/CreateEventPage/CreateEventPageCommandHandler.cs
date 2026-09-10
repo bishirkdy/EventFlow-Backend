@@ -1,11 +1,9 @@
-
-
 using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.Event.Application.Exceptions;
 using EventFlow.Event.Domain.Entities;
 using MediatR;
 
-namespace EventFlow.Event.Application.Features.EventPages.Commands
+namespace EventFlow.Event.Application.Features.EventPages.Commands.CreateEventPage
 {
     public sealed class CreateEventPageCommandHandler(IEventPageRepository eventPageRepository,IUnitOfWork unitOfWork)
         : IRequestHandler<CreateEventPageCommand, Guid>

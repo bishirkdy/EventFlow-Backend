@@ -1,7 +1,10 @@
 using AutoMapper;
 using EventFlow.Event.Api.Common.Models;
 using EventFlow.Event.Api.Requests.EventPages;
-using EventFlow.Event.Application.Features.EventPages.Commands;
+using EventFlow.Event.Application.Features.EventPages.Commands.CreateEventPage;
+using EventFlow.Event.Application.Features.EventPages.Commands.DeleteEventPage;
+using EventFlow.Event.Application.Features.EventPages.Commands.PublishEventPage;
+using EventFlow.Event.Application.Features.EventPages.Commands.UnpublishEventPage;
 using EventFlow.Event.Application.Features.EventPages.Queries.GetEventPagesByEvent;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -51,6 +54,56 @@ namespace EventFlow.Event.Api.Controllers
                     Message = "Event pages retrieved successfully.",
                     Data = pages
                 };
+
+            return Ok(response);
+        }
+
+        //Publish event page
+        [HttpPut("{eventId:guid}/pages/{id:guid}/publish")]
+        public async Task<IActionResult> PublishEventPage(Guid eventId,Guid id,CancellationToken cancellationToken)
+        {
+            await sender.Send(new PublishEventPageCommand(eventId, id),cancellationToken);
+
+            var response = new ApiResponse<object?>
+            {
+                Success = true,
+                Message = "Event page published successfully.",
+                Data = null
+            };
+
+            return Ok(response);
+        }
+
+        //Unpublish event page
+        [HttpPut("{eventId:guid}/pages/{id:guid}/unpublish")]
+        public async Task<IActionResult> UnpublishEventPage(Guid eventId,Guid id,CancellationToken cancellationToken)
+        {
+            await sender.Send(
+                new UnpublishEventPageCommand(eventId, id), cancellationToken);
+
+            var response = new ApiResponse<object?>
+            {
+                Success = true,
+                Message = "Event page unpublished successfully.",
+                Data = null
+            };
+
+            return Ok(response);
+        }
+
+        //Delete event page
+        [HttpDelete("{eventId:guid}/pages/{id:guid}")]
+        public async Task<IActionResult> DeleteEventPage(Guid eventId,Guid id,CancellationToken cancellationToken)
+        {
+            // Send command
+            await sender.Send(new DeleteEventPageCommand(eventId, id), cancellationToken);
+
+            var response = new ApiResponse<object?>
+            {
+                Success = true,
+                Message = "Event page deleted successfully.",
+                Data = null
+            };
 
             return Ok(response);
         }
