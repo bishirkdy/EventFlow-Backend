@@ -20,7 +20,7 @@ namespace EventFlow.Event.Api.Controllers
     public sealed class EventsController(ISender sender , IMapper mapper) : ControllerBase
     {
         //Controller for create Event
-        [HttpPost]
+        [HttpPost("create")]
         [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

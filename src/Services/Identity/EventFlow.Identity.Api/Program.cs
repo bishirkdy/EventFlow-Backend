@@ -1,5 +1,7 @@
 
+using EventFlow.Identity.Api.Common;
 using EventFlow.Identity.Api.Extensions;
+using EventFlow.Identity.Application.Abstractions.Authorization;
 
 namespace EventFlow.Identity.Api
 {
@@ -13,7 +15,8 @@ namespace EventFlow.Identity.Api
             builder.Services.AddOpenApi();
             builder.Services.AddIdentityServices(builder.Configuration);
             builder.Services.AddJwtAuthentication(builder.Configuration);
-
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
             builder.Services.AddSwaggerDocumentation();
 

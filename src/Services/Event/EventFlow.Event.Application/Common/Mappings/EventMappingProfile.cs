@@ -14,6 +14,9 @@ namespace EventFlow.Event.Application.Common.Mappings
             CreateMap<EventEntity, EventResponse>();
             CreateMap<EventEntity, GetEventByIdResponse>()
                 .ForMember(
+                    dest => dest.EventTimeZone,
+                    opt => opt.MapFrom(src => src.TimeZone))
+                .ForMember(
                     dest => dest.Status,
                     opt => opt.MapFrom(src => src.Status.ToString()));
 

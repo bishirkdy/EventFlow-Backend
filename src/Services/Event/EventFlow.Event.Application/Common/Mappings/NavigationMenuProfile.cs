@@ -1,4 +1,3 @@
-
 using AutoMapper;
 using EventFlow.Event.Application.Features.NavigationMenu.Queries.GetNavigationMenuById;
 using EventFlow.Event.Application.Features.NavigationMenu.Queries.GetNavigationMenusByEvent;
@@ -8,7 +7,7 @@ namespace EventFlow.Event.Application.Common.Mappings
 {
     public sealed class NavigationMenuProfile : Profile
     {
-        NavigationMenuProfile()
+        public NavigationMenuProfile()
         {
             CreateMap<NavigationMenu, GetNavigationMenusByEventResponse>();
             CreateMap<NavigationMenu,GetNavigationMenuByIdResponse>();

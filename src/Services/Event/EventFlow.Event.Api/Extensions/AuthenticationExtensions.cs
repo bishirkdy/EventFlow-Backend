@@ -28,6 +28,17 @@ namespace EventFlow.Event.Api.Extensions
                         ValidateLifetime = true,
                         ClockSkew = TimeSpan.Zero
                     };
+
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            // Read JWT from HttpOnly cookie
+                            context.Token = context.Request.Cookies["accessToken"];
+
+                            return Task.CompletedTask;
+                        }
+                    };
                 });
 
             return services;

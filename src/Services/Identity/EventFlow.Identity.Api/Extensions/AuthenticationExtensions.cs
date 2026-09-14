@@ -1,4 +1,5 @@
 using EventFlow.Identity.Application.Configuration;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -14,6 +15,15 @@ namespace EventFlow.Identity.Api.Extensions
                 .AddAuthentication("Bearer")
                 .AddJwtBearer("Bearer", options =>
                 {
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            context.Token = context.Request.Cookies["accessToken"];
+                            return Task.CompletedTask;
+                        }
+                    };
+
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuer = true,

@@ -4,10 +4,12 @@ using EventFlow.Identity.Application.Commands.LogoutUser;
 using EventFlow.Identity.Application.Commands.RemoveUserRole;
 using EventFlow.Identity.Application.Queries.GetUserEventRoles;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventFlow.Identity.Api.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/events/{eventId}/users/{userId}/roles")]
     public class UserEventRolesController : ControllerBase

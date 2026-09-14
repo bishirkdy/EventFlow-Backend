@@ -4,13 +4,15 @@ using EventFlow.Identity.Application.Commands.Login;
 using EventFlow.Identity.Application.Commands.LogoutUser;
 using EventFlow.Identity.Application.Commands.RegisterUser;
 using EventFlow.Identity.Application.DTOs.Authentication;
+using EventFlow.Identity.Application.Queries.GetProfile;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventFlow.Identity.Api.Controllers
 {
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/v1/auth")]
     public sealed class AuthController(ISender sender) : ControllerBase
     {
 
@@ -34,21 +36,49 @@ namespace EventFlow.Identity.Api.Controllers
         public async Task<ActionResult<LoginResponse>> Login(LoginRequest request, CancellationToken cancellationToken)
         {
             var command = new LoginUserCommand(request.Email,request.Password);
-
             var result = await sender.Send(command,cancellationToken);
 
-            return Ok(result);
+            //Setup tokens into the cookies
+            Response.SetAuthCookies(result.AccessToken,result.RefreshToken);
+
+            return Ok(new ApiResponse<object?>
+            {
+                Success = true,
+                Message = "Login successful",
+                Data = null
+            });
         }
 
         [HttpPost("logout")]
         public async Task<IActionResult> Logout([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
         {
-            // Purpose: Revoke the user's refresh token.
-            await sender.Send(
-                new LogoutUserCommand(request.RefreshToken),
-                cancellationToken);
+            var refreshToken = Request.Cookies["refreshToken"];
+
+            // Revoke the user's refresh token.
+            if (!string.IsNullOrEmpty(refreshToken))
+            {
+                await sender.Send(new LogoutUserCommand(refreshToken), cancellationToken);
+            }
+            Response.ClearAuthCookies();
 
             return NoContent();
+        }
+
+        [Authorize]
+        [HttpGet("profile")]
+        [ProducesResponseType(typeof(ApiResponse<UserProfileResponse>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Profile(CancellationToken cancellationToken)
+        {
+            var result = await sender.Send(new GetProfileQuery(), cancellationToken);
+
+            var response = new ApiResponse<UserProfileResponse>
+            {
+                Success = true,
+                Message = "Profile retrieved successfully.",
+                Data = result
+            };
+
+            return Ok(response);
         }
     }
 }
