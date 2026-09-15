@@ -37,7 +37,10 @@ namespace EventFlow.Event.Api.Mappings
         public EventMappingProfile()
         {
             //Event
-            CreateMap<GetEventByIdResponse, GetEventResponse>();
+            CreateMap<GetEventByIdResponse, GetEventResponse>()
+                .ForMember(
+                    dest => dest.Timezone,
+                    opt => opt.MapFrom(src => src.EventTimeZone));
             CreateMap<CreateEventRequest, CreateEventCommand>();
             CreateMap<UpdateEventRequest, UpdateEventCommand>();
 

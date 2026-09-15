@@ -6,7 +6,7 @@ using MediatR;
 namespace EventFlow.Event.Application.Features.Events.Queries.GetEvents
 {
     public sealed class GetEventsQueryHandler
-        : IRequestHandler<GetEventsQuery, PaginatedResult<EventResponse>>
+        : IRequestHandler<GetEventsQuery, PaginatedResult<GetEventResponse>>
     {
         private readonly IEventRepository _eventRepository;
         private readonly IMapper _mapper;
@@ -17,7 +17,7 @@ namespace EventFlow.Event.Application.Features.Events.Queries.GetEvents
             _mapper = mapper;
         }
 
-        public async Task<PaginatedResult<EventResponse>> Handle(
+        public async Task<PaginatedResult<GetEventResponse>> Handle(
             GetEventsQuery request,
             CancellationToken cancellationToken)
         {
@@ -26,10 +26,10 @@ namespace EventFlow.Event.Application.Features.Events.Queries.GetEvents
                 request.PageSize,
                 cancellationToken);
 
-            var items = _mapper.Map<List<EventResponse>>(result.Items);
+            var items = _mapper.Map<List<GetEventResponse>>(result.Items);
 
 
-            return new PaginatedResult<EventResponse>
+            return new PaginatedResult<GetEventResponse>
             {
                 Items = items,
                 Page = result.Page,

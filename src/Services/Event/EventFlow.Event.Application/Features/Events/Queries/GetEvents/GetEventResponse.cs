@@ -3,7 +3,7 @@ using EventFlow.Event.Domain.Enums;
 
 namespace EventFlow.Event.Application.Features.Events.Queries.GetEvents
 {
-    public sealed record EventResponse(
+    public sealed record GetEventResponse(
         Guid Id,
         string Name,
         string? Description,

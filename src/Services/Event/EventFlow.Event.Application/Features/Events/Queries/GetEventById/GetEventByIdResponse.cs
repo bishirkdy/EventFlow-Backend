@@ -2,18 +2,20 @@
 
 namespace EventFlow.Event.Application.Features.Events.Queries.GetEventById
 {
-    public sealed record GetEventByIdResponse(
-        Guid Id,
-        string Name,
-        string? Description,
-        string EventType,
-        string? SubType,
-        DateTime StartDate,
-        DateTime EndDate,
-        string EventTimeZone,
-        string Status,
-        string? Subdomain,
-        Guid CreatedBy,
-        DateTime CreatedAt,
-        DateTime? UpdatedAt);
+    public sealed class GetEventByIdResponse
+    {
+        public Guid Id { get; init; }
+        public string Name { get; init; } = default!;
+        public string? Description { get; init; }
+        public string EventType { get; init; } = default!;
+        public string? SubType { get; init; }
+        public DateTime StartDate { get; init; }
+        public DateTime EndDate { get; init; }
+        public string EventTimeZone { get; init; } = default!;
+        public string Status { get; init; } = default!;
+        public string? Subdomain { get; init; }
+        public Guid CreatedBy { get; init; }
+        public DateTime CreatedAt { get; init; }
+        public DateTime? UpdatedAt { get; init; }
+    }
 }

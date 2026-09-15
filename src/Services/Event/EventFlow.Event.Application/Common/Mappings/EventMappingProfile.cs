@@ -11,7 +11,7 @@ namespace EventFlow.Event.Application.Common.Mappings
     {
         public EventMappingProfile()
         {
-            CreateMap<EventEntity, EventResponse>();
+            CreateMap<EventEntity, GetEventResponse>();
             CreateMap<EventEntity, GetEventByIdResponse>()
                 .ForMember(
                     dest => dest.EventTimeZone,
