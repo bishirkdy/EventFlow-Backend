@@ -2,6 +2,8 @@ using AutoMapper;
 using EventFlow.Event.Api.Common.Models;
 using EventFlow.Event.Api.Requests.Events;
 using EventFlow.Event.Api.Responses.Events;
+using EventFlow.Event.Api.Services;
+using EventFlow.Event.Application.Abstractions.Authentication;
 using EventFlow.Event.Application.Features.Events.Commands.CancelEvent;
 using EventFlow.Event.Application.Features.Events.Commands.CreateEvent;
 using EventFlow.Event.Application.Features.Events.Commands.PublishEvent;
@@ -17,7 +19,7 @@ namespace EventFlow.Event.Api.Controllers
     [ApiController]
     [Route("api/v1/events")]
     [Authorize]
-    public sealed class EventsController(ISender sender , IMapper mapper) : ControllerBase
+    public sealed class EventsController(ISender sender , IMapper mapper , ICurrentUserService currentUserService) : ControllerBase
     {
         //Controller for create Event
         [HttpPost("create")]
@@ -109,7 +111,7 @@ namespace EventFlow.Event.Api.Controllers
         public async Task<IActionResult> GetMyEvents(CancellationToken cancellationToken)
         {
             // Get current authenticated user ID
-            var userId = Guid.Parse(User.FindFirst("sub")!.Value);
+            var userId = currentUserService.UserId;
 
             // Send query
             var result = await sender.Send(new GetMyEventsQuery(userId),cancellationToken);

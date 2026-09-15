@@ -40,7 +40,7 @@ namespace EventFlow.Event.Api.Mappings
             CreateMap<GetEventByIdResponse, GetEventResponse>();
             CreateMap<CreateEventRequest, CreateEventCommand>();
             CreateMap<UpdateEventRequest, UpdateEventCommand>();
-           
+
             //Event settings
             CreateMap<UpdateEventSettingsRequest, UpdateEventSettingsCommand>();
 

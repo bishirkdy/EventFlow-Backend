@@ -1,6 +1,7 @@
 ﻿namespace EventFlow.Identity.Api.Contracts.Authorization
 {
-    public class CheckPermissionRequest
-    {
-    }
+    public sealed record CheckPermissionRequest(
+        Guid UserId,
+        Guid EventId,
+        string Permission);
 }
