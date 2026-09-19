@@ -2,6 +2,7 @@ using EventFlow.Event.Application.Abstractions.Authentication;
 using EventFlow.Event.Application.Common;
 using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.Event.Application.Abstractions.Storage;
+using EventFlow.Event.Application.Abstractions.Services;
 using EventFlow.Event.Application.Features.Events.Common;
 using EventFlow.Event.Domain.Entities;
 using MediatR;
@@ -15,6 +16,7 @@ namespace EventFlow.Event.Application.Features.Events.Commands.CreateEvent
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
         private readonly IFileStorage _fileStorage;
+        private readonly IUserDirectoryClient _userDirectoryClient;
         private readonly ILogger<CreateEventCommandHandler> _logger;
 
         public CreateEventCommandHandler(
@@ -22,12 +24,14 @@ namespace EventFlow.Event.Application.Features.Events.Commands.CreateEvent
             IUnitOfWork unitOfWork,
             ICurrentUserService currentUserService,
             IFileStorage fileStorage,
+            IUserDirectoryClient userDirectoryClient,
             ILogger<CreateEventCommandHandler> logger)
         {
             _eventRepository = eventRepository;
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
             _fileStorage = fileStorage;
+            _userDirectoryClient = userDirectoryClient;
             _logger = logger;
         }
 
@@ -82,6 +86,10 @@ namespace EventFlow.Event.Application.Features.Events.Commands.CreateEvent
                 await _eventRepository.AddAsync(eventEntity, cancellationToken);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+                var createdByName = await _userDirectoryClient.GetDisplayNameAsync(
+                    eventEntity.CreatedBy,
+                    cancellationToken);
+
                 return new CreateEventResult(
                     eventEntity.Id,
                     eventEntity.Name,
@@ -94,6 +102,7 @@ namespace EventFlow.Event.Application.Features.Events.Commands.CreateEvent
                     eventEntity.Status.ToString(),
                     eventEntity.Subdomain,
                     eventEntity.CreatedBy,
+                    createdByName,
                     eventEntity.CreatedAt,
                     eventEntity.UpdatedAt,
                     eventEntity.Images

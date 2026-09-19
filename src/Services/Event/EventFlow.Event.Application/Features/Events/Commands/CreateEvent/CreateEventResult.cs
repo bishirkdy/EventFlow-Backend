@@ -14,6 +14,7 @@ namespace EventFlow.Event.Application.Features.Events.Commands.CreateEvent
         string Status,
         string? Subdomain,
         Guid CreatedBy,
+        string? CreatedByName,
         DateTime CreatedAt,
         DateTime? UpdatedAt,
         IReadOnlyList<EventImageResponse> Images);

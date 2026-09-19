@@ -7,12 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
     <ProjectReference Include="..\EventFlow.Event.Application\EventFlow.Event.Application.csproj" />
     <ProjectReference Include="..\EventFlow.Event.Domain\EventFlow.Event.Domain.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\EventFlow.Infrastructure\EventFlow.Infrastructure.csproj" />
 
 	  <PackageReference Include="Microsoft.EntityFrameworkCore" />
 	  <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
+
+	  <PackageReference Include="Microsoft.Extensions.Http" />
   </ItemGroup>
 
 </Project>

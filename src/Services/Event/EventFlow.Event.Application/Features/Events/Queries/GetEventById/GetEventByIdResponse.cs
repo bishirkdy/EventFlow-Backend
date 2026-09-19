@@ -15,6 +15,7 @@ namespace EventFlow.Event.Application.Features.Events.Queries.GetEventById
         public string Status { get; init; } = default!;
         public string? Subdomain { get; init; }
         public Guid CreatedBy { get; init; }
+        public string? CreatedByName { get; set; }
         public DateTime CreatedAt { get; init; }
         public DateTime? UpdatedAt { get; init; }
         public IReadOnlyList<EventImageResponse> Images { get; init; } = [];
