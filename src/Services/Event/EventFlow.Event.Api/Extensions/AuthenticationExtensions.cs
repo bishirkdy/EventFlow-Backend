@@ -33,8 +33,14 @@ namespace EventFlow.Event.Api.Extensions
                     {
                         OnMessageReceived = context =>
                         {
-                            // Read JWT from HttpOnly cookie
-                            context.Token = context.Request.Cookies["accessToken"];
+                            // Prefer the HttpOnly cookie when present.
+                            // Otherwise JwtBearer continues with the Authorization header.
+                            var cookieToken = context.Request.Cookies["accessToken"];
+
+                            if (!string.IsNullOrWhiteSpace(cookieToken))
+                            {
+                                context.Token = cookieToken;
+                            }
 
                             return Task.CompletedTask;
                         }

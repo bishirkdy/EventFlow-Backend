@@ -15,11 +15,26 @@ namespace EventFlow.Event.Infrastructure.Repositories
         {
             _context = context;
         }
-        //Paginated event
-        public async Task<PaginatedResult<EventEntity>> GetPagedAsync(int page,int pageSize,CancellationToken cancellationToken)
+
+        public async Task<EventEntity?> GetByIdWithImagesAsync(
+            Guid id,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.EventEntities
+                .AsNoTracking()
+                .Include(x => x.Images.OrderBy(image => image.DisplayOrder))
+                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        }
+
+        public async Task<PaginatedResult<EventEntity>> GetPagedAsync(
+            int page,
+            int pageSize,
+            CancellationToken cancellationToken)
         {
             var query = _context.EventEntities
                 .AsNoTracking()
+                .Include(x => x.Images.OrderBy(image => image.DisplayOrder))
+                .AsSplitQuery()
                 .OrderByDescending(x => x.CreatedAt);
 
             var totalCount = await query.CountAsync(cancellationToken);
@@ -36,13 +51,16 @@ namespace EventFlow.Event.Infrastructure.Repositories
                 PageSize = pageSize,
                 TotalCount = totalCount
             };
-
         }
 
-        // Get all events created by the user
-        public async Task<IReadOnlyList<EventEntity>> GetByCreatedByAsync(Guid userId, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<EventEntity>> GetByCreatedByAsync(
+            Guid userId,
+            CancellationToken cancellationToken = default)
         {
-            return await Context.Set<EventEntity>()
+            return await _context.EventEntities
+                .AsNoTracking()
+                .Include(x => x.Images.OrderBy(image => image.DisplayOrder))
+                .AsSplitQuery()
                 .Where(x => x.CreatedBy == userId)
                 .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync(cancellationToken);

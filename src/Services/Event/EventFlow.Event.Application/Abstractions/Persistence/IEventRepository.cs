@@ -5,7 +5,10 @@ namespace EventFlow.Event.Application.Abstractions.Persistence
 {
     public interface IEventRepository : IRepository<EventEntity>
     {
-        //Get events by pagination
+        // Get event with its images.
+        Task<EventEntity?> GetByIdWithImagesAsync(Guid id, CancellationToken cancellationToken = default);
+
+        // Get events by pagination
         Task<PaginatedResult<EventEntity>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken);
         
         // Get events created by a specific user

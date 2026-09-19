@@ -1,3 +1,5 @@
+using EventFlow.Event.Application.Exceptions;
+using EventFlow.Event.Application.Common;
 using EventFlow.Event.Application.Abstractions.Persistence;
 using MediatR;
 
@@ -12,15 +14,25 @@ namespace EventFlow.Event.Application.Features.Events.Commands.UpdateEvent
             var eventEntity = await eventRepository.GetByIdAsync(request.Id, cancellationToken);
 
             if (eventEntity is null)
-                throw new KeyNotFoundException("Event not found.");
+                throw new NotFoundException("Event not found.");
+
+            var timeZone = TimeZoneHelper.GetTimeZone(request.TimeZone);
+
+            var startDate = TimeZoneInfo.ConvertTimeToUtc(
+                DateTime.SpecifyKind(request.StartDate, DateTimeKind.Unspecified),
+                timeZone);
+
+            var endDate = TimeZoneInfo.ConvertTimeToUtc(
+                DateTime.SpecifyKind(request.EndDate, DateTimeKind.Unspecified),
+                timeZone);
 
             eventEntity.Update(
                 request.Name,
                 request.Description,
                 request.EventType,
                 request.SubType,
-                request.StartDate,
-                request.EndDate,
+                startDate,
+                endDate,
                 request.TimeZone);
 
             eventRepository.Update(eventEntity);

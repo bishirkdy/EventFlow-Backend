@@ -1,5 +1,5 @@
+using EventFlow.Event.Application.Features.Events.Common;
 using EventFlow.Event.Domain.Enums;
-
 
 namespace EventFlow.Event.Application.Features.Events.Queries.GetEvents
 {
@@ -12,6 +12,7 @@ namespace EventFlow.Event.Application.Features.Events.Queries.GetEvents
         DateTime StartDate,
         DateTime EndDate,
         string TimeZone,
-        EventStatus Status
+        EventStatus Status,
+        IReadOnlyList<EventImageResponse> Images
     );
 }

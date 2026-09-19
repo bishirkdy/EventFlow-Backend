@@ -8,10 +8,10 @@ namespace EventFlow.Event.Domain.Entities
     {
         public string Name { get; private set; } = string.Empty;
         public string? Description { get; private set; }
-        
+
         public string EventType { get; private set; } = string.Empty;
         public string? SubType { get; private set; }
-        
+
         public DateTime StartDate { get; private set; }
         public DateTime EndDate { get; private set; }
         public string TimeZone { get; private set; } = string.Empty;
@@ -22,12 +22,24 @@ namespace EventFlow.Event.Domain.Entities
 
         public Guid CreatedBy { get; private set; }
 
+        // Domain-only collection.
+        // EF relationship is configured through EventImage.EventId.
+        public ICollection<EventImage> Images { get; private set; }
+            = new List<EventImage>();
+
         private EventEntity()
         {
-            // Required by EF Core
         }
 
-        public EventEntity(string name, string? description, string eventType, string? subType, DateTime startDate, DateTime endDate, string timeZone,Guid createdBy)
+        public EventEntity(
+            string name,
+            string? description,
+            string eventType,
+            string? subType,
+            DateTime startDate,
+            DateTime endDate,
+            string timeZone,
+            Guid createdBy)
         {
             ValidateDates(startDate, endDate);
 
@@ -40,6 +52,30 @@ namespace EventFlow.Event.Domain.Entities
             TimeZone = timeZone;
             CreatedBy = createdBy;
             Status = EventStatus.Draft;
+        }
+
+        public void AddImage(EventImage image)
+        {
+            ArgumentNullException.ThrowIfNull(image);
+
+            if (image.EventId != Id)
+            {
+                throw new InvalidOperationException(
+                    "Image does not belong to this event.");
+            }
+
+            Images.Add(image);
+        }
+
+        private static void ValidateDates(
+            DateTime startDate,
+            DateTime endDate)
+        {
+            if (endDate <= startDate)
+            {
+                throw new ArgumentException(
+                    "Event end date must be greater than start date.");
+            }
         }
 
         public void Update(string name,string? description,string eventType,string? subType,DateTime startDate,DateTime endDate,string timeZone)
@@ -78,13 +114,7 @@ namespace EventFlow.Event.Domain.Entities
             UpdatedAt = DateTime.UtcNow;
         }
 
-        private static void ValidateDates(DateTime startDate, DateTime endDate)
-        {
-            if (endDate <= startDate)
-            {
-                throw new ArgumentException("Event end date must be greater than start date.");
-            }
-        }
+
 
 
     }

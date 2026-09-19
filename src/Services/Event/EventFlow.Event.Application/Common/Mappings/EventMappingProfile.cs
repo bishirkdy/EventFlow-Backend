@@ -1,4 +1,5 @@
 using AutoMapper;
+using EventFlow.Event.Application.Features.Events.Common;
 using EventFlow.Event.Application.Features.Events.Queries.GetEventById;
 using EventFlow.Event.Application.Features.Events.Queries.GetEvents;
 using EventFlow.Event.Application.Features.Events.Queries.GetMyEvents;
@@ -11,6 +12,8 @@ namespace EventFlow.Event.Application.Common.Mappings
     {
         public EventMappingProfile()
         {
+            CreateMap<EventImage, EventImageResponse>();
+
             CreateMap<EventEntity, GetEventResponse>();
             CreateMap<EventEntity, GetEventByIdResponse>()
                 .ForMember(

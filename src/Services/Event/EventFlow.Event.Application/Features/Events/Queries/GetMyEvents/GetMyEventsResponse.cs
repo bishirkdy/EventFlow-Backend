@@ -1,6 +1,7 @@
+using EventFlow.Event.Application.Features.Events.Common;
+
 namespace EventFlow.Event.Application.Features.Events.Queries.GetMyEvents
 {
-    // Query Response
     public sealed record GetMyEventsResponse(
         Guid Id,
         string Name,
@@ -10,5 +11,6 @@ namespace EventFlow.Event.Application.Features.Events.Queries.GetMyEvents
         DateTime StartDate,
         DateTime EndDate,
         string TimeZone,
-        string Status);
+        string Status,
+        IReadOnlyList<EventImageResponse> Images);
 }

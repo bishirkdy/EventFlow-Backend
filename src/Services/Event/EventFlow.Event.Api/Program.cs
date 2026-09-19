@@ -6,6 +6,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddOpenApi();
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 110 * 1024 * 1024;
+});
 builder.Services.AddApplication()
     .AddInfrastructure(builder.Configuration)
     .AddApiServices()
@@ -24,6 +28,7 @@ app.UseSwaggerDocumentation();
 
 app.UseApiMiddleware();
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();

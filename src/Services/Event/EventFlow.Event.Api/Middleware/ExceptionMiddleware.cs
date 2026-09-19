@@ -42,6 +42,10 @@ public sealed class ExceptionMiddleware
             ValidationException => StatusCodes.Status400BadRequest,
             NotFoundException => StatusCodes.Status404NotFound,
             ConflictException => StatusCodes.Status409Conflict,
+            KeyNotFoundException => StatusCodes.Status404NotFound,
+            UnauthorizedAccessException => StatusCodes.Status401Unauthorized,
+            TimeZoneNotFoundException => StatusCodes.Status400BadRequest,
+            InvalidTimeZoneException => StatusCodes.Status400BadRequest,
             ArgumentException => StatusCodes.Status400BadRequest,
             InvalidOperationException => StatusCodes.Status400BadRequest,
             _ => StatusCodes.Status500InternalServerError
@@ -53,6 +57,10 @@ public sealed class ExceptionMiddleware
             ValidationException => "One or more validation errors occurred.",
             NotFoundException =>exception.Message,
             ConflictException =>exception.Message,
+            KeyNotFoundException => exception.Message,
+            UnauthorizedAccessException => exception.Message,
+            TimeZoneNotFoundException => exception.Message,
+            InvalidTimeZoneException => exception.Message,
             ArgumentException =>exception.Message,
             InvalidOperationException =>exception.Message,
             _ => "An unexpected error occurred."

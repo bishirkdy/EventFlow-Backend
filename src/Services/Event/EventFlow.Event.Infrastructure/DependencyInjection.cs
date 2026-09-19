@@ -1,6 +1,8 @@
 using EventFlow.Event.Application.Abstractions.Persistence;
+using EventFlow.Event.Application.Abstractions.Storage;
 using EventFlow.Event.Infrastructure.Persistence;
 using EventFlow.Event.Infrastructure.Repositories;
+using EventFlow.Event.Infrastructure.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +32,8 @@ namespace EventFlow.Event.Infrastructure
             services.AddScoped<IPageSectionRepository, PageSectionRepository>();
             services.AddScoped<INavigationMenuRepository, NavigationMenuRepository>();
             services.AddScoped<INavigationItemRepository, NavigationItemRepository>();
+
+            services.AddScoped<IFileStorage, LocalFileStorage>();
 
             return services;
         }

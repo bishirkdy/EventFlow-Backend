@@ -1,3 +1,4 @@
+using EventFlow.Event.Application.Exceptions;
 using EventFlow.Event.Application.Abstractions.Persistence;
 using MediatR;
 
@@ -14,7 +15,7 @@ namespace EventFlow.Event.Application.Features.Events.Commands.CancelEvent
 
             // Check whether the event exists
             if (eventEntity is null)
-                throw new KeyNotFoundException("Event not found.");
+                throw new NotFoundException("Event not found.");
 
             // Apply the cancel business rule
             eventEntity.Cancel();

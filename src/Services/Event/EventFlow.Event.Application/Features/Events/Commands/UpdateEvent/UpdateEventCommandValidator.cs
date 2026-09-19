@@ -1,3 +1,4 @@
+using EventFlow.Event.Application.Common;
 
 using FluentValidation;
 
@@ -34,7 +35,12 @@ namespace EventFlow.Event.Application.Features.Events.Commands.UpdateEvent
 
             RuleFor(x => x.TimeZone)
                 .NotEmpty()
-                .MaximumLength(100);
+                .MaximumLength(100)
+                .Must(BeValidTimeZone)
+                .WithMessage("Event time zone is invalid.");
         }
+
+        private static bool BeValidTimeZone(string timeZoneId)
+            => TimeZoneHelper.TryGetTimeZone(timeZoneId, out _);
     }
 }

@@ -19,7 +19,7 @@ namespace EventFlow.Event.Api.Extensions
                 // Add JWT Bearer authentication to Swagger.
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    Name = "EventFlow Event Core API",
+                    Name = "Authorization",
                     Type = SecuritySchemeType.Http,
                     Scheme = "bearer",
                     BearerFormat = "JWT",

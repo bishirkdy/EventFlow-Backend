@@ -1,5 +1,4 @@
-
-
+using EventFlow.Event.Application.Abstractions.Storage;
 using MediatR;
 
 namespace EventFlow.Event.Application.Features.Events.Commands.CreateEvent
@@ -11,6 +10,7 @@ namespace EventFlow.Event.Application.Features.Events.Commands.CreateEvent
         string? SubType,
         DateTime StartDate,
         DateTime EndDate,
-        string TimeZone
+        string TimeZone,
+        IReadOnlyList<UploadedFile> Images
     ) : IRequest<CreateEventResult>;
 }

@@ -9,7 +9,7 @@ namespace EventFlow.Event.Application.Features.Events.Queries.GetEventById
     {
         public async Task<GetEventByIdResponse?> Handle(GetEventByIdQuery request, CancellationToken cancellationToken)
         {
-            var eventEntity = await eventRepository.GetByIdAsync(request.Id,cancellationToken);
+            var eventEntity = await eventRepository.GetByIdWithImagesAsync(request.Id, cancellationToken);
 
             if (eventEntity is null)
                 return null;

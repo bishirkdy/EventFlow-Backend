@@ -1,4 +1,4 @@
-
+using EventFlow.Event.Application.Features.Events.Common;
 
 namespace EventFlow.Event.Application.Features.Events.Queries.GetEventById
 {
@@ -17,5 +17,6 @@ namespace EventFlow.Event.Application.Features.Events.Queries.GetEventById
         public Guid CreatedBy { get; init; }
         public DateTime CreatedAt { get; init; }
         public DateTime? UpdatedAt { get; init; }
+        public IReadOnlyList<EventImageResponse> Images { get; init; } = [];
     }
 }

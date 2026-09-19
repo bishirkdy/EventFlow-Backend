@@ -39,9 +39,14 @@ namespace EventFlow.Event.Api.Mappings
             //Event
             CreateMap<GetEventByIdResponse, GetEventResponse>()
                 .ForMember(
-                    dest => dest.Timezone,
-                    opt => opt.MapFrom(src => src.EventTimeZone));
-            CreateMap<CreateEventRequest, CreateEventCommand>();
+                    dest => dest.TimeZone,
+                    opt => opt.MapFrom(src => src.EventTimeZone))
+                .ForMember(
+                    dest => dest.Images,
+                    opt => opt.MapFrom(src => src.Images));
+
+            CreateMap<CreateEventResult, CreateEventResponse>();
+
             CreateMap<UpdateEventRequest, UpdateEventCommand>();
 
             //Event settings

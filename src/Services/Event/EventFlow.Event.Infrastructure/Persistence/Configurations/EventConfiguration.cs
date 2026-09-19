@@ -59,6 +59,12 @@ namespace EventFlow.Event.Infrastructure.Persistence.Configurations
                 .IsRequired();
 
             builder.Property(x => x.UpdatedAt);
+
+            // Event -> EventImages relationship.
+            // Configure the navigation explicitly from the Event side so
+            // EF Core always registers EventEntity.Images as a real CLR
+            // navigation before applying the relationship metadata.
+ 
         }
     }
 }

@@ -14,6 +14,7 @@
 	  <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
 	  <PackageReference Include="Microsoft.Extensions.Options" />
 	  <PackageReference Include="AutoMapper" />
+	  <PackageReference Include="TimeZoneConverter" />
   </ItemGroup>
 
   <ItemGroup>
