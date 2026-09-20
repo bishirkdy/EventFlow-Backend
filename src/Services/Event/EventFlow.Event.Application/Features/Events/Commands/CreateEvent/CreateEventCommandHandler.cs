@@ -17,6 +17,7 @@ namespace EventFlow.Event.Application.Features.Events.Commands.CreateEvent
         private readonly ICurrentUserService _currentUserService;
         private readonly IFileStorage _fileStorage;
         private readonly IUserDirectoryClient _userDirectoryClient;
+        private readonly IEventSettingsRepository _eventSettingsRepository;
         private readonly ILogger<CreateEventCommandHandler> _logger;
 
         public CreateEventCommandHandler(
@@ -25,6 +26,7 @@ namespace EventFlow.Event.Application.Features.Events.Commands.CreateEvent
             ICurrentUserService currentUserService,
             IFileStorage fileStorage,
             IUserDirectoryClient userDirectoryClient,
+            IEventSettingsRepository eventSettingsRepository,
             ILogger<CreateEventCommandHandler> logger)
         {
             _eventRepository = eventRepository;
@@ -33,6 +35,7 @@ namespace EventFlow.Event.Application.Features.Events.Commands.CreateEvent
             _fileStorage = fileStorage;
             _userDirectoryClient = userDirectoryClient;
             _logger = logger;
+            _eventSettingsRepository = eventSettingsRepository;
         }
 
         public async Task<CreateEventResult> Handle(
@@ -59,6 +62,8 @@ namespace EventFlow.Event.Application.Features.Events.Commands.CreateEvent
                 request.TimeZone,
                 _currentUserService.UserId);
 
+            var eventSettings = new EventFlow.Event.Domain.Entities.EventSettings(eventEntity.Id);
+
             var storedFiles = new List<StoredFile>();
 
             try
@@ -82,7 +87,7 @@ namespace EventFlow.Event.Application.Features.Events.Commands.CreateEvent
                             storedFile.Length,
                             index));
                 }
-
+                await _eventSettingsRepository.AddAsync(eventSettings, cancellationToken);
                 await _eventRepository.AddAsync(eventEntity, cancellationToken);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 

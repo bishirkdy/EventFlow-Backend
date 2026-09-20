@@ -8,6 +8,7 @@ using EventFlow.Event.Application.Features.Venues.Commands.UpdateVenue;
 using EventFlow.Event.Application.Features.Venues.Commands.UpdateVenueCapacity;
 using EventFlow.Event.Application.Features.Venues.Queries.GetVenueById;
 using EventFlow.Event.Application.Features.Venues.Queries.GetVenuesByEvent;
+using EventFlow.Event.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,19 +18,23 @@ namespace EventFlow.Event.Api.Controllers
     [ApiController]
     [Route("api/v1/events")]
     [Authorize]
-    public sealed class VenueController(ISender sender, IMapper mapper) : ControllerBase
+    public sealed class VenueController(ISender sender) : ControllerBase
     {
         [HttpPost("{eventId:guid}/venues")]
         public async Task<IActionResult> CreateVenue(Guid eventId, CreateVenueRequest request, CancellationToken cancellationToken)
         {
             // Map request to command
-            var command = mapper.Map<CreateVenueCommand>(request) with
-            {
-                EventId = eventId
-            };
+            var command = new CreateVenueCommand(
+                eventId,
+                request.Name,
+                request.Description,
+                request.Address,
+                request.Capacity
+            );
 
-            // Send command
-            var venueId = await sender.Send(command,cancellationToken);
+            var venueId = await sender.Send(
+                command,
+                cancellationToken);
 
             // Create API response
             var response = new ApiResponse<Guid>
@@ -84,20 +89,22 @@ namespace EventFlow.Event.Api.Controllers
         public async Task<IActionResult> UpdateVenue(Guid eventId, Guid id, UpdateVenueRequest request, CancellationToken cancellationToken)
         {
             // Map request to command
-            var command = mapper.Map<UpdateVenueCommand>(request) with
-            {
-                Id = id,
-                EventId = eventId
-            };
+            var command = new UpdateVenueCommand(
+                id,
+                eventId,
+                request.Name,
+                request.Description,
+                request.Address,
+                request.Capacity
+            );
 
-            // Send command
             await sender.Send(command, cancellationToken);
 
-            var response = new ApiResponse<object?>
+            var response = new ApiResponse<bool>
             {
                 Success = true,
                 Message = "Venue updated successfully.",
-                Data = null
+                Data = true
             };
 
             return Ok(response);

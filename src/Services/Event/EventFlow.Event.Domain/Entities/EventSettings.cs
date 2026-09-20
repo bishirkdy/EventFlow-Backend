@@ -29,7 +29,7 @@ namespace EventFlow.Event.Domain.Entities
             FeedbackEnabled = false;
             CertificateEnabled = false;
             GalleryEnabled = false;
-            DefaultLanguage = "en";
+            DefaultLanguage = "english";
         }
 
         public void Update(
@@ -59,7 +59,7 @@ namespace EventFlow.Event.Domain.Entities
             FeedbackEnabled = false;
             CertificateEnabled = false;
             GalleryEnabled = false;
-            DefaultLanguage = "en";
+            DefaultLanguage = "english";
 
             // Update audit timestamp
             UpdatedAt = DateTime.UtcNow;
