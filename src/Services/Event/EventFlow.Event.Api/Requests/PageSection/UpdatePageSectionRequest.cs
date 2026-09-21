@@ -4,7 +4,7 @@ namespace EventFlow.Event.Api.Requests.PageSection
         string SectionType,
         string? Title,
         string? Content,
-        string? ImageUrl,
+        IFormFile? Image,
         int DisplayOrder,
         bool IsVisible,
         string? Configuration);

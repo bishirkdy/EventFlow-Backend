@@ -9,14 +9,7 @@ public sealed record CloudinaryStoredFile(
 
 public interface ICloudinaryStorage
 {
-    Task<CloudinaryStoredFile> UploadAsync(
-        Stream content,
-        string fileName,
-        string contentType,
-        string folder,
-        CancellationToken cancellationToken = default);
+    Task<CloudinaryStoredFile> UploadAsync(Stream content,string fileName,string contentType, string folder,CancellationToken cancellationToken = default);
 
-    Task DeleteAsync(
-        string publicId,
-        CancellationToken cancellationToken = default);
+    Task DeleteAsync(string publicId, CancellationToken cancellationToken = default);
 }

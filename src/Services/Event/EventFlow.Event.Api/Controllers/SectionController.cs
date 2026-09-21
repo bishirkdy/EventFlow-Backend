@@ -1,4 +1,3 @@
-using AutoMapper;
 using EventFlow.Event.Api.Common.Models;
 using EventFlow.Event.Api.Requests.Sections;
 using EventFlow.Event.Application.Exceptions;
@@ -16,21 +15,19 @@ namespace EventFlow.Event.Api.Controllers
     [ApiController]
     [Route("api/v1/section")]
     [Authorize]
-    public class SectionController(ISender sender, IMapper mapper) : ControllerBase
+    public class SectionController(ISender sender) : ControllerBase
     {
         [HttpPost("{eventId:guid}/sections")]
         public async Task<IActionResult> CreateSection(Guid eventId,CreateSectionRequest request, CancellationToken cancellationToken)
         {
-            // Map request to command
-            var command = mapper.Map<CreateSectionCommand>(request) with
-            {
-                EventId = eventId
-            };
+            var command = new CreateSectionCommand(
+                eventId,
+                request.Name,
+                request.Description,
+                request.DisplayOrder
+            );
 
-            // Send command
             var sectionId = await sender.Send(command,cancellationToken);
-
-            // Create API response
             var response = new ApiResponse<Guid>
             {
                 Success = true,
@@ -44,15 +41,15 @@ namespace EventFlow.Event.Api.Controllers
         [HttpGet("{eventId:guid}/sections")]
         public async Task<IActionResult> GetSectionsByEvent(Guid eventId, CancellationToken cancellationToken)
         {
-            // Send query
-            var sections = await sender.Send(new GetSectionsByEventQuery(eventId), cancellationToken);
+            var sections = await sender.Send(new GetSectionsByEventQuery(eventId),cancellationToken);
 
-            var response = new ApiResponse<IReadOnlyList<GetSectionsByEventResponse>>
-            {
-                Success = true,
-                Message = "Sections retrieved successfully.",
-                Data = sections
-            };
+            var response =
+                new ApiResponse<IReadOnlyList<GetSectionsByEventResponse>>
+                {
+                    Success = true,
+                    Message = "Sections retrieved successfully.",
+                    Data = sections
+                };
 
             return Ok(response);
         }
@@ -79,21 +76,19 @@ namespace EventFlow.Event.Api.Controllers
             return Ok(response);
         }
 
-        //UpdateSection controller
         [HttpPut("{eventId:guid}/sections/{id:guid}")]
-        public async Task<IActionResult> UpdateSection(Guid eventId,Guid id, UpdateSectionRequest request, CancellationToken cancellationToken)
+        public async Task<IActionResult> UpdateSection(Guid eventId,Guid id,UpdateSectionRequest request,CancellationToken cancellationToken)
         {
-            // Map request to command
-            var command = mapper.Map<UpdateSectionCommand>(request) with
-            {
-                Id = id,
-                EventId = eventId
-            };
+            var command = new UpdateSectionCommand(
+                id,
+                eventId,
+                request.Name,
+                request.Description,
+                request.DisplayOrder
+            );
 
-            // Send command
             await sender.Send(command, cancellationToken);
 
-            // Create API response
             var response = new ApiResponse<object?>
             {
                 Success = true,
@@ -104,14 +99,11 @@ namespace EventFlow.Event.Api.Controllers
             return Ok(response);
         }
 
-        //Controller for event
         [HttpDelete("{eventId:guid}/sections/{id:guid}")]
         public async Task<IActionResult> DeleteSection(Guid eventId,Guid id,CancellationToken cancellationToken)
         {
-            // Send command
-            await sender.Send(new DeleteSectionCommand(id, eventId),cancellationToken);
+            await sender.Send(new DeleteSectionCommand(id, eventId), cancellationToken);
 
-            // Create API response
             var response = new ApiResponse<object?>
             {
                 Success = true,

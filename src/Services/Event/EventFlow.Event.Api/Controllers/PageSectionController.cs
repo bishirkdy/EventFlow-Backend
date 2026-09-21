@@ -6,6 +6,7 @@ using EventFlow.Event.Application.Features.PageSection.Commands.DeletePageSectio
 using EventFlow.Event.Application.Features.PageSection.Commands.ReorderPageSections;
 using EventFlow.Event.Application.Features.PageSection.Commands.UpdatePageSection;
 using EventFlow.Event.Application.Features.PageSection.Queries.GetPageSections;
+using EventFlow.Infrastructure.Storage.Cloudinary;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,29 +16,48 @@ namespace EventFlow.Event.Api.Controllers
     [ApiController]
     [Route("api/v1/page-section")]
     [Authorize]
-    public class PageSectionController(ISender sender, IMapper mapper) : ControllerBase
+    public class PageSectionController(ISender sender, ICloudinaryStorage cloudinaryStorage) : ControllerBase
     {
         //Create event sections
         [HttpPost("{pageId:guid}/sections")]
-        public async Task<IActionResult> CreatePageSection(Guid pageId, CreatePageSectionRequest request, CancellationToken cancellationToken)
+        public async Task<IActionResult> CreatePageSection(Guid pageId,[FromForm] CreatePageSectionRequest request,CancellationToken cancellationToken)
         {
-            // Map request to command
-            var command = mapper.Map<CreatePageSectionCommand>(request) with
-            {
-                PageId = pageId
-            };
+            string? imageUrl = null;
+            string? imagePublicId = null;
 
-            // Send command
+            if (request.Image is not null)
+            {
+                await using var stream = request.Image.OpenReadStream();
+
+                var uploadedFile = await cloudinaryStorage.UploadAsync(
+                    stream,
+                    request.Image.FileName,
+                    request.Image.ContentType,
+                    $"events/{pageId}/page-sections",
+                    cancellationToken);
+
+                imageUrl = uploadedFile.Url;
+                imagePublicId = uploadedFile.PublicId;
+            }
+
+            var command = new CreatePageSectionCommand(
+                pageId,
+                request.SectionType,
+                request.Title,
+                request.Content,
+                imageUrl,
+                imagePublicId,
+                request.DisplayOrder,
+                request.Configuration);
+
             var sectionId = await sender.Send(command, cancellationToken);
 
-            var response = new ApiResponse<Guid>
+            return Ok(new ApiResponse<Guid>
             {
                 Success = true,
                 Message = "Page section created successfully.",
                 Data = sectionId
-            };
-
-            return Ok(response);
+            });
         }
 
         //Get page sections
@@ -47,8 +67,7 @@ namespace EventFlow.Event.Api.Controllers
             // Send query
             var sections = await sender.Send(new GetPageSectionsQuery(pageId),cancellationToken);
 
-            var response =
-                new ApiResponse<IReadOnlyList<GetPageSectionsResponse>>
+            var response = new ApiResponse<IReadOnlyList<GetPageSectionsResponse>>
                 {
                     Success = true,
                     Message = "Page sections retrieved successfully.",
@@ -60,44 +79,72 @@ namespace EventFlow.Event.Api.Controllers
 
         //Update event sections by id
         [HttpPut("{pageId:guid}/sections/{id:guid}")]
-        public async Task<IActionResult> UpdatePageSection(Guid pageId,Guid id,UpdatePageSectionRequest request, CancellationToken cancellationToken)
+        public async Task<IActionResult> UpdatePageSection(Guid pageId, Guid id,
+           [FromForm] UpdatePageSectionRequest request,CancellationToken cancellationToken)
         {
-            // Map request to command
-            var command = mapper.Map<UpdatePageSectionCommand>(request) with
+            string? imageUrl = null;
+            string? imagePublicId = null;
+
+            if (request.Image is not null)
             {
-                PageId = pageId,
-                Id = id
-            };
+                await using var stream = request.Image.OpenReadStream();
 
-            // Send command
-            await sender.Send(command, cancellationToken);
+                var uploadedFile = await cloudinaryStorage.UploadAsync(
+                    stream,
+                    request.Image.FileName,
+                    request.Image.ContentType,
+                    $"events/{pageId}/page-sections",
+                    cancellationToken);
 
-            var response = new ApiResponse<object?>
+                imageUrl = uploadedFile.Url;
+                imagePublicId = uploadedFile.PublicId;
+            }
+
+            var command = new UpdatePageSectionCommand(
+                id,
+                pageId,
+                request.SectionType,
+                request.Title,
+                request.Content,
+                imageUrl,
+                imagePublicId,
+                request.DisplayOrder,
+                request.IsVisible,
+                request.Configuration);
+
+            var oldImagePublicId = await sender.Send(command,cancellationToken);
+
+            // New image replaced the old one
+            if (!string.IsNullOrWhiteSpace(oldImagePublicId))
+            {
+                await cloudinaryStorage.DeleteAsync(oldImagePublicId, cancellationToken);
+            }
+
+            return Ok(new ApiResponse<object?>
             {
                 Success = true,
                 Message = "Page section updated successfully.",
                 Data = null
-            };
-
-            return Ok(response);
+            });
         }
 
+        //Delete page section
         [HttpDelete("{pageId:guid}/sections/{id:guid}")]
-        public async Task<IActionResult> DeletePageSection(Guid pageId,Guid id, CancellationToken cancellationToken)
+        public async Task<IActionResult> DeletePageSection(Guid pageId,Guid id,CancellationToken cancellationToken)
         {
-            // Send command
-            await sender.Send(
-                new DeletePageSectionCommand(pageId, id),
-                cancellationToken);
+            var imagePublicId = await sender.Send(new DeletePageSectionCommand(pageId, id),cancellationToken);
 
-            var response = new ApiResponse<object?>
+            if (!string.IsNullOrWhiteSpace(imagePublicId))
+            {
+                await cloudinaryStorage.DeleteAsync(imagePublicId,cancellationToken);
+            }
+
+            return Ok(new ApiResponse<object?>
             {
                 Success = true,
                 Message = "Page section deleted successfully.",
                 Data = null
-            };
-
-            return Ok(response);
+            });
         }
 
         //Changing the order in which sections appear on the page

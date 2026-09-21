@@ -9,6 +9,7 @@ namespace EventFlow.Event.Domain.Entities
         public string? Title { get; private set; }
         public string? Content { get; private set; }
         public string? ImageUrl { get; private set; }
+        public string? ImagePublicId { get; private set; }
         public int DisplayOrder { get; private set; }
         public bool IsVisible { get; private set; }
         public string? Configuration { get; private set; }
@@ -18,24 +19,26 @@ namespace EventFlow.Event.Domain.Entities
             // Required by EF Core
         }
 
-        public PageSection(Guid pageId,string sectionType,string? title,string? content,string? imageUrl,int displayOrder,string? configuration)
+        public PageSection(Guid pageId,string sectionType,string? title,string? content,string? imageUrl,string? imagePublicId,int displayOrder,string? configuration)
         {
             PageId = pageId;
             SectionType = sectionType;
             Title = title;
             Content = content;
             ImageUrl = imageUrl;
+            ImagePublicId = imagePublicId;
             DisplayOrder = displayOrder;
             IsVisible = true;
             Configuration = configuration;
         }
 
-        public void Update(string sectionType,string? title,string? content,string? imageUrl,int displayOrder,string? configuration)
+        public void Update(string sectionType,string? title,string? content,string? imageUrl,string? imagePublicId,int displayOrder,string? configuration)
         {
             SectionType = sectionType;
             Title = title;
             Content = content;
             ImageUrl = imageUrl;
+            ImagePublicId = imagePublicId;
             DisplayOrder = displayOrder;
             Configuration = configuration;
             UpdatedAt = DateTime.UtcNow;

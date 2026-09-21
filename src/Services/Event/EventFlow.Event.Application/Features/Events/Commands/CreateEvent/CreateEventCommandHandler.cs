@@ -38,9 +38,7 @@ namespace EventFlow.Event.Application.Features.Events.Commands.CreateEvent
             _eventSettingsRepository = eventSettingsRepository;
         }
 
-        public async Task<CreateEventResult> Handle(
-            CreateEventCommand request,
-            CancellationToken cancellationToken)
+        public async Task<CreateEventResult> Handle(CreateEventCommand request, CancellationToken cancellationToken)
         {
             var timeZone = TimeZoneHelper.GetTimeZone(request.TimeZone);
 

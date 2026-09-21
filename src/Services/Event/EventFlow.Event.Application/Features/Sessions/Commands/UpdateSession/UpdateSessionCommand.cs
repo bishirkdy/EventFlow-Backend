@@ -1,5 +1,3 @@
-
-
 using MediatR;
 
 namespace EventFlow.Event.Application.Features.Sessions.Commands.UpdateSession

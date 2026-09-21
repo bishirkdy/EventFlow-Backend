@@ -15,6 +15,7 @@ namespace EventFlow.Event.Application.Features.PageSection.Commands.CreatePageSe
                 request.Title,
                 request.Content,
                 request.ImageUrl,
+                request.ImagePublicId,
                 request.DisplayOrder,
                 request.Configuration);
 

@@ -1,12 +1,17 @@
+﻿
+
 using FluentValidation;
 
-namespace EventFlow.Event.Application.Features.EventPages.Commands.CreateEventPage
+namespace EventFlow.Event.Application.Features.EventPages.Commands.UpdateEventPage
 {
-    public sealed class CreateEventPageCommandValidator
-        : AbstractValidator<CreateEventPageCommand>
+    public sealed class UpdateEventPageCommandValidator: AbstractValidator<UpdateEventPageCommand>
     {
-        public CreateEventPageCommandValidator()
+        public UpdateEventPageCommandValidator()
         {
+            RuleFor(x => x.Id)
+                .NotEmpty()
+                .WithMessage("Page ID is required.");
+
             RuleFor(x => x.EventId)
                 .NotEmpty()
                 .WithMessage("Event ID is required.");
@@ -23,7 +28,8 @@ namespace EventFlow.Event.Application.Features.EventPages.Commands.CreateEventPa
                 .MaximumLength(150)
                 .WithMessage("Page slug cannot exceed 150 characters.")
                 .Matches("^[a-z0-9]+(?:-[a-z0-9]+)*$")
-                .WithMessage("Slug can contain only lowercase letters, numbers, and hyphens.");
+                .WithMessage(
+                    "Slug can contain only lowercase letters, numbers, and hyphens.");
 
             RuleFor(x => x.PageType)
                 .NotEmpty()

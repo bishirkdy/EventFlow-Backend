@@ -1,10 +1,13 @@
 using AutoMapper;
 using EventFlow.Event.Api.Common.Models;
 using EventFlow.Event.Api.Requests.EventPages;
+using EventFlow.Event.Application.Exceptions;
 using EventFlow.Event.Application.Features.EventPages.Commands.CreateEventPage;
 using EventFlow.Event.Application.Features.EventPages.Commands.DeleteEventPage;
 using EventFlow.Event.Application.Features.EventPages.Commands.PublishEventPage;
 using EventFlow.Event.Application.Features.EventPages.Commands.UnpublishEventPage;
+using EventFlow.Event.Application.Features.EventPages.Commands.UpdateEventPage;
+using EventFlow.Event.Application.Features.EventPages.Queries.GetEventPageById;
 using EventFlow.Event.Application.Features.EventPages.Queries.GetEventPagesByEvent;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -15,17 +18,20 @@ namespace EventFlow.Event.Api.Controllers
     [ApiController]
     [Route("api/v1/event-page")]
     [Authorize]
-    public class EventPageController(ISender sender, IMapper mapper) : ControllerBase
+    public class EventPageController(ISender sender) : ControllerBase
     {
         //Create event page
         [HttpPost("{eventId:guid}/pages")]
         public async Task<IActionResult> CreateEventPage(Guid eventId,CreateEventPageRequest request,CancellationToken cancellationToken)
         {
             // Map request to command
-            var command = mapper.Map<CreateEventPageCommand>(request) with
-            {
-                EventId = eventId
-            };
+            var command = new CreateEventPageCommand(
+                eventId,
+                request.Name,
+                request.Slug,
+                request.PageType,
+                request.DisplayOrder
+            );
 
             // Send command
             var pageId = await sender.Send(command,cancellationToken);
@@ -107,5 +113,47 @@ namespace EventFlow.Event.Api.Controllers
 
             return Ok(response);
         }
+
+        //Update event page
+        [HttpPut("{eventId:guid}/pages/{id:guid}")]
+        public async Task<IActionResult> UpdateEventPage(Guid eventId, Guid id, UpdateEventPageRequest request, CancellationToken cancellationToken)
+        {
+            var command = new UpdateEventPageCommand(
+                id,
+                eventId,
+                request.Name,
+                request.Slug,
+                request.PageType,
+                request.DisplayOrder);
+
+            await sender.Send(command, cancellationToken);
+
+            return Ok(new ApiResponse<object?>
+            {
+                Success = true,
+                Message = "Event page updated successfully.",
+                Data = null
+            });
+        }
+
+        //Get event page by id
+        [HttpGet("{eventId:guid}/pages/{id:guid}")]
+        public async Task<IActionResult> GetEventPageById(Guid eventId,Guid id,CancellationToken cancellationToken)
+        {
+            var page = await sender.Send(new GetEventPageByIdQuery(eventId, id),cancellationToken);
+
+            if (page is null)
+            {
+                throw new NotFoundException("Event page not found.");
+            }
+
+            return Ok(new ApiResponse<GetEventPageByIdResponse>
+            {
+                Success = true,
+                Message = "Event page retrieved successfully.",
+                Data = page
+            });
+        }
+
     }
 }
