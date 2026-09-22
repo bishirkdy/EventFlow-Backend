@@ -6,7 +6,7 @@ namespace EventFlow.Event.Application.Features.Events.Commands.CreateEvent
     public sealed record CreateEventCommand(
         string Name,
         string? Description,
-        string EventType,
+        Guid EventTypeId,
         string? SubType,
         DateTime StartDate,
         DateTime EndDate,

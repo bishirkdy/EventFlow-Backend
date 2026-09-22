@@ -8,8 +8,9 @@ namespace EventFlow.Event.Domain.Entities
     {
         public string Name { get; private set; } = string.Empty;
         public string? Description { get; private set; }
-
-        public string EventType { get; private set; } = string.Empty;
+        //Navigation to event type
+        public Guid EventTypeId { get; private set; }
+        public EventType EventType { get; private set; } = null!;
         public string? SubType { get; private set; }
 
         public DateTime StartDate { get; private set; }
@@ -34,24 +35,23 @@ namespace EventFlow.Event.Domain.Entities
         public EventEntity(
             string name,
             string? description,
-            string eventType,
+            Guid eventTypeId,
             string? subType,
             DateTime startDate,
             DateTime endDate,
             string timeZone,
             Guid createdBy)
         {
-            ValidateDates(startDate, endDate);
+            Id = Guid.NewGuid();
 
             Name = name;
             Description = description;
-            EventType = eventType;
+            EventTypeId = eventTypeId;
             SubType = subType;
             StartDate = startDate;
             EndDate = endDate;
             TimeZone = timeZone;
             CreatedBy = createdBy;
-            Status = EventStatus.Draft;
         }
 
         public void AddImage(EventImage image)
@@ -78,13 +78,13 @@ namespace EventFlow.Event.Domain.Entities
             }
         }
 
-        public void Update(string name,string? description,string eventType,string? subType,DateTime startDate,DateTime endDate,string timeZone)
+        public void Update(string name,string? description, Guid eventTypeId, string? subType,DateTime startDate,DateTime endDate,string timeZone)
         {
             ValidateDates(startDate, endDate);
 
             Name = name;
             Description = description;
-            EventType = eventType;
+            EventTypeId = eventTypeId;
             SubType = subType;
             StartDate = startDate;
             EndDate = endDate;

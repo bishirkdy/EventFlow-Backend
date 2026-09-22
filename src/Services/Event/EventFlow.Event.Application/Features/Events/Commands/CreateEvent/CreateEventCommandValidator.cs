@@ -29,11 +29,9 @@ namespace EventFlow.Event.Application.Features.Events.Commands.CreateEvent
                 .WithMessage("Description cannot exceed 2000 characters.")
                 .When(x => !string.IsNullOrWhiteSpace(x.Description));
 
-            RuleFor(x => x.EventType)
+            RuleFor(x => x.EventTypeId)
                 .NotEmpty()
-                .WithMessage("Event type is required.")
-                .MaximumLength(100)
-                .WithMessage("Event type cannot exceed 100 characters.");
+                .WithMessage("Event type is required.");
 
             RuleFor(x => x.SubType)
                 .MaximumLength(100)

@@ -6,7 +6,7 @@ namespace EventFlow.Event.Api.Requests.Events
     {
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
-        public string EventType { get; set; } = string.Empty;
+        public Guid EventTypeId { get; init; }
         public string? SubType { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }

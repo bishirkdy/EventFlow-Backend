@@ -6,7 +6,7 @@ namespace EventFlow.Event.Api.Responses.Events
         Guid Id,
         string Name,
         string? Description,
-        string EventType,
+        Guid EventTypeId,
         string? SubType,
         DateTime StartDate,
         DateTime EndDate,
@@ -17,5 +17,6 @@ namespace EventFlow.Event.Api.Responses.Events
         string? CreatedByName,
         DateTime CreatedAt,
         DateTime? UpdatedAt,
-        IReadOnlyList<EventImageResponse> Images);
+        IReadOnlyList<EventImageResponse> Images
+    );
 }

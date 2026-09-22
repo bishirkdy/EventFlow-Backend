@@ -42,7 +42,7 @@ namespace EventFlow.Event.Api.Controllers
                 var command = new CreateEventCommand(
                     request.Name,
                     request.Description,
-                    request.EventType,
+                    request.EventTypeId,
                     request.SubType,
                     request.StartDate,
                     request.EndDate,

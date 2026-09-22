@@ -11,43 +11,65 @@ namespace EventFlow.Event.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                 name: "PublicId",
-                 table: "EventImage");
-            migrationBuilder.AddColumn<string>(
-                name: "StorageKey",
-                table: "EventImage",
-                type: "character varying(1000)",
-                maxLength: 1000,
-                nullable: false,
-                defaultValue: "");
+            migrationBuilder.CreateTable(
+                name: "EventImage",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(
+                        type: "uuid",
+                        nullable: false),
 
-            migrationBuilder.AddColumn<string>(
-                name: "OriginalFileName",
-                table: "EventImage",
-                type: "character varying(255)",
-                maxLength: 255,
-                nullable: false,
-                defaultValue: "");
+                    EventId = table.Column<Guid>(
+                        type: "uuid",
+                        nullable: false),
 
-            migrationBuilder.AddColumn<string>(
-                name: "ContentType",
-                table: "EventImage",
-                type: "character varying(100)",
-                maxLength: 100,
-                nullable: false,
-                defaultValue: "");
+                    Url = table.Column<string>(
+                        type: "character varying(1000)",
+                        maxLength: 1000,
+                        nullable: false),
 
-            migrationBuilder.AddColumn<long>(
-                name: "SizeBytes",
-                table: "EventImage",
-                type: "bigint",
-                nullable: false,
-                defaultValue: 0L);
+                    StorageKey = table.Column<string>(
+                        type: "character varying(1000)",
+                        maxLength: 1000,
+                        nullable: false),
 
-            migrationBuilder.DropIndex(
-                name: "IX_EventImage_EventId_DisplayOrder",
-                table: "EventImage");
+                    OriginalFileName = table.Column<string>(
+                        type: "character varying(255)",
+                        maxLength: 255,
+                        nullable: false),
+
+                    ContentType = table.Column<string>(
+                        type: "character varying(100)",
+                        maxLength: 100,
+                        nullable: false),
+
+                    SizeBytes = table.Column<long>(
+                        type: "bigint",
+                        nullable: false),
+
+                    DisplayOrder = table.Column<int>(
+                        type: "integer",
+                        nullable: false),
+
+                    CreatedAt = table.Column<DateTime>(
+                        type: "timestamp with time zone",
+                        nullable: false),
+
+                    UpdatedAt = table.Column<DateTime>(
+                        type: "timestamp with time zone",
+                        nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EventImage", x => x.Id);
+
+                    table.ForeignKey(
+                        name: "FK_EventImage_Events_EventId",
+                        column: x => x.EventId,
+                        principalTable: "Events",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_EventImage_EventId",
@@ -57,47 +79,19 @@ namespace EventFlow.Event.Infrastructure.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_EventImage_EventId_DisplayOrder",
                 table: "EventImage",
-                columns: new[] { "EventId", "DisplayOrder" },
+                columns: new[]
+                {
+                    "EventId",
+                    "DisplayOrder"
+                },
                 unique: true);
         }
+
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
-                name: "IX_EventImage_EventId_DisplayOrder",
-                table: "EventImage");
-
-            migrationBuilder.DropIndex(
-                name: "IX_EventImage_EventId",
-                table: "EventImage");
-
-            migrationBuilder.DropColumn(
-                name: "StorageKey",
-                table: "EventImage");
-
-            migrationBuilder.DropColumn(
-                name: "OriginalFileName",
-                table: "EventImage");
-
-            migrationBuilder.DropColumn(
-                name: "ContentType",
-                table: "EventImage");
-
-            migrationBuilder.DropColumn(
-                name: "SizeBytes",
-                table: "EventImage");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_EventImage_EventId_DisplayOrder",
-                table: "EventImage",
-                columns: new[] { "EventId", "DisplayOrder" });
-
-            migrationBuilder.AddColumn<string>(
-                name: "PublicId",
-                table: "EventImage",
-                type: "character varying",
-                nullable: false,
-                defaultValue: "");
+            migrationBuilder.DropTable(
+                name: "EventImage");
         }
     }
 }

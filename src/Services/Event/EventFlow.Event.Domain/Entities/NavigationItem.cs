@@ -5,14 +5,14 @@ namespace EventFlow.Event.Domain.Entities
 {
     public sealed class NavigationItem : Entity
     {
-        public Guid NavigationMenuId { get; private set; }
         public string Label { get; private set; } = string.Empty;
         public string? Url { get; private set; }
         public Guid? PageId { get; private set; }
         public int DisplayOrder { get; private set; }
         public bool IsVisible { get; private set; }
         public bool OpenInNewTab { get; private set; }
-
+        public Guid NavigationMenuId { get; private set; }
+        public NavigationMenu NavigationMenu { get; private set; } = null!;
         private NavigationItem()
         {
             // Required by EF Core

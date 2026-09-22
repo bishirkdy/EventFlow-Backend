@@ -19,9 +19,9 @@ namespace EventFlow.Event.Application.Features.Events.Commands.UpdateEvent
             RuleFor(x => x.Description)
                 .MaximumLength(2000);
 
-            RuleFor(x => x.EventType)
+            RuleFor(x => x.EventTypeId)
                 .NotEmpty()
-                .MaximumLength(100);
+                .WithMessage("Event type is required.");
 
             RuleFor(x => x.SubType)
                 .MaximumLength(100);

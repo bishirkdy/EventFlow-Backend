@@ -45,7 +45,8 @@ namespace EventFlow.Event.Infrastructure.Persistence.Configurations
                 x.DisplayOrder
             });
 
-            builder.HasOne<NavigationMenu>()
+            builder
+                .HasOne(x => x.NavigationMenu)
                 .WithMany()
                 .HasForeignKey(x => x.NavigationMenuId)
                 .OnDelete(DeleteBehavior.Cascade);

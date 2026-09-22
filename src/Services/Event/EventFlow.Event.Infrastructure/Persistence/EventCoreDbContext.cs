@@ -20,7 +20,7 @@ namespace EventFlow.Event.Infrastructure.Persistence
         public DbSet<PageSection> PageSections => Set<PageSection>();
         public DbSet<NavigationMenu> NavigationMenus => Set<NavigationMenu>();
         public DbSet<NavigationItem> NavigationItems => Set<NavigationItem>();
-
+        public DbSet<EventType> EventTypes => Set<EventType>();
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

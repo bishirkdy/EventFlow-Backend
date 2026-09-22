@@ -23,10 +23,6 @@ namespace EventFlow.Event.Infrastructure.Persistence.Configurations
             builder.Property(x => x.Description)
                 .HasMaxLength(2000);
 
-            // Event type.
-            builder.Property(x => x.EventType)
-                .IsRequired()
-                .HasMaxLength(100);
 
             // Event subtype.
             builder.Property(x => x.SubType)
@@ -60,11 +56,11 @@ namespace EventFlow.Event.Infrastructure.Persistence.Configurations
 
             builder.Property(x => x.UpdatedAt);
 
-            // Event -> EventImages relationship.
-            // Configure the navigation explicitly from the Event side so
-            // EF Core always registers EventEntity.Images as a real CLR
-            // navigation before applying the relationship metadata.
- 
+            builder.HasOne(x => x.EventType)
+                .WithMany()
+                .HasForeignKey(x => x.EventTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
         }
     }
 }

@@ -1,8 +1,9 @@
 using EventFlow.Event.Application.Abstractions.Authentication;
-using EventFlow.Event.Application.Common;
 using EventFlow.Event.Application.Abstractions.Persistence;
-using EventFlow.Event.Application.Abstractions.Storage;
 using EventFlow.Event.Application.Abstractions.Services;
+using EventFlow.Event.Application.Abstractions.Storage;
+using EventFlow.Event.Application.Common;
+using EventFlow.Event.Application.Exceptions;
 using EventFlow.Event.Application.Features.Events.Common;
 using EventFlow.Event.Domain.Entities;
 using MediatR;
@@ -18,6 +19,7 @@ namespace EventFlow.Event.Application.Features.Events.Commands.CreateEvent
         private readonly IFileStorage _fileStorage;
         private readonly IUserDirectoryClient _userDirectoryClient;
         private readonly IEventSettingsRepository _eventSettingsRepository;
+        private readonly IEventTypeRepository _eventTypeRepository;
         private readonly ILogger<CreateEventCommandHandler> _logger;
 
         public CreateEventCommandHandler(
@@ -27,6 +29,7 @@ namespace EventFlow.Event.Application.Features.Events.Commands.CreateEvent
             IFileStorage fileStorage,
             IUserDirectoryClient userDirectoryClient,
             IEventSettingsRepository eventSettingsRepository,
+            IEventTypeRepository eventTypeRepository,
             ILogger<CreateEventCommandHandler> logger)
         {
             _eventRepository = eventRepository;
@@ -36,24 +39,31 @@ namespace EventFlow.Event.Application.Features.Events.Commands.CreateEvent
             _userDirectoryClient = userDirectoryClient;
             _logger = logger;
             _eventSettingsRepository = eventSettingsRepository;
+            _eventTypeRepository = eventTypeRepository;
         }
 
         public async Task<CreateEventResult> Handle(CreateEventCommand request, CancellationToken cancellationToken)
         {
+
             var timeZone = TimeZoneHelper.GetTimeZone(request.TimeZone);
 
             var startDate = TimeZoneInfo.ConvertTimeToUtc(
-                DateTime.SpecifyKind(request.StartDate, DateTimeKind.Unspecified),
-                timeZone);
+                DateTime.SpecifyKind(request.StartDate, DateTimeKind.Unspecified),timeZone);
 
             var endDate = TimeZoneInfo.ConvertTimeToUtc(
-                DateTime.SpecifyKind(request.EndDate, DateTimeKind.Unspecified),
-                timeZone);
+                DateTime.SpecifyKind(request.EndDate, DateTimeKind.Unspecified),timeZone);
+
+            var eventType = await _eventTypeRepository.GetByIdAsync(request.EventTypeId,cancellationToken);
+
+            if (eventType is null || !eventType.IsActive)
+            {
+                throw new NotFoundException("Event type not found.");
+            }
 
             var eventEntity = new EventEntity(
                 request.Name,
                 request.Description,
-                request.EventType,
+                request.EventTypeId,
                 request.SubType,
                 startDate,
                 endDate,
@@ -97,7 +107,7 @@ namespace EventFlow.Event.Application.Features.Events.Commands.CreateEvent
                     eventEntity.Id,
                     eventEntity.Name,
                     eventEntity.Description,
-                    eventEntity.EventType,
+                    eventEntity.EventTypeId,
                     eventEntity.SubType,
                     eventEntity.StartDate,
                     eventEntity.EndDate,
