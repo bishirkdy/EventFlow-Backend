@@ -53,7 +53,16 @@ namespace EventFlow.Event.Api.Mappings
             CreateMap<UpdateEventSettingsRequest, UpdateEventSettingsCommand>();
 
             //Event Features
-            CreateMap<EventFeature, GetEventFeaturesResponse>();
+            CreateMap<EventFeature, GetEventFeaturesResponse>()
+                .ForMember(
+                    dest => dest.FeatureCode,
+                    opt => opt.MapFrom(src => src.Feature.Code))
+                .ForMember(
+                    dest => dest.FeatureName,
+                    opt => opt.MapFrom(src => src.Feature.Name))
+                .ForMember(
+                    dest => dest.FeatureDescription,
+                    opt => opt.MapFrom(src => src.Feature.Description));
 
             //Section
             CreateMap<CreateSectionRequest, CreateSectionCommand>();

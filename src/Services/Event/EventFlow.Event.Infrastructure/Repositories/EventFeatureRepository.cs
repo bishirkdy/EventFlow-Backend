@@ -16,12 +16,12 @@ namespace EventFlow.Event.Infrastructure.Repositories
                     cancellationToken);
         }
 
-        public async Task<IReadOnlyList<EventFeature>> GetByEventIdAsync(
-            Guid eventId,
-            CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<EventFeature>> GetByEventIdAsync(Guid eventId, CancellationToken cancellationToken = default)
         {
             return await Context.EventFeatures
+                .Include(x => x.Feature)
                 .Where(x => x.EventId == eventId)
+                .OrderBy(x => x.Feature.Name)
                 .ToListAsync(cancellationToken);
         }
     }

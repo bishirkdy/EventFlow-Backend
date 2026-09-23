@@ -8,6 +8,7 @@ namespace EventFlow.Event.Domain.Entities
     {
         public Guid EventId { get; private set; }
         public Guid FeatureId { get; private set; }
+        public Feature Feature { get; private set; } = null!;
         public bool IsEnabled { get; private set; }
 
         private EventFeature()

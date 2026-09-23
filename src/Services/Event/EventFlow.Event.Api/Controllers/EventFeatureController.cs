@@ -8,78 +8,77 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EventFlow.Event.Api.Controllers
+namespace EventFlow.Event.Api.Controllers;
+
+[ApiController]
+[Route("api/v1/events")]
+[Authorize]
+public sealed class EventFeatureController(ISender sender) : ControllerBase
 {
-    [ApiController]
-    [Route("api/v1/events")]
-    [Authorize]
-    public sealed class EventFeatureController(ISender sender) : ControllerBase
+    // Enable event feature
+    [HttpPost("{eventId:guid}/features/{featureId:guid}/enable")]
+    public async Task<IActionResult> EnableFeature(Guid eventId,Guid featureId,CancellationToken cancellationToken)
     {
-        //Enable event features
-        [HttpPost("{eventId:guid}/features/{featureId:guid}/enable")]
-        public async Task<IActionResult> EnableFeature(Guid eventId,Guid featureId,CancellationToken cancellationToken)
+        await sender.Send(new EnableEventFeatureCommand(eventId, featureId),cancellationToken);
+
+        var response = new ApiResponse<object?>
         {
-            await sender.Send(new EnableEventFeatureCommand(eventId, featureId),cancellationToken);
+            Success = true,
+            Message = "Feature enabled successfully.",
+            Data = null
+        };
 
-            var response = new ApiResponse<object?>
-            {
-                Success = true,
-                Message = "Feature enabled successfully.",
-                Data = null
-            };
+        return Ok(response);
+    }
 
-            return Ok(response);
-        }
+    // Disable event feature
+    [HttpPost("{eventId:guid}/features/{featureId:guid}/disable")]
+    public async Task<IActionResult> DisableFeature(Guid eventId, Guid featureId, CancellationToken cancellationToken)
+    {
+        await sender.Send(
+            new DisableEventFeatureCommand(eventId, featureId),
+            cancellationToken);
 
-        //Disable event features
-        [HttpPost("{eventId:guid}/features/{featureId:guid}/disable")]
-        public async Task<IActionResult> DisableFeature(Guid eventId,Guid featureId,CancellationToken cancellationToken)
+        var response = new ApiResponse<object?>
         {
-            await sender.Send(new DisableEventFeatureCommand(eventId, featureId),cancellationToken);
+            Success = true,
+            Message = "Feature disabled successfully.",
+            Data = null
+        };
 
-            var response = new ApiResponse<object?>
-            {
-                Success = true,
-                Message = "Feature disabled successfully.",
-                Data = null
-            };
+        return Ok(response);
+    }
 
-            return Ok(response);
-        }
+    // Get event features
+    [HttpGet("{eventId:guid}/features")]
+    public async Task<IActionResult> GetEventFeatures(Guid eventId, CancellationToken cancellationToken)
+    {
+        var features = await sender.Send(new GetEventFeaturesQuery(eventId),cancellationToken);
 
-        //Get Event features using event id
-        [HttpGet("{eventId:guid}/features")]
-        public async Task<IActionResult> GetEventFeatures(Guid eventId,CancellationToken cancellationToken)
+        var response = new ApiResponse<IReadOnlyList<GetEventFeaturesResponse>>
         {
-            var features = await sender.Send(new GetEventFeaturesQuery(eventId),cancellationToken);
+            Success = true,
+            Message = "Event features retrieved successfully.",
+            Data = features
+        };
 
-            var response =new ApiResponse<IReadOnlyList<GetEventFeaturesResponse>>
-                {
-                    Success = true,
-                    Message = "Event features retrieved successfully.",
-                    Data = features
-                };
+        return Ok(response);
+    }
 
-            return Ok(response);
-        }
+    // Reset event features
+    [HttpPost("{eventId:guid}/features/reset")]
+    public async Task<IActionResult> ResetEventFeatures(Guid eventId, CancellationToken cancellationToken)
+    {
+        var features = await sender.Send(
+            new ResetEventFeaturesCommand(eventId), cancellationToken);
 
-        //Reset all features of a event
-        [HttpPost("{eventId:guid}/features/reset")]
-        public async Task<IActionResult> ResetEventFeatures(Guid eventId,CancellationToken cancellationToken)
+        var response = new ApiResponse<IReadOnlyList<GetEventFeaturesResponse>>
         {
-            // Send command
-            await sender.Send(new ResetEventFeaturesCommand(eventId), cancellationToken);
+            Success = true,
+            Message = "Event features reset successfully.",
+            Data = features
+        };
 
-            // Create API response
-            var response = new ApiResponse<object?>
-            {
-                Success = true,
-                Message = "Event features reset successfully.",
-                Data = null
-            };
-
-            return Ok(response);
-        }
-
+        return Ok(response);
     }
 }

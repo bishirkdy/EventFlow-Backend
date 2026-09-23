@@ -36,6 +36,8 @@ namespace EventFlow.Event.Infrastructure
             services.AddScoped<INavigationMenuRepository, NavigationMenuRepository>();
             services.AddScoped<INavigationItemRepository, NavigationItemRepository>();
             services.AddScoped<IEventTypeRepository, EventTypeRepository>();
+            services.AddScoped<IFeatureRepository, FeatureRepository>();
+            services.AddScoped<IEventTypeFeatureRepository,EventTypeFeatureRepository>();
 
             services.Configure<CloudinaryStorageOptions>(configuration.GetSection("Cloudinary"));
             services.AddSingleton<ICloudinaryStorage, CloudinaryStorage>();

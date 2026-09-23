@@ -20,6 +20,7 @@ namespace EventFlow.Event.Infrastructure.Repositories
         {
             return await _context.EventEntities
                 .AsNoTracking()
+                .Include(x => x.EventType)
                 .Include(x => x.Images.OrderBy(image => image.DisplayOrder))
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
@@ -28,6 +29,7 @@ namespace EventFlow.Event.Infrastructure.Repositories
         {
             var query = _context.EventEntities
                 .AsNoTracking()
+                .Include(x => x.EventType)
                 .Include(x => x.Images.OrderBy(image => image.DisplayOrder))
                 .AsSplitQuery()
                 .OrderByDescending(x => x.CreatedAt);
@@ -54,6 +56,7 @@ namespace EventFlow.Event.Infrastructure.Repositories
         {
             return await _context.EventEntities
                 .AsNoTracking()
+                .Include(x => x.EventType)
                 .Include(x => x.Images.OrderBy(image => image.DisplayOrder))
                 .AsSplitQuery()
                 .Where(x => x.CreatedBy == userId)

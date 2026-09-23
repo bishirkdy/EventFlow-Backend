@@ -41,6 +41,11 @@ namespace EventFlow.Event.Infrastructure.Persistence.Configurations
                 x.FeatureId
             })
             .IsUnique();
+
+            builder.HasOne(x => x.Feature)
+                .WithMany()
+                .HasForeignKey(x => x.FeatureId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

@@ -14,8 +14,21 @@ namespace EventFlow.Event.Application.Common.Mappings
         {
             CreateMap<EventImage, EventImageResponse>();
 
-            CreateMap<EventEntity, GetEventResponse>();
+            CreateMap<EventEntity, GetEventResponse>()
+                .ForMember(
+                    dest => dest.EventType,
+                    opt => opt.MapFrom(src => src.EventType.Name))
+                .ForMember(
+                    dest => dest.Status,
+                    opt => opt.MapFrom(src => src.Status.ToString()))
+                .ForMember(
+                    dest => dest.Images,
+                    opt => opt.MapFrom(src =>
+                        src.Images.OrderBy(image => image.DisplayOrder)));
             CreateMap<EventEntity, GetEventByIdResponse>()
+                .ForMember(
+                    dest => dest.EventType,
+                    opt => opt.MapFrom(src => src.EventType.Name))
                 .ForMember(
                     dest => dest.EventTimeZone,
                     opt => opt.MapFrom(src => src.TimeZone))
@@ -25,6 +38,9 @@ namespace EventFlow.Event.Application.Common.Mappings
 
             // Event entity > Get My Events response
             CreateMap<EventEntity, GetMyEventsResponse>()
+                .ForMember(
+                    dest => dest.EventType,
+                    opt => opt.MapFrom(src => src.EventType.Name))
                 .ForMember(
                     dest => dest.Status,
                     opt => opt.MapFrom(src => src.Status.ToString()))

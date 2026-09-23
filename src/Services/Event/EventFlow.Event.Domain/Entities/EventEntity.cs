@@ -48,6 +48,7 @@ namespace EventFlow.Event.Domain.Entities
             Description = description;
             EventTypeId = eventTypeId;
             SubType = subType;
+            Status = EventStatus.Draft;
             StartDate = startDate;
             EndDate = endDate;
             TimeZone = timeZone;

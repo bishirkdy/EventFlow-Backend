@@ -15,12 +15,15 @@ namespace EventFlow.Event.Infrastructure.Persistence
         public DbSet<Section> Sections => Set<Section>();
         public DbSet<Session> Sessions => Set<Session>();
         public DbSet<EventFeature> EventFeatures => Set<EventFeature>();
+        public DbSet<Feature> Features => Set<Feature>();
+
         public DbSet<Venue> Venues => Set<Venue>();
         public DbSet<EventPage> EventPages => Set<EventPage>();
         public DbSet<PageSection> PageSections => Set<PageSection>();
         public DbSet<NavigationMenu> NavigationMenus => Set<NavigationMenu>();
         public DbSet<NavigationItem> NavigationItems => Set<NavigationItem>();
         public DbSet<EventType> EventTypes => Set<EventType>();
+        public DbSet<EventTypeFeature> EventTypeFeatures => Set<EventTypeFeature>();
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
