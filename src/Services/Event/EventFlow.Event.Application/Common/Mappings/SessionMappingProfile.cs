@@ -10,8 +10,12 @@ namespace EventFlow.Event.Application.Common.Mappings
     {
         public SessionMappingProfile()
         {
-            CreateMap<Session, GetSessionsByEventResponse>();
-            CreateMap<Session, GetSessionByIdResponse>();
+            CreateMap<Session, GetSessionsByEventResponse>()
+                .ForMember(d => d.StartTime, o => o.MapFrom(s => s.StartTimeUtc))
+                .ForMember(d => d.EndTime, o => o.MapFrom(s => s.EndTimeUtc));
+            CreateMap<Session, GetSessionByIdResponse>()
+                .ForMember(d => d.StartTime, o => o.MapFrom(s => s.StartTimeUtc))
+                .ForMember(d => d.EndTime, o => o.MapFrom(s => s.EndTimeUtc));
         }
     }
 }

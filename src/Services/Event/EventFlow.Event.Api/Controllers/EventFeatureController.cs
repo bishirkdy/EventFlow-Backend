@@ -50,6 +50,7 @@ public sealed class EventFeatureController(ISender sender) : ControllerBase
     }
 
     // Get event features
+        [AllowAnonymous]
     [HttpGet("{eventId:guid}/features")]
     public async Task<IActionResult> GetEventFeatures(Guid eventId, CancellationToken cancellationToken)
     {

@@ -4,6 +4,7 @@ using EventFlow.Event.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EventFlow.Event.Infrastructure.Migrations
 {
     [DbContext(typeof(EventCoreDbContext))]
-    partial class EventCoreDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260924131843_AddSessionScheduleFieldsV2")]
+    partial class AddSessionScheduleFieldsV2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -954,10 +956,6 @@ namespace EventFlow.Event.Infrastructure.Migrations
                     b.Property<Guid?>("VenueId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("ImageUrl")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
                     b.Property<Guid>("SectionId")
                         .HasColumnType("uuid");
 
@@ -1018,10 +1016,6 @@ namespace EventFlow.Event.Infrastructure.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
-
-                    b.Property<string>("ImageUrl")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
 
                     b.Property<string>("Name")
                         .IsRequired()

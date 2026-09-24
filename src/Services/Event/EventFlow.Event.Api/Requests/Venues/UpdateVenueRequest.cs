@@ -1,11 +1,13 @@
-
+using Microsoft.AspNetCore.Http;
 
 namespace EventFlow.Event.Api.Requests.Venues
 {
-    public sealed record UpdateVenueRequest(
-        string Name,
-        string? Description,
-        string? Address,
-        int Capacity);
+    public sealed class UpdateVenueRequest
+    {
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public string? Address { get; set; }
+        public int Capacity { get; set; }
+        public IFormFile? Image { get; set; }
+    }
 }
-    

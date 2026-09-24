@@ -47,6 +47,7 @@ namespace EventFlow.Event.Api.Controllers
         }
 
         //Page of event
+        [AllowAnonymous]
         [HttpGet("{eventId:guid}/pages")]
         public async Task<IActionResult> GetEventPagesByEvent(Guid eventId,CancellationToken cancellationToken)
         {
@@ -137,6 +138,7 @@ namespace EventFlow.Event.Api.Controllers
         }
 
         //Get event page by id
+        [AllowAnonymous]
         [HttpGet("{eventId:guid}/pages/{id:guid}")]
         public async Task<IActionResult> GetEventPageById(Guid eventId,Guid id,CancellationToken cancellationToken)
         {

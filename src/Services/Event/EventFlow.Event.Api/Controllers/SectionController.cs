@@ -38,6 +38,7 @@ namespace EventFlow.Event.Api.Controllers
             return Ok(response);
         }
 
+        [AllowAnonymous]
         [HttpGet("{eventId:guid}/sections")]
         public async Task<IActionResult> GetSectionsByEvent(Guid eventId, CancellationToken cancellationToken)
         {
@@ -54,6 +55,7 @@ namespace EventFlow.Event.Api.Controllers
             return Ok(response);
         }
 
+        [AllowAnonymous]
         [HttpGet("sections/{id:guid}")]
         public async Task<IActionResult> GetSectionById(
             Guid id,

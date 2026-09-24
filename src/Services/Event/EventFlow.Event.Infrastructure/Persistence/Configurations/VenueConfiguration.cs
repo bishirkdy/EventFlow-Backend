@@ -36,6 +36,10 @@ namespace EventFlow.Event.Infrastructure.Persistence.Configurations
             builder.Property(x => x.Capacity)
                 .IsRequired();
 
+            // Image
+            builder.Property(x => x.ImageUrl)
+                .HasMaxLength(1000);
+
             // Active status
             builder.Property(x => x.IsActive)
                 .IsRequired();

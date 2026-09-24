@@ -11,7 +11,8 @@ namespace EventFlow.Event.Infrastructure.Repositories
         {
             return await Context.Set<Session>()
                 .Where(x => x.EventId == eventId)
-                .OrderBy(x => x.CreatedAt)
+                .OrderBy(x => x.StartTimeUtc ?? DateTime.MaxValue)
+                .ThenBy(x => x.CreatedAt)
                 .ToListAsync(cancellationToken);
         }
     }

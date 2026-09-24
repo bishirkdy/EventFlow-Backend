@@ -45,6 +45,7 @@ namespace EventFlow.Event.Api.Controllers
         }
 
         // Get navigation items
+        [AllowAnonymous]
         [HttpGet("{navigationMenuId:guid}/items")]
         public async Task<IActionResult> GetNavigationItems(
             Guid navigationMenuId,
@@ -157,6 +158,7 @@ namespace EventFlow.Event.Api.Controllers
         }
 
         //Get navigation item by page id
+        [AllowAnonymous]
         [HttpGet("page/{pageId:guid}")]
         public async Task<IActionResult> GetNavigationItemByPage(Guid pageId,CancellationToken cancellationToken)
         {

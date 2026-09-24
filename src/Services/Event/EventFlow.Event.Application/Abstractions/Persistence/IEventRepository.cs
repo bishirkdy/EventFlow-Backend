@@ -13,5 +13,6 @@ namespace EventFlow.Event.Application.Abstractions.Persistence
         
         // Get events created by a specific user
         Task<IReadOnlyList<EventEntity>> GetByCreatedByAsync(Guid userId, CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<EventEntity>> GetPublishedUpcomingAsync(int take, CancellationToken cancellationToken = default);
     }
 }

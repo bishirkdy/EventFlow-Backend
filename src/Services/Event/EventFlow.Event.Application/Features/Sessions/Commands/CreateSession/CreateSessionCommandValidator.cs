@@ -36,6 +36,10 @@ namespace EventFlow.Event.Application.Features.Sessions.Commands.CreateSession
                 .GreaterThan(0)
                 .When(x => x.Capacity.HasValue)
                 .WithMessage("Session capacity must be greater than 0.");
+
+            RuleFor(x => x)
+                .Must(x => !x.StartTime.HasValue || !x.EndTime.HasValue || x.StartTime < x.EndTime)
+                .WithMessage("Session start time must be before end time.");
         }
     }
 }

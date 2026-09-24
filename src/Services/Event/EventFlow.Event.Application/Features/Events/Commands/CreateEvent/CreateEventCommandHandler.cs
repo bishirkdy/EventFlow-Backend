@@ -19,7 +19,6 @@ public sealed class CreateEventCommandHandler
     private readonly ICurrentUserService _currentUserService;
     private readonly IFileStorage _fileStorage;
     private readonly IUserDirectoryClient _userDirectoryClient;
-    private readonly IEventSettingsRepository _eventSettingsRepository;
     private readonly IEventTypeRepository _eventTypeRepository;
     private readonly IEventFeatureRepository _eventFeatureRepository;
     private readonly IEventTypeFeatureRepository _eventTypeFeatureRepository;
@@ -31,7 +30,6 @@ public sealed class CreateEventCommandHandler
         ICurrentUserService currentUserService,
         IFileStorage fileStorage,
         IUserDirectoryClient userDirectoryClient,
-        IEventSettingsRepository eventSettingsRepository,
         IEventTypeRepository eventTypeRepository,
         IEventTypeFeatureRepository eventTypeFeatureRepository,
         IEventFeatureRepository eventFeatureRepository,
@@ -42,7 +40,6 @@ public sealed class CreateEventCommandHandler
         _currentUserService = currentUserService;
         _fileStorage = fileStorage;
         _userDirectoryClient = userDirectoryClient;
-        _eventSettingsRepository = eventSettingsRepository;
         _eventTypeRepository = eventTypeRepository;
         _eventTypeFeatureRepository = eventTypeFeatureRepository;
         _eventFeatureRepository = eventFeatureRepository;
@@ -87,10 +84,6 @@ public sealed class CreateEventCommandHandler
             endDate,
             request.TimeZone,
             _currentUserService.UserId);
-
-        // Create default event settings
-        var eventSettings =
-            new Domain.Entities.EventSettings(eventEntity.Id);
 
         // Get default features for this event type
         var eventTypeFeatures =
@@ -137,17 +130,12 @@ public sealed class CreateEventCommandHandler
                         index));
             }
 
-            // Add event settings
-            await _eventSettingsRepository.AddAsync(
-                eventSettings,
-                cancellationToken);
-
             // Add event
             await _eventRepository.AddAsync(
                 eventEntity,
                 cancellationToken);
 
-            // Save event + settings + features + images
+            // Save event + features + images
             await _unitOfWork.SaveChangesAsync(
                 cancellationToken);
 

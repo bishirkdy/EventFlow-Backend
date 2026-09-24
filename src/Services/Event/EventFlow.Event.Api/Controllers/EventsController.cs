@@ -11,6 +11,7 @@ using EventFlow.Event.Application.Features.Events.Commands.PublishEvent;
 using EventFlow.Event.Application.Features.Events.Commands.UpdateEvent;
 using EventFlow.Event.Application.Features.Events.Queries.GetEventById;
 using EventFlow.Event.Application.Features.Events.Queries.GetMyEvents;
+using EventFlow.Event.Application.Features.Events.Queries.GetPublicEvents;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -70,6 +71,7 @@ namespace EventFlow.Event.Api.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<GetEventResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -113,7 +115,6 @@ namespace EventFlow.Event.Api.Controllers
             };
 
             await sender.Send(command, cancellationToken);
-
             return NoContent();
         }
 
@@ -125,8 +126,23 @@ namespace EventFlow.Event.Api.Controllers
         public async Task<IActionResult> Publish(Guid id, CancellationToken cancellationToken)
         {
             await sender.Send(new PublishEventCommand(id), cancellationToken);
-
             return NoContent();
+        }
+
+        [AllowAnonymous]
+        [HttpGet("public")]
+        [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<GetEventResponse>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetPublicEvents([FromQuery] int take = 3, CancellationToken cancellationToken = default)
+        {
+            var result = await sender.Send(new GetPublicEventsQuery(take), cancellationToken);
+            var response = mapper.Map<IReadOnlyList<GetEventResponse>>(result);
+
+            return Ok(new ApiResponse<IReadOnlyList<GetEventResponse>>
+            {
+                Success = true,
+                Message = "Public events retrieved successfully.",
+                Data = response
+            });
         }
 
         [HttpGet("my-events")]

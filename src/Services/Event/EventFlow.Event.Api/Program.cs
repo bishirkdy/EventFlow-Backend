@@ -1,6 +1,9 @@
 using EventFlow.Event.Api.Extensions;
 using EventFlow.Event.Application;
 using EventFlow.Event.Infrastructure;
+using EventFlow.Event.Infrastructure.Persistence;
+using EventFlow.Event.Infrastructure.Seeding;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +20,14 @@ builder.Services.AddApplication()
        .AddSwaggerDocumentation();
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<EventCoreDbContext>();
+    await db.Database.MigrateAsync();
+    await EventDemoSeeder.SeedAsync(db);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

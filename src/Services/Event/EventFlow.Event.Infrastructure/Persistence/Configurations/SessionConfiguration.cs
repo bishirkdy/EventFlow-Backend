@@ -32,6 +32,23 @@ namespace EventFlow.Event.Infrastructure.Persistence.Configurations
 
             builder.Property(x => x.Capacity);
 
+            builder.Property(x => x.StartTimeUtc)
+                .HasColumnType("timestamp with time zone");
+
+            builder.Property(x => x.EndTimeUtc)
+                .HasColumnType("timestamp with time zone");
+
+            builder.Property(x => x.VenueId);
+
+            builder.Property(x => x.ImageUrl)
+                .HasMaxLength(1000);
+            builder.HasIndex(x => x.VenueId);
+
+            builder.HasOne<Venue>()
+                .WithMany()
+                .HasForeignKey(x => x.VenueId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             builder.Property(x => x.Status)
                 .IsRequired()
                 .HasMaxLength(50);

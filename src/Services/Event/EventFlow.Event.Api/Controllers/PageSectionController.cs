@@ -61,6 +61,7 @@ namespace EventFlow.Event.Api.Controllers
         }
 
         //Get page sections
+        [AllowAnonymous]
         [HttpGet("{pageId:guid}/sections")]
         public async Task<IActionResult> GetPageSections(Guid pageId, CancellationToken cancellationToken)
         {

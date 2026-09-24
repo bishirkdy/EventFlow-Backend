@@ -11,13 +11,14 @@ namespace EventFlow.Event.Domain.Entities
         public string? Address { get; private set; }
         public int Capacity { get; private set; }
         public bool IsActive { get; private set; }
+        public string? ImageUrl { get; private set; }
 
         private Venue()
         {
             // Required by EF Core
         }
 
-        public Venue(Guid eventId,string name,string? description,string? address,int capacity)
+        public Venue(Guid eventId,string name,string? description,string? address,int capacity,string? imageUrl = null)
         {
             EventId = eventId;
             Name = name;
@@ -25,14 +26,16 @@ namespace EventFlow.Event.Domain.Entities
             Address = address;
             Capacity = capacity;
             IsActive = true;
+            ImageUrl = imageUrl;
         }
 
-        public void Update(string name,string? description,string? address,int capacity)
+        public void Update(string name,string? description,string? address,int capacity,string? imageUrl = null)
         {
             Name = name;
             Description = description;
             Address = address;
             Capacity = capacity;
+            ImageUrl = imageUrl;
             UpdatedAt = DateTime.UtcNow;
         }
 

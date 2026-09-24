@@ -1,6 +1,6 @@
-using AutoMapper;
 using EventFlow.Event.Api.Common.Models;
 using EventFlow.Event.Api.Requests.Venues;
+using EventFlow.Event.Application.Abstractions.Storage;
 using EventFlow.Event.Application.Exceptions;
 using EventFlow.Event.Application.Features.Venues.Commands.CreateVenue;
 using EventFlow.Event.Application.Features.Venues.Commands.DeleteVenue;
@@ -8,7 +8,6 @@ using EventFlow.Event.Application.Features.Venues.Commands.UpdateVenue;
 using EventFlow.Event.Application.Features.Venues.Commands.UpdateVenueCapacity;
 using EventFlow.Event.Application.Features.Venues.Queries.GetVenueById;
 using EventFlow.Event.Application.Features.Venues.Queries.GetVenuesByEvent;
-using EventFlow.Event.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,129 +20,63 @@ namespace EventFlow.Event.Api.Controllers
     public sealed class VenueController(ISender sender) : ControllerBase
     {
         [HttpPost("{eventId:guid}/venues")]
-        public async Task<IActionResult> CreateVenue(Guid eventId, CreateVenueRequest request, CancellationToken cancellationToken)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> CreateVenue(Guid eventId, [FromForm] CreateVenueRequest request, CancellationToken cancellationToken)
         {
-            // Map request to command
+            await using var stream = request.Image?.OpenReadStream();
+            var image = request.Image is null ? null : new UploadedFile(
+                stream!, request.Image.FileName, request.Image.ContentType, request.Image.Length);
+
             var command = new CreateVenueCommand(
-                eventId,
-                request.Name,
-                request.Description,
-                request.Address,
-                request.Capacity
-            );
+                eventId, request.Name, request.Description, request.Address, request.Capacity, image);
 
-            var venueId = await sender.Send(
-                command,
-                cancellationToken);
-
-            // Create API response
-            var response = new ApiResponse<Guid>
-            {
-                Success = true,
-                Message = "Venue created successfully.",
-                Data = venueId
-            };
-
-            return Ok(response);
+            var venueId = await sender.Send(command, cancellationToken);
+            return Ok(new ApiResponse<Guid> { Success = true, Message = "Venue created successfully.", Data = venueId });
         }
 
-        //Get venues of events
+        [AllowAnonymous]
         [HttpGet("{eventId:guid}/venues")]
         public async Task<IActionResult> GetVenuesByEvent(Guid eventId, CancellationToken cancellationToken)
         {
-            // Send query
             var venues = await sender.Send(new GetVenuesByEventQuery(eventId), cancellationToken);
-
-            var response = new ApiResponse<IReadOnlyList<GetVenuesByEventResponse>>
-            {
-                Success = true,
-                Message = "Venues retrieved successfully.",
-                Data = venues
-            };
-
-            return Ok(response);
+            return Ok(new ApiResponse<IReadOnlyList<GetVenuesByEventResponse>> { Success = true, Message = "Venues retrieved successfully.", Data = venues });
         }
 
-        //Controller for get venue by id and event id
+        [AllowAnonymous]
         [HttpGet("{eventId:guid}/venues/{id:guid}")]
-        public async Task<IActionResult> GetVenueById(Guid eventId,Guid id,CancellationToken cancellationToken)
+        public async Task<IActionResult> GetVenueById(Guid eventId, Guid id, CancellationToken cancellationToken)
         {
-            // Send query
-            var venue = await sender.Send(new GetVenueByIdQuery(id, eventId) ,cancellationToken);
-
-            if (venue is null)
-                throw new NotFoundException("Venue not found.");
-
-            var response = new ApiResponse<GetVenueByIdResponse>
-            {
-                Success = true,
-                Message = "Venue retrieved successfully.",
-                Data = venue
-            };
-
-            return Ok(response);
+            var venue = await sender.Send(new GetVenueByIdQuery(id, eventId), cancellationToken);
+            if (venue is null) throw new NotFoundException("Venue not found.");
+            return Ok(new ApiResponse<GetVenueByIdResponse> { Success = true, Message = "Venue retrieved successfully.", Data = venue });
         }
 
-        //Update Venue of event
         [HttpPut("{eventId:guid}/venues/{id:guid}")]
-        public async Task<IActionResult> UpdateVenue(Guid eventId, Guid id, UpdateVenueRequest request, CancellationToken cancellationToken)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateVenue(Guid eventId, Guid id, [FromForm] UpdateVenueRequest request, CancellationToken cancellationToken)
         {
-            // Map request to command
-            var command = new UpdateVenueCommand(
-                id,
-                eventId,
-                request.Name,
-                request.Description,
-                request.Address,
-                request.Capacity
-            );
+            await using var stream = request.Image?.OpenReadStream();
+            var image = request.Image is null ? null : new UploadedFile(
+                stream!, request.Image.FileName, request.Image.ContentType, request.Image.Length);
 
-            await sender.Send(command, cancellationToken);
+            await sender.Send(new UpdateVenueCommand(
+                id, eventId, request.Name, request.Description, request.Address, request.Capacity, image), cancellationToken);
 
-            var response = new ApiResponse<bool>
-            {
-                Success = true,
-                Message = "Venue updated successfully.",
-                Data = true
-            };
-
-            return Ok(response);
+            return Ok(new ApiResponse<bool> { Success = true, Message = "Venue updated successfully.", Data = true });
         }
 
-        //Delete venue
         [HttpDelete("{eventId:guid}/venues/{id:guid}")]
         public async Task<IActionResult> DeleteVenue(Guid eventId, Guid id, CancellationToken cancellationToken)
         {
-            // Send command
             await sender.Send(new DeleteVenueCommand(id, eventId), cancellationToken);
-
-            var response = new ApiResponse<object?>
-            {
-                Success = true,
-                Message = "Venue deleted successfully.",
-                Data = null
-            };
-
-            return Ok(response);
+            return Ok(new ApiResponse<object?> { Success = true, Message = "Venue deleted successfully.", Data = null });
         }
 
         [HttpPatch("{eventId:guid}/venues/{id:guid}/capacity")]
         public async Task<IActionResult> UpdateVenueCapacity(Guid eventId, Guid id, int capacity, CancellationToken cancellationToken)
         {
-            // Map request to command
-            var command = new UpdateVenueCapacityCommand(id,eventId, capacity);
-
-            // Send command
-            await sender.Send(command, cancellationToken);
-
-            var response = new ApiResponse<object?>
-            {
-                Success = true,
-                Message = "Venue capacity updated successfully.",
-                Data = null
-            };
-
-            return Ok(response);
+            await sender.Send(new UpdateVenueCapacityCommand(id, eventId, capacity), cancellationToken);
+            return Ok(new ApiResponse<object?> { Success = true, Message = "Venue capacity updated successfully.", Data = null });
         }
     }
 }

@@ -10,13 +10,12 @@ namespace EventFlow.Event.Infrastructure.Repositories
     {
         private readonly EventCoreDbContext _context;
 
-        public EventRepository(EventCoreDbContext context)
-            : base(context)
+        public EventRepository(EventCoreDbContext context) : base(context)
         {
             _context = context;
         }
 
-        public async Task<EventEntity?> GetByIdWithImagesAsync(Guid id,CancellationToken cancellationToken = default)
+        public async Task<EventEntity?> GetByIdWithImagesAsync(Guid id, CancellationToken cancellationToken = default)
         {
             return await _context.EventEntities
                 .AsNoTracking()
@@ -25,7 +24,7 @@ namespace EventFlow.Event.Infrastructure.Repositories
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
-        public async Task<PaginatedResult<EventEntity>> GetPagedAsync(int page,int pageSize,CancellationToken cancellationToken)
+        public async Task<PaginatedResult<EventEntity>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken)
         {
             var query = _context.EventEntities
                 .AsNoTracking()
@@ -35,11 +34,7 @@ namespace EventFlow.Event.Infrastructure.Repositories
                 .OrderByDescending(x => x.CreatedAt);
 
             var totalCount = await query.CountAsync(cancellationToken);
-
-            var items = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync(cancellationToken);
+            var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
 
             return new PaginatedResult<EventEntity>
             {
@@ -50,9 +45,7 @@ namespace EventFlow.Event.Infrastructure.Repositories
             };
         }
 
-        public async Task<IReadOnlyList<EventEntity>> GetByCreatedByAsync(
-            Guid userId,
-            CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<EventEntity>> GetByCreatedByAsync(Guid userId, CancellationToken cancellationToken = default)
         {
             return await _context.EventEntities
                 .AsNoTracking()
@@ -61,6 +54,19 @@ namespace EventFlow.Event.Infrastructure.Repositories
                 .AsSplitQuery()
                 .Where(x => x.CreatedBy == userId)
                 .OrderByDescending(x => x.CreatedAt)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<IReadOnlyList<EventEntity>> GetPublishedUpcomingAsync(int take, CancellationToken cancellationToken = default)
+        {
+            return await _context.EventEntities
+                .AsNoTracking()
+                .Include(x => x.EventType)
+                .Include(x => x.Images.OrderBy(image => image.DisplayOrder))
+                .AsSplitQuery()
+                .Where(x => x.Status == EventFlow.Event.Domain.Enums.EventStatus.Published && x.EndDate >= DateTime.UtcNow)
+                .OrderBy(x => x.StartDate)
+                .Take(Math.Clamp(take, 1, 12))
                 .ToListAsync(cancellationToken);
         }
     }

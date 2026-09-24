@@ -40,12 +40,16 @@ namespace EventFlow.Event.Api.Mappings
             CreateMap<GetEventByIdResponse, GetEventResponse>()
                 .ForMember(
                     dest => dest.TimeZone,
-                    opt => opt.MapFrom(src => src.EventTimeZone))
+                    opt => opt.MapFrom(src => src.TimeZone))
                 .ForMember(
                     dest => dest.Images,
                     opt => opt.MapFrom(src => src.Images));
 
             CreateMap<CreateEventResult, CreateEventResponse>();
+
+            CreateMap<
+                EventFlow.Event.Application.Features.Events.Queries.GetEvents.GetEventResponse,
+                EventFlow.Event.Api.Responses.Events.GetEventResponse>();
 
             CreateMap<UpdateEventRequest, UpdateEventCommand>();
 
@@ -67,14 +71,6 @@ namespace EventFlow.Event.Api.Mappings
             //Section
             CreateMap<CreateSectionRequest, CreateSectionCommand>();
             CreateMap<UpdateSectionRequest, UpdateSectionCommand>();
-
-            //Session
-            CreateMap<CreateSessionRequest, CreateSessionCommand>();
-            CreateMap<UpdateSessionRequest, UpdateSessionCommand>();
-
-            //Venue
-            CreateMap<CreateVenueRequest, CreateVenueCommand>();
-            CreateMap<UpdateVenueRequest, UpdateVenueCommand>();
 
             //Event page
             CreateMap<CreateEventPageRequest, CreateEventPageCommand>();

@@ -11,7 +11,7 @@ namespace EventFlow.Event.Application.Features.Events.Queries.GetEventById
         public string? SubType { get; init; }
         public DateTime StartDate { get; init; }
         public DateTime EndDate { get; init; }
-        public string EventTimeZone { get; init; } = default!;
+        public string TimeZone { get; init; } = default!;
         public string Status { get; init; } = default!;
         public string? Subdomain { get; init; }
         public Guid CreatedBy { get; init; }

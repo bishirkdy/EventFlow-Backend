@@ -30,7 +30,7 @@ namespace EventFlow.Event.Application.Common.Mappings
                     dest => dest.EventType,
                     opt => opt.MapFrom(src => src.EventType.Name))
                 .ForMember(
-                    dest => dest.EventTimeZone,
+                    dest => dest.TimeZone,
                     opt => opt.MapFrom(src => src.TimeZone))
                 .ForMember(
                     dest => dest.Status,

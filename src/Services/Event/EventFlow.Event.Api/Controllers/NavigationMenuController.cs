@@ -39,6 +39,7 @@ namespace EventFlow.Event.Api.Controllers
         }
 
         // Fetch navigation menus of event
+        [AllowAnonymous]
         [HttpGet("{eventId:guid}/navigation-menus")]
         public async Task<IActionResult> GetNavigationMenusByEvent(
             Guid eventId,
@@ -58,6 +59,7 @@ namespace EventFlow.Event.Api.Controllers
         }
 
         // Get specific navigation menu
+        [AllowAnonymous]
         [HttpGet("{eventId:guid}/navigation-menus/{id:guid}")]
         public async Task<IActionResult> GetNavigationMenuById(
             Guid eventId,
