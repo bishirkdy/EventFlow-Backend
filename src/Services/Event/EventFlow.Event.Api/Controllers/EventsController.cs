@@ -57,7 +57,8 @@ namespace EventFlow.Event.Api.Controllers
                     StatusCodes.Status201Created,
                     new ApiResponse<CreateEventResponse>
                     {
-                        Success = true,
+                        IsSuccess = true,
+                        StatusCode = StatusCodes.Status201Created,
                         Message = "Event created successfully.",
                         Data = response
                     });
@@ -85,7 +86,8 @@ namespace EventFlow.Event.Api.Controllers
                 return NotFound(
                     new ApiResponse<GetEventResponse>
                     {
-                        Success = false,
+                        IsSuccess = false,
+                        StatusCode = StatusCodes.Status404NotFound,
                         Message = "Event not found.",
                         Data = null
                     });
@@ -96,7 +98,8 @@ namespace EventFlow.Event.Api.Controllers
             return Ok(
                 new ApiResponse<GetEventResponse>
                 {
-                    Success = true,
+                    IsSuccess = true,
+                    StatusCode = StatusCodes.Status200OK,
                     Message = "Event retrieved successfully.",
                     Data = response
                 });
@@ -115,7 +118,7 @@ namespace EventFlow.Event.Api.Controllers
             };
 
             await sender.Send(command, cancellationToken);
-            return NoContent();
+            return Ok(ApiResponse<object?>.Success(null, "Event updated successfully."));
         }
 
         [HttpPost("{id:guid}/publish")]
@@ -126,7 +129,7 @@ namespace EventFlow.Event.Api.Controllers
         public async Task<IActionResult> Publish(Guid id, CancellationToken cancellationToken)
         {
             await sender.Send(new PublishEventCommand(id), cancellationToken);
-            return NoContent();
+            return Ok(ApiResponse<object?>.Success(null, "Event published successfully."));
         }
 
         [AllowAnonymous]
@@ -139,7 +142,8 @@ namespace EventFlow.Event.Api.Controllers
 
             return Ok(new ApiResponse<IReadOnlyList<GetEventResponse>>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Public events retrieved successfully.",
                 Data = response
             });
@@ -162,7 +166,8 @@ namespace EventFlow.Event.Api.Controllers
             return Ok(
                 new ApiResponse<IReadOnlyList<GetMyEventsResponse>>
                 {
-                    Success = true,
+                    IsSuccess = true,
+                    StatusCode = StatusCodes.Status200OK,
                     Message = "Events retrieved successfully.",
                     Data = result
                 });
@@ -181,7 +186,7 @@ namespace EventFlow.Event.Api.Controllers
                 new CancelEventCommand(id),
                 cancellationToken);
 
-            return NoContent();
+            return Ok(ApiResponse<object?>.Success(null, "Event cancelled successfully."));
         }
     }
 }

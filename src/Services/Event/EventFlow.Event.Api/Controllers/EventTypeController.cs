@@ -19,7 +19,8 @@ public sealed class EventTypeController(ISender sender) : ControllerBase
 
         return Ok(new ApiResponse<IReadOnlyList<GetEventTypeResponse>>
         {
-            Success = true,
+            IsSuccess = true,
+            StatusCode = StatusCodes.Status200OK,
             Message = "Event types retrieved successfully.",
             Data = eventTypes
         });

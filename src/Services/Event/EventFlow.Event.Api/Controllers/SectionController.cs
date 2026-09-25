@@ -30,7 +30,8 @@ namespace EventFlow.Event.Api.Controllers
             var sectionId = await sender.Send(command,cancellationToken);
             var response = new ApiResponse<Guid>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Section created successfully.",
                 Data = sectionId
             };
@@ -47,7 +48,8 @@ namespace EventFlow.Event.Api.Controllers
             var response =
                 new ApiResponse<IReadOnlyList<GetSectionsByEventResponse>>
                 {
-                    Success = true,
+                    IsSuccess = true,
+                    StatusCode = StatusCodes.Status200OK,
                     Message = "Sections retrieved successfully.",
                     Data = sections
                 };
@@ -70,7 +72,8 @@ namespace EventFlow.Event.Api.Controllers
 
             var response = new ApiResponse<GetSectionByIdResponse>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Section retrieved successfully.",
                 Data = section
             };
@@ -93,7 +96,8 @@ namespace EventFlow.Event.Api.Controllers
 
             var response = new ApiResponse<object?>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Section updated successfully.",
                 Data = null
             };
@@ -108,7 +112,8 @@ namespace EventFlow.Event.Api.Controllers
 
             var response = new ApiResponse<object?>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Section deleted successfully.",
                 Data = null
             };

@@ -38,7 +38,8 @@ namespace EventFlow.Event.Api.Controllers
 
             return Ok(new ApiResponse<Guid>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Navigation item created successfully.",
                 Data = itemId
             });
@@ -58,7 +59,8 @@ namespace EventFlow.Event.Api.Controllers
             return Ok(
                 new ApiResponse<IReadOnlyList<GetNavigationItemsResponse>>
                 {
-                    Success = true,
+                    IsSuccess = true,
+                    StatusCode = StatusCodes.Status200OK,
                     Message = "Navigation items retrieved successfully.",
                     Data = items
                 });
@@ -86,7 +88,8 @@ namespace EventFlow.Event.Api.Controllers
 
             return Ok(new ApiResponse<object?>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Navigation item updated successfully.",
                 Data = null
             });
@@ -105,7 +108,8 @@ namespace EventFlow.Event.Api.Controllers
 
             return Ok(new ApiResponse<object?>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Navigation item deleted successfully.",
                 Data = null
             });
@@ -126,7 +130,8 @@ namespace EventFlow.Event.Api.Controllers
 
             return Ok(new ApiResponse<object?>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Navigation items reordered successfully.",
                 Data = null
             });
@@ -149,7 +154,8 @@ namespace EventFlow.Event.Api.Controllers
 
             return Ok(new ApiResponse<object?>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = isVisible
                     ? "Navigation item shown successfully."
                     : "Navigation item hidden successfully.",
@@ -168,7 +174,8 @@ namespace EventFlow.Event.Api.Controllers
 
             return Ok(new ApiResponse<GetNavigationItemByPageResponse?>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Navigation item retrieved successfully.",
                 Data = item
             });

@@ -31,7 +31,7 @@ namespace EventFlow.Event.Api.Controllers
                 eventId, request.Name, request.Description, request.Address, request.Capacity, image);
 
             var venueId = await sender.Send(command, cancellationToken);
-            return Ok(new ApiResponse<Guid> { Success = true, Message = "Venue created successfully.", Data = venueId });
+            return Ok(new ApiResponse<Guid> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Venue created successfully.", Data = venueId });
         }
 
         [AllowAnonymous]
@@ -39,7 +39,7 @@ namespace EventFlow.Event.Api.Controllers
         public async Task<IActionResult> GetVenuesByEvent(Guid eventId, CancellationToken cancellationToken)
         {
             var venues = await sender.Send(new GetVenuesByEventQuery(eventId), cancellationToken);
-            return Ok(new ApiResponse<IReadOnlyList<GetVenuesByEventResponse>> { Success = true, Message = "Venues retrieved successfully.", Data = venues });
+            return Ok(new ApiResponse<IReadOnlyList<GetVenuesByEventResponse>> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Venues retrieved successfully.", Data = venues });
         }
 
         [AllowAnonymous]
@@ -48,7 +48,7 @@ namespace EventFlow.Event.Api.Controllers
         {
             var venue = await sender.Send(new GetVenueByIdQuery(id, eventId), cancellationToken);
             if (venue is null) throw new NotFoundException("Venue not found.");
-            return Ok(new ApiResponse<GetVenueByIdResponse> { Success = true, Message = "Venue retrieved successfully.", Data = venue });
+            return Ok(new ApiResponse<GetVenueByIdResponse> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Venue retrieved successfully.", Data = venue });
         }
 
         [HttpPut("{eventId:guid}/venues/{id:guid}")]
@@ -62,21 +62,21 @@ namespace EventFlow.Event.Api.Controllers
             await sender.Send(new UpdateVenueCommand(
                 id, eventId, request.Name, request.Description, request.Address, request.Capacity, image), cancellationToken);
 
-            return Ok(new ApiResponse<bool> { Success = true, Message = "Venue updated successfully.", Data = true });
+            return Ok(new ApiResponse<bool> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Venue updated successfully.", Data = true });
         }
 
         [HttpDelete("{eventId:guid}/venues/{id:guid}")]
         public async Task<IActionResult> DeleteVenue(Guid eventId, Guid id, CancellationToken cancellationToken)
         {
             await sender.Send(new DeleteVenueCommand(id, eventId), cancellationToken);
-            return Ok(new ApiResponse<object?> { Success = true, Message = "Venue deleted successfully.", Data = null });
+            return Ok(new ApiResponse<object?> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Venue deleted successfully.", Data = null });
         }
 
         [HttpPatch("{eventId:guid}/venues/{id:guid}/capacity")]
         public async Task<IActionResult> UpdateVenueCapacity(Guid eventId, Guid id, int capacity, CancellationToken cancellationToken)
         {
             await sender.Send(new UpdateVenueCapacityCommand(id, eventId, capacity), cancellationToken);
-            return Ok(new ApiResponse<object?> { Success = true, Message = "Venue capacity updated successfully.", Data = null });
+            return Ok(new ApiResponse<object?> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Venue capacity updated successfully.", Data = null });
         }
     }
 }

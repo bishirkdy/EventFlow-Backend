@@ -1,4 +1,5 @@
-﻿using EventFlow.Identity.Api.Contracts.Authorization;
+﻿using EventFlow.Identity.Api.Common;
+using EventFlow.Identity.Api.Contracts.Authorization;
 using EventFlow.Identity.Application.Abstractions.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,10 +25,7 @@ namespace EventFlow.Identity.Api.Controllers
                 request.Permission,
                 cancellationToken);
 
-            return Ok(new
-            {
-                hasPermission
-            });
+            return Ok(ApiResponse<bool>.Success(hasPermission, "Permission check completed successfully."));
         }
     }
 }

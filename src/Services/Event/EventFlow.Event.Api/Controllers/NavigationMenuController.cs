@@ -32,7 +32,8 @@ namespace EventFlow.Event.Api.Controllers
 
             return Ok(new ApiResponse<Guid>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Navigation menu created successfully.",
                 Data = menuId
             });
@@ -52,7 +53,8 @@ namespace EventFlow.Event.Api.Controllers
             return Ok(
                 new ApiResponse<IReadOnlyList<GetNavigationMenusByEventResponse>>
                 {
-                    Success = true,
+                    IsSuccess = true,
+                    StatusCode = StatusCodes.Status200OK,
                     Message = "Navigation menus retrieved successfully.",
                     Data = menus
                 });
@@ -72,7 +74,8 @@ namespace EventFlow.Event.Api.Controllers
 
             return Ok(new ApiResponse<GetNavigationMenuByIdResponse>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Navigation menu retrieved successfully.",
                 Data = menu
             });
@@ -96,7 +99,8 @@ namespace EventFlow.Event.Api.Controllers
 
             return Ok(new ApiResponse<object?>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Navigation menu updated successfully.",
                 Data = null
             });
@@ -115,7 +119,8 @@ namespace EventFlow.Event.Api.Controllers
 
             return Ok(new ApiResponse<object?>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Navigation menu deleted successfully.",
                 Data = null
             });

@@ -23,7 +23,8 @@ public sealed class EventFeatureController(ISender sender) : ControllerBase
 
         var response = new ApiResponse<object?>
         {
-            Success = true,
+            IsSuccess = true,
+            StatusCode = StatusCodes.Status200OK,
             Message = "Feature enabled successfully.",
             Data = null
         };
@@ -41,7 +42,8 @@ public sealed class EventFeatureController(ISender sender) : ControllerBase
 
         var response = new ApiResponse<object?>
         {
-            Success = true,
+            IsSuccess = true,
+            StatusCode = StatusCodes.Status200OK,
             Message = "Feature disabled successfully.",
             Data = null
         };
@@ -58,7 +60,8 @@ public sealed class EventFeatureController(ISender sender) : ControllerBase
 
         var response = new ApiResponse<IReadOnlyList<GetEventFeaturesResponse>>
         {
-            Success = true,
+            IsSuccess = true,
+            StatusCode = StatusCodes.Status200OK,
             Message = "Event features retrieved successfully.",
             Data = features
         };
@@ -75,7 +78,8 @@ public sealed class EventFeatureController(ISender sender) : ControllerBase
 
         var response = new ApiResponse<IReadOnlyList<GetEventFeaturesResponse>>
         {
-            Success = true,
+            IsSuccess = true,
+            StatusCode = StatusCodes.Status200OK,
             Message = "Event features reset successfully.",
             Data = features
         };

@@ -54,7 +54,8 @@ namespace EventFlow.Event.Api.Controllers
 
             return Ok(new ApiResponse<Guid>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Page section created successfully.",
                 Data = sectionId
             });
@@ -70,7 +71,8 @@ namespace EventFlow.Event.Api.Controllers
 
             var response = new ApiResponse<IReadOnlyList<GetPageSectionsResponse>>
                 {
-                    Success = true,
+                    IsSuccess = true,
+                    StatusCode = StatusCodes.Status200OK,
                     Message = "Page sections retrieved successfully.",
                     Data = sections
                 };
@@ -123,7 +125,8 @@ namespace EventFlow.Event.Api.Controllers
 
             return Ok(new ApiResponse<object?>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Page section updated successfully.",
                 Data = null
             });
@@ -142,7 +145,8 @@ namespace EventFlow.Event.Api.Controllers
 
             return Ok(new ApiResponse<object?>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Page section deleted successfully.",
                 Data = null
             });
@@ -159,7 +163,8 @@ namespace EventFlow.Event.Api.Controllers
 
             var response = new ApiResponse<object?>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Page sections reordered successfully.",
                 Data = null
             };

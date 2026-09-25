@@ -24,7 +24,8 @@ namespace EventFlow.Identity.Api.Controllers
             var result = await sender.Send(command, cancellationToken);
             var response = new ApiResponse<RegisterUserResponse>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status201Created,
                 Message = "User registered successfully",
                 Data = result
             };
@@ -32,8 +33,8 @@ namespace EventFlow.Identity.Api.Controllers
         }
 
         [HttpPost("login")]
-        [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
-        public async Task<ActionResult<LoginResponse>> Login(LoginRequest request, CancellationToken cancellationToken)
+        [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Login(LoginRequest request, CancellationToken cancellationToken)
         {
             var command = new LoginUserCommand(request.Email,request.Password);
             var result = await sender.Send(command,cancellationToken);
@@ -43,7 +44,8 @@ namespace EventFlow.Identity.Api.Controllers
 
             return Ok(new ApiResponse<object?>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Login successful",
                 Data = null
             });
@@ -61,7 +63,7 @@ namespace EventFlow.Identity.Api.Controllers
             }
             Response.ClearAuthCookies();
 
-            return NoContent();
+            return Ok(ApiResponse<object?>.Success(null, "Logout successful."));
         }
 
         [Authorize]
@@ -73,7 +75,8 @@ namespace EventFlow.Identity.Api.Controllers
 
             var response = new ApiResponse<UserProfileResponse>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Profile retrieved successfully.",
                 Data = result
             };

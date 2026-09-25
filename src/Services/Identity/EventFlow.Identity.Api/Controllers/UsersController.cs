@@ -24,7 +24,8 @@ public sealed class UsersController(IUserRepository userRepository) : Controller
         {
             return NotFound(new ApiResponse<UserSummaryResponse>
             {
-                Success = false,
+                IsSuccess = false,
+                StatusCode = StatusCodes.Status404NotFound,
                 Message = "User not found.",
                 Data = null
             });
@@ -37,7 +38,8 @@ public sealed class UsersController(IUserRepository userRepository) : Controller
 
         return Ok(new ApiResponse<UserSummaryResponse>
         {
-            Success = true,
+            IsSuccess = true,
+            StatusCode = StatusCodes.Status200OK,
             Message = "User retrieved successfully.",
             Data = new UserSummaryResponse(
                 user.Id,

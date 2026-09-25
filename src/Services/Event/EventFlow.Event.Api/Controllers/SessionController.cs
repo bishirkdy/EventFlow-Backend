@@ -30,7 +30,7 @@ namespace EventFlow.Event.Api.Controllers
                 eventId, request.SectionId, request.Title, request.Description, request.SessionType,
                 request.Capacity, request.StartTime, request.EndTime, request.VenueId, image), cancellationToken);
 
-            return Ok(new ApiResponse<Guid> { Success = true, Message = "Session created successfully.", Data = sessionId });
+            return Ok(new ApiResponse<Guid> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Session created successfully.", Data = sessionId });
         }
 
         [AllowAnonymous]
@@ -38,7 +38,7 @@ namespace EventFlow.Event.Api.Controllers
         public async Task<IActionResult> GetSessionsByEvent(Guid eventId, CancellationToken cancellationToken)
         {
             var sessions = await sender.Send(new GetSessionsByEventQuery(eventId), cancellationToken);
-            return Ok(new ApiResponse<IReadOnlyList<GetSessionsByEventResponse>> { Success = true, Message = "Sessions retrieved successfully.", Data = sessions });
+            return Ok(new ApiResponse<IReadOnlyList<GetSessionsByEventResponse>> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Sessions retrieved successfully.", Data = sessions });
         }
 
         [AllowAnonymous]
@@ -47,7 +47,7 @@ namespace EventFlow.Event.Api.Controllers
         {
             var session = await sender.Send(new GetSessionByIdQuery(id, eventId), cancellationToken);
             if (session is null) throw new NotFoundException("Session not found.");
-            return Ok(new ApiResponse<GetSessionByIdResponse> { Success = true, Message = "Session retrieved successfully.", Data = session });
+            return Ok(new ApiResponse<GetSessionByIdResponse> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Session retrieved successfully.", Data = session });
         }
 
         [HttpPut("{eventId:guid}/sessions/{id:guid}")]
@@ -62,14 +62,14 @@ namespace EventFlow.Event.Api.Controllers
                 id, eventId, request.Title, request.Description, request.SessionType, request.Capacity,
                 request.StartTime, request.EndTime, request.VenueId, image), cancellationToken);
 
-            return Ok(new ApiResponse<object?> { Success = true, Message = "Session updated successfully.", Data = null });
+            return Ok(new ApiResponse<object?> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Session updated successfully.", Data = null });
         }
 
         [HttpDelete("{eventId:guid}/sessions/{id:guid}")]
         public async Task<IActionResult> DeleteSession(Guid eventId, Guid id, CancellationToken cancellationToken)
         {
             await sender.Send(new DeleteSessionCommand(id, eventId), cancellationToken);
-            return Ok(new ApiResponse<object?> { Success = true, Message = "Session deleted successfully.", Data = null });
+            return Ok(new ApiResponse<object?> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Session deleted successfully.", Data = null });
         }
     }
 }

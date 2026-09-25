@@ -1,3 +1,4 @@
+using EventFlow.Identity.Api.Common;
 using EventFlow.Identity.Api.Contracts.Authentication;
 using EventFlow.Identity.Application.Commands.AssignUserRole;
 using EventFlow.Identity.Application.Commands.LogoutUser;
@@ -36,10 +37,7 @@ namespace EventFlow.Identity.Api.Controllers
                     request.RoleId),
                 cancellationToken);
 
-            return Ok(new
-            {
-                Id = roleId
-            });
+            return Ok(ApiResponse<Guid>.Success(roleId, "User role assigned successfully."));
         }
 
         [HttpGet]
@@ -55,7 +53,7 @@ namespace EventFlow.Identity.Api.Controllers
                     eventId),
                 cancellationToken);
 
-            return Ok(result);
+            return Ok(ApiResponse<object?>.Success(result, "User roles retrieved successfully."));
         }
 
         [HttpDelete("{roleId}")]
@@ -73,7 +71,7 @@ namespace EventFlow.Identity.Api.Controllers
                     roleId),
                 cancellationToken);
 
-            return NoContent();
+            return Ok(ApiResponse<object?>.Success(null, "User role removed successfully."));
         }
 
     }

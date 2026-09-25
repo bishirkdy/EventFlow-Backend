@@ -21,10 +21,13 @@ public sealed class UserDirectoryClient(HttpClient httpClient) : IUserDirectoryC
         var envelope = await response.Content.ReadFromJsonAsync<ApiResponse<UserSummary>>(
             cancellationToken);
 
-        return envelope?.Data?.DisplayName;
+        if (envelope is null || !envelope.IsSuccess)
+            return null;
+
+        return envelope.Data?.DisplayName;
     }
 
-    private sealed record ApiResponse<T>(bool Success, string Message, T? Data);
+    private sealed record ApiResponse<T>(bool IsSuccess, int StatusCode, T? Data, string Message, List<string>? Errors);
 
     private sealed record UserSummary(
         Guid Id,

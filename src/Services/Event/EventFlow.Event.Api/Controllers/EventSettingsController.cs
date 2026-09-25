@@ -27,12 +27,13 @@ namespace EventFlow.Event.Api.Controllers
 
             // Check whether settings exist
             if (result is null)
-                return NotFound();
+                return StatusCode(StatusCodes.Status404NotFound, ApiResponse<object?>.Fail(new[] { "Event settings not found." }, "Event settings not found.", System.Net.HttpStatusCode.NotFound));
 
             // Return settings
             return Ok(new ApiResponse<GetEventSettingsResponse>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Event settings retrieved successfully.",
                 Data = result
             });
@@ -55,7 +56,8 @@ namespace EventFlow.Event.Api.Controllers
 
             return Ok(new ApiResponse<object>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Event settings updated successfully.",
                 Data = null
             });
@@ -68,7 +70,8 @@ namespace EventFlow.Event.Api.Controllers
             await sender.Send(new ResetEventSettingsCommand(eventId), cancellationToken);
             return Ok(new ApiResponse<bool>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Event settings reset successfully.",
                 Data = true
             });

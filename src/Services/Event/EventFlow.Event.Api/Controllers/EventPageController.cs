@@ -38,7 +38,8 @@ namespace EventFlow.Event.Api.Controllers
 
             var response = new ApiResponse<Guid>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Event page created successfully.",
                 Data = pageId
             };
@@ -57,7 +58,8 @@ namespace EventFlow.Event.Api.Controllers
             var response =
                 new ApiResponse<IReadOnlyList<GetEventPagesByEventResponse>>
                 {
-                    Success = true,
+                    IsSuccess = true,
+                    StatusCode = StatusCodes.Status200OK,
                     Message = "Event pages retrieved successfully.",
                     Data = pages
                 };
@@ -73,7 +75,8 @@ namespace EventFlow.Event.Api.Controllers
 
             var response = new ApiResponse<object?>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Event page published successfully.",
                 Data = null
             };
@@ -90,7 +93,8 @@ namespace EventFlow.Event.Api.Controllers
 
             var response = new ApiResponse<object?>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Event page unpublished successfully.",
                 Data = null
             };
@@ -107,7 +111,8 @@ namespace EventFlow.Event.Api.Controllers
 
             var response = new ApiResponse<object?>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Event page deleted successfully.",
                 Data = null
             };
@@ -131,7 +136,8 @@ namespace EventFlow.Event.Api.Controllers
 
             return Ok(new ApiResponse<object?>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Event page updated successfully.",
                 Data = null
             });
@@ -151,7 +157,8 @@ namespace EventFlow.Event.Api.Controllers
 
             return Ok(new ApiResponse<GetEventPageByIdResponse>
             {
-                Success = true,
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
                 Message = "Event page retrieved successfully.",
                 Data = page
             });

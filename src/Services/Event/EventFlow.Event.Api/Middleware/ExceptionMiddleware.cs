@@ -1,3 +1,4 @@
+using EventFlow.Event.Api.Common.Models;
 using EventFlow.Event.Application.Exceptions;
 using FluentValidation;
 
@@ -8,7 +9,7 @@ public sealed class ExceptionMiddleware
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionMiddleware> _logger;
 
-    public ExceptionMiddleware(RequestDelegate next,ILogger<ExceptionMiddleware> logger)
+    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
     {
         _next = next;
         _logger = logger;
@@ -18,26 +19,18 @@ public sealed class ExceptionMiddleware
     {
         try
         {
-            // Continue request pipeline
             await _next(context);
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            // Log exception
-            _logger.LogError(ex, "An unhandled exception occurred.");
-
-            // Handle exception centrally
-            await HandleExceptionAsync(context, ex);
+            _logger.LogError(exception, "Unhandled exception occurred.");
+            await HandleExceptionAsync(context, exception);
         }
     }
 
-    private static async Task HandleExceptionAsync(HttpContext context,Exception exception)
+    private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        // Set response content type
-        context.Response.ContentType = "application/json";
-
-        // Determine HTTP status code
-        context.Response.StatusCode = exception switch
+        var statusCode = exception switch
         {
             ValidationException => StatusCodes.Status400BadRequest,
             NotFoundException => StatusCodes.Status404NotFound,
@@ -51,30 +44,32 @@ public sealed class ExceptionMiddleware
             _ => StatusCodes.Status500InternalServerError
         };
 
-        // Determine response message
         var message = exception switch
         {
             ValidationException => "One or more validation errors occurred.",
-            NotFoundException =>exception.Message,
-            ConflictException =>exception.Message,
-            KeyNotFoundException => exception.Message,
+            NotFoundException or ConflictException or KeyNotFoundException => exception.Message,
             UnauthorizedAccessException => exception.Message,
-            TimeZoneNotFoundException => exception.Message,
-            InvalidTimeZoneException => exception.Message,
-            ArgumentException =>exception.Message,
-            InvalidOperationException =>exception.Message,
+            TimeZoneNotFoundException or InvalidTimeZoneException => exception.Message,
+            ArgumentException or InvalidOperationException => exception.Message,
             _ => "An unexpected error occurred."
         };
 
-        // Create standard API response
-        var response = new
-        {
-            success = false,
-            message,
-            data = (object?)null
-        };
+        var errors = exception is ValidationException validationException
+            ? validationException.Errors
+                .Select(error => string.IsNullOrWhiteSpace(error.PropertyName)
+                    ? error.ErrorMessage
+                    : $"{error.PropertyName}: {error.ErrorMessage}")
+                .Distinct()
+                .ToList()
+            : new List<string> { message };
 
-        // Write response as JSON
+        var response = ApiResponse<object?>.Fail(
+            errors,
+            message,
+            (System.Net.HttpStatusCode)statusCode);
+
+        context.Response.StatusCode = statusCode;
+        context.Response.ContentType = "application/json";
         await context.Response.WriteAsJsonAsync(response);
     }
 }

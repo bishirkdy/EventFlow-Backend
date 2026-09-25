@@ -1,11 +1,8 @@
+namespace EventFlow.Event.Application.Exceptions;
 
-namespace EventFlow.Event.Application.Exceptions
+public sealed class ForbiddenException : Exception
 {
-    // Represents a forbidden
-    public sealed class ForbiddenExeption : Exception
+    public ForbiddenException(string message) : base(message)
     {
-        public ForbiddenExeption(string message): base(message)
-        {
-        }
     }
 }
