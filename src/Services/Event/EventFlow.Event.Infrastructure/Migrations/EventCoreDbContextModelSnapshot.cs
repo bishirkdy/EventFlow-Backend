@@ -993,6 +993,58 @@ namespace EventFlow.Event.Infrastructure.Migrations
                     b.ToTable("Sessions", (string)null);
                 });
 
+            modelBuilder.Entity("EventFlow.Event.Domain.Entities.Speaker", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uuid");
+                    b.Property<string>("Bio").HasMaxLength(4000).HasColumnType("character varying(4000)");
+                    b.Property<DateTime>("CreatedAt").HasColumnType("timestamp with time zone");
+                    b.Property<string>("Designation").HasMaxLength(200).HasColumnType("character varying(200)");
+                    b.Property<int>("DisplayOrder").HasColumnType("integer");
+                    b.Property<string>("Email").HasMaxLength(320).HasColumnType("character varying(320)");
+                    b.Property<Guid>("EventId").HasColumnType("uuid");
+                    b.Property<string>("ImageUrl").HasMaxLength(1000).HasColumnType("character varying(1000)");
+                    b.Property<bool>("IsActive").HasColumnType("boolean");
+                    b.Property<string>("Name").IsRequired().HasMaxLength(200).HasColumnType("character varying(200)");
+                    b.Property<string>("Organization").HasMaxLength(200).HasColumnType("character varying(200)");
+                    b.Property<DateTime?>("UpdatedAt").HasColumnType("timestamp with time zone");
+                    b.HasKey("Id");
+                    b.HasIndex("EventId");
+                    b.HasIndex("EventId", "DisplayOrder");
+                    b.ToTable("Speakers", (string)null);
+                });
+
+            modelBuilder.Entity("EventFlow.Event.Domain.Entities.Sponsor", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uuid");
+                    b.Property<DateTime>("CreatedAt").HasColumnType("timestamp with time zone");
+                    b.Property<string>("Description").HasMaxLength(2000).HasColumnType("character varying(2000)");
+                    b.Property<int>("DisplayOrder").HasColumnType("integer");
+                    b.Property<Guid>("EventId").HasColumnType("uuid");
+                    b.Property<bool>("IsActive").HasColumnType("boolean");
+                    b.Property<string>("LogoUrl").HasMaxLength(1000).HasColumnType("character varying(1000)");
+                    b.Property<string>("Name").IsRequired().HasMaxLength(200).HasColumnType("character varying(200)");
+                    b.Property<string>("SponsorLevel").IsRequired().HasMaxLength(100).HasColumnType("character varying(100)");
+                    b.Property<DateTime?>("UpdatedAt").HasColumnType("timestamp with time zone");
+                    b.Property<string>("WebsiteUrl").HasMaxLength(1000).HasColumnType("character varying(1000)");
+                    b.HasKey("Id");
+                    b.HasIndex("EventId");
+                    b.HasIndex("EventId", "SponsorLevel", "DisplayOrder");
+                    b.ToTable("Sponsors", (string)null);
+                });
+
+            modelBuilder.Entity("EventFlow.Event.Domain.Entities.SessionSpeaker", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uuid");
+                    b.Property<DateTime>("CreatedAt").HasColumnType("timestamp with time zone");
+                    b.Property<Guid>("SessionId").HasColumnType("uuid");
+                    b.Property<Guid>("SpeakerId").HasColumnType("uuid");
+                    b.Property<DateTime?>("UpdatedAt").HasColumnType("timestamp with time zone");
+                    b.HasKey("Id");
+                    b.HasIndex("SessionId", "SpeakerId").IsUnique();
+                    b.HasIndex("SpeakerId");
+                    b.ToTable("SessionSpeakers", (string)null);
+                });
+
             modelBuilder.Entity("EventFlow.Event.Domain.Entities.Venue", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1036,6 +1088,24 @@ namespace EventFlow.Event.Infrastructure.Migrations
                     b.HasIndex("EventId");
 
                     b.ToTable("Venues", (string)null);
+                });
+
+            modelBuilder.Entity("EventFlow.Event.Domain.Entities.Speaker", b =>
+                {
+                    b.HasOne("EventFlow.Event.Domain.Entities.EventEntity", null).WithMany().HasForeignKey("EventId").OnDelete(DeleteBehavior.Cascade).IsRequired();
+                });
+
+            modelBuilder.Entity("EventFlow.Event.Domain.Entities.Sponsor", b =>
+                {
+                    b.HasOne("EventFlow.Event.Domain.Entities.EventEntity", null).WithMany().HasForeignKey("EventId").OnDelete(DeleteBehavior.Cascade).IsRequired();
+                });
+
+            modelBuilder.Entity("EventFlow.Event.Domain.Entities.SessionSpeaker", b =>
+                {
+                    b.HasOne("EventFlow.Event.Domain.Entities.Session", "Session").WithMany().HasForeignKey("SessionId").OnDelete(DeleteBehavior.Cascade).IsRequired();
+                    b.HasOne("EventFlow.Event.Domain.Entities.Speaker", "Speaker").WithMany().HasForeignKey("SpeakerId").OnDelete(DeleteBehavior.Cascade).IsRequired();
+                    b.Navigation("Session");
+                    b.Navigation("Speaker");
                 });
 
             modelBuilder.Entity("EventFlow.Event.Domain.Entities.EventEntity", b =>

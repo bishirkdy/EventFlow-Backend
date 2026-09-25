@@ -14,6 +14,9 @@ namespace EventFlow.Event.Infrastructure.Persistence
         public DbSet<EventImage> EventImages => Set<EventImage>();
         public DbSet<Section> Sections => Set<Section>();
         public DbSet<Session> Sessions => Set<Session>();
+        public DbSet<Speaker> Speakers => Set<Speaker>();
+        public DbSet<Sponsor> Sponsors => Set<Sponsor>();
+        public DbSet<SessionSpeaker> SessionSpeakers => Set<SessionSpeaker>();
         public DbSet<EventFeature> EventFeatures => Set<EventFeature>();
         public DbSet<Feature> Features => Set<Feature>();
 

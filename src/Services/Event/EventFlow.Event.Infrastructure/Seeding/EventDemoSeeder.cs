@@ -152,6 +152,7 @@ public static class EventDemoSeeder
         AddSession(db, e, opening, "The Architecture Behind Reliable Event Platforms", "Talk", 2027, 2, 18, 6, 0, 7, 0, main, "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1200&q=85");
         AddSession(db, e, workshops, "Designing Event Experiences with Data", "Workshop", 2027, 2, 18, 8, 0, 9, 30, workshop, "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=85");
         AddSession(db, e, workshops, "Modern APIs, Messaging and Distributed Workflows", "Workshop", 2027, 2, 19, 5, 0, 6, 30, workshop, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=85");
+        AddConferencePeople(db, e);
 
         AddPageSet(db, e, new[]
         {
@@ -200,6 +201,7 @@ public static class EventDemoSeeder
         AddSession(db, e, culture, "Contemporary Folk Ensemble", "Performance", 2027, 4, 11, 8, 0, 9, 30, stage, "https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=1200&q=85");
         AddSession(db, e, community, "Local Food Stories", "Talk", 2027, 4, 11, 10, 0, 11, 0, grounds, "https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=1200&q=85");
         AddSession(db, e, community, "Craft and Design Market Walk", "Experience", 2027, 4, 12, 6, 0, 8, 0, grounds, "https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d?auto=format&fit=crop&w=1200&q=85");
+        AddFestivalSponsors(db, e);
         AddPageSet(db, e, new[]
         {
             ("Home", "home", FestivalHero, "Malabar Arts & Culture Festival", "Three days of music, performance, food and community."),
@@ -232,6 +234,34 @@ public static class EventDemoSeeder
             ("Certificates", "certificates", "https://images.unsplash.com/photo-1589330694653-ded6df03f754?auto=format&fit=crop&w=1400&q=85", "Certificates", "Participant and achievement certificates for eligible competitions."),
         });
         AddNavigation(db, e, db.EventPages.Local.Where(x => x.EventId == e.Id).OrderBy(x => x.DisplayOrder).ToArray());
+    }
+
+    private static void AddConferencePeople(EventCoreDbContext db, EventEntity e)
+    {
+        var speakers = new[]
+        {
+            new Speaker(e.Id, "Anika Menon", "Product and engineering leader focused on resilient digital platforms.", "VP Engineering", "Northstar Systems", "anika@example.com", "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=700&q=85", 1),
+            new Speaker(e.Id, "Rohan Iyer", "Architect working across distributed systems, APIs and event-driven platforms.", "Principal Architect", "Arcwell", "rohan@example.com", "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=700&q=85", 2),
+            new Speaker(e.Id, "Maya Thomas", "Design strategist helping teams turn complex workflows into clear experiences.", "Design Director", "Studio North", "maya@example.com", "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=700&q=85", 3),
+            new Speaker(e.Id, "Arjun Nair", "Platform engineer exploring messaging, observability and production reliability.", "Staff Platform Engineer", "Cloudline", "arjun@example.com", "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=700&q=85", 4)
+        };
+        db.Speakers.AddRange(speakers);
+        var sessions = db.Sessions.Local.Where(x => x.EventId == e.Id).OrderBy(x => x.StartTimeUtc).ToArray();
+        foreach (var pair in sessions.Zip(speakers, (session, speaker) => new { session, speaker }))
+            db.SessionSpeakers.Add(new SessionSpeaker(pair.session.Id, pair.speaker.Id));
+
+        db.Sponsors.AddRange(
+            new Sponsor(e.Id, "Northstar Systems", "Technology partner supporting the summit.", "https://example.com", "https://images.unsplash.com/photo-1556761175-4b46a572b786?auto=format&fit=crop&w=800&q=85", "Platinum", 1),
+            new Sponsor(e.Id, "Cloudline", "Infrastructure and platform partner.", "https://example.com", "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=800&q=85", "Gold", 2),
+            new Sponsor(e.Id, "Studio North", "Design and experience partner.", "https://example.com", "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=800&q=85", "Silver", 3));
+    }
+
+    private static void AddFestivalSponsors(EventCoreDbContext db, EventEntity e)
+    {
+        db.Sponsors.AddRange(
+            new Sponsor(e.Id, "Malabar Foods", "Celebrating local food culture and community.", "https://example.com", "https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=800&q=85", "Presenting Partner", 1),
+            new Sponsor(e.Id, "Heritage Collective", "Supporting arts, craft and cultural preservation.", "https://example.com", "https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d?auto=format&fit=crop&w=800&q=85", "Cultural Partner", 2),
+            new Sponsor(e.Id, "Coastline Bank", "Community partner for the festival experience.", "https://example.com", "https://images.unsplash.com/photo-1556761175-4b46a572b786?auto=format&fit=crop&w=800&q=85", "Community Partner", 3));
     }
 
     private static void AddSession(EventCoreDbContext db, EventEntity e, Section section, string title, string type, int year, int month, int day, int hourUtc, int minute, int endHourUtc, int endMinute, Venue venue, string imageUrl)
