@@ -46,23 +46,15 @@ public sealed class CreateEventCommandHandler
         _logger = logger;
     }
 
-    public async Task<CreateEventResult> Handle(
-        CreateEventCommand request,
-        CancellationToken cancellationToken)
+    public async Task<CreateEventResult> Handle(CreateEventCommand request,CancellationToken cancellationToken)
     {
         var timeZone = TimeZoneHelper.GetTimeZone(request.TimeZone);
 
         var startDate = TimeZoneInfo.ConvertTimeToUtc(
-            DateTime.SpecifyKind(
-                request.StartDate,
-                DateTimeKind.Unspecified),
-            timeZone);
+            DateTime.SpecifyKind(request.StartDate, DateTimeKind.Unspecified), timeZone);
 
         var endDate = TimeZoneInfo.ConvertTimeToUtc(
-            DateTime.SpecifyKind(
-                request.EndDate,
-                DateTimeKind.Unspecified),
-            timeZone);
+            DateTime.SpecifyKind(request.EndDate, DateTimeKind.Unspecified), timeZone);
 
         // Validate event type
         var eventType = await _eventTypeRepository.GetByIdAsync(

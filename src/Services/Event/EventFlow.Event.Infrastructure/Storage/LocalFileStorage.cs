@@ -34,10 +34,7 @@ namespace EventFlow.Event.Infrastructure.Storage
             _requestPath = _requestPath.TrimEnd('/');
         }
 
-        public async Task<StoredFile> SaveAsync(
-            UploadedFile file,
-            string folder,
-            CancellationToken cancellationToken = default)
+        public async Task<StoredFile> SaveAsync(UploadedFile file,string folder,CancellationToken cancellationToken = default)
         {
             if (!ExtensionsByContentType.TryGetValue(file.ContentType, out var extension))
                 throw new InvalidOperationException("Unsupported image content type.");

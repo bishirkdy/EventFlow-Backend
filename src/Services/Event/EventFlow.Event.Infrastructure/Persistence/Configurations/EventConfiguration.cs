@@ -35,7 +35,7 @@ namespace EventFlow.Event.Infrastructure.Persistence.Configurations
             builder.Property(x => x.EndDate)
                 .IsRequired();
 
-            // IANA time zone ID, for example:
+            // time zone ID
             // Asia/Kolkata
             // Europe/London
             builder.Property(x => x.TimeZone)

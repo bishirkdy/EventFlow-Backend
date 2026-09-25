@@ -7,8 +7,6 @@ using EventFlow.Event.Api.Requests.NavigationItems;
 using EventFlow.Event.Api.Requests.NavigationMenu;
 using EventFlow.Event.Api.Requests.PageSection;
 using EventFlow.Event.Api.Requests.Sections;
-using EventFlow.Event.Api.Requests.Sessions;
-using EventFlow.Event.Api.Requests.Venues;
 using EventFlow.Event.Api.Responses.Events;
 using EventFlow.Event.Application.Features.EventFeature.Queries.GetEventFeatures;
 using EventFlow.Event.Application.Features.EventPages.Commands.CreateEventPage;
@@ -24,10 +22,7 @@ using EventFlow.Event.Application.Features.PageSection.Commands.CreatePageSectio
 using EventFlow.Event.Application.Features.PageSection.Commands.UpdatePageSection;
 using EventFlow.Event.Application.Features.Sections.Commands.CreateSection;
 using EventFlow.Event.Application.Features.Sections.Commands.UpdateSection;
-using EventFlow.Event.Application.Features.Sessions.Commands.CreateSession;
-using EventFlow.Event.Application.Features.Sessions.Commands.UpdateSession;
-using EventFlow.Event.Application.Features.Venues.Commands.CreateVenue;
-using EventFlow.Event.Application.Features.Venues.Commands.UpdateVenue;
+
 using EventFlow.Event.Domain.Entities;
 
 namespace EventFlow.Event.Api.Mappings
