@@ -15,8 +15,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\EventFlow.Contracts\EventFlow.Contracts.csproj" />
     <ProjectReference Include="..\EventFlow.Event.Application\EventFlow.Event.Application.csproj" />
     <ProjectReference Include="..\EventFlow.Event.Infrastructure\EventFlow.Event.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Common\" />
   </ItemGroup>
 
 </Project>

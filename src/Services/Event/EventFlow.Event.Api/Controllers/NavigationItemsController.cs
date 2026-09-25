@@ -1,4 +1,4 @@
-using EventFlow.Event.Api.Common.Models;
+using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.NavigationItem;
 using EventFlow.Event.Api.Requests.NavigationItems;
 using EventFlow.Event.Application.Features.NavigationItem.Commands.CreateNavigationItem;

@@ -1,13 +1,14 @@
 using EventFlow.Identity.Api.Common;
+using EventFlow.Contracts.Common;
 using EventFlow.Identity.Api.Contracts.Authentication;
-using EventFlow.Identity.Application.Commands.Login;
-using EventFlow.Identity.Application.Commands.LogoutUser;
-using EventFlow.Identity.Application.Commands.RegisterUser;
 using EventFlow.Identity.Application.DTOs.Authentication;
-using EventFlow.Identity.Application.Queries.GetProfile;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using EventFlow.Identity.Application.Features.Commands.RegisterUser;
+using EventFlow.Identity.Application.Features.Commands.LoginUser;
+using EventFlow.Identity.Application.Features.Commands.LogoutUser;
+using EventFlow.Identity.Application.Features.Queries.GetProfile;
 
 namespace EventFlow.Identity.Api.Controllers
 {

@@ -1,86 +1,41 @@
-using EventFlow.Identity.Api.Common;
-using EventFlow.Identity.Api.Contracts.Authentication;
-using EventFlow.Identity.Application.Commands.AssignUserRole;
-using EventFlow.Identity.Application.Commands.LogoutUser;
-using EventFlow.Identity.Application.Commands.RemoveUserRole;
-using EventFlow.Identity.Application.Queries.GetUserEventRoles;
+using EventFlow.Contracts.Common;
+using EventFlow.Identity.Api.Contracts.UserEventRoles;
+using EventFlow.Identity.Application.Features.Commands.AssignUserRole;
+using EventFlow.Identity.Application.Features.Commands.RemoveUserRole;
+using EventFlow.Identity.Application.Features.Queries.GetUserEventRoles;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EventFlow.Identity.Api.Controllers
+namespace EventFlow.Identity.Api.Controllers;
+
+[Authorize]
+[ApiController]
+[Route("api/events/{eventId}/users/{userId}/roles")]
+public sealed class UserEventRolesController(ISender sender) : ControllerBase
 {
-    [Authorize]
-    [ApiController]
-    [Route("api/events/{eventId}/users/{userId}/roles")]
-    public class UserEventRolesController : ControllerBase
+    [HttpPost]
+    public async Task<IActionResult> AssignRole(Guid eventId,Guid userId,[FromBody] AssignUserRoleRequest request,CancellationToken cancellationToken)
     {
-        private readonly IMediator _mediator;
+        var roleId = await sender.Send(new AssignUserRoleCommand(userId,eventId,request.RoleId),cancellationToken);
 
-        public UserEventRolesController(IMediator mediator)
-        {
-            _mediator = mediator;
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> AssignRole(
-            Guid eventId,
-            Guid userId,
-            [FromBody] AssignUserRoleRequest request,
-            CancellationToken cancellationToken)
-        {
-            // Purpose: Assign a role to a user for this event.
-            var roleId = await _mediator.Send(
-                new AssignUserRoleCommand(
-                    userId,
-                    eventId,
-                    request.RoleId),
-                cancellationToken);
-
-            return Ok(ApiResponse<Guid>.Success(roleId, "User role assigned successfully."));
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetRoles(
-    Guid eventId,
-    Guid userId,
-    CancellationToken cancellationToken)
-        {
-            // Purpose: Get the user's roles for this event.
-            var result = await _mediator.Send(
-                new GetUserEventRolesQuery(
-                    userId,
-                    eventId),
-                cancellationToken);
-
-            return Ok(ApiResponse<object?>.Success(result, "User roles retrieved successfully."));
-        }
-
-        [HttpDelete("{roleId}")]
-        public async Task<IActionResult> RemoveRole(
-    Guid eventId,
-    Guid userId,
-    Guid roleId,
-    CancellationToken cancellationToken)
-        {
-            // Purpose: Remove a role from a user for this event.
-            await _mediator.Send(
-                new RemoveUserRoleCommand(
-                    userId,
-                    eventId,
-                    roleId),
-                cancellationToken);
-
-            return Ok(ApiResponse<object?>.Success(null, "User role removed successfully."));
-        }
-
+        return Ok(ApiResponse<Guid>.Success(roleId,"User role assigned successfully."));
     }
 
-    public class AssignUserRoleRequest
+    [HttpGet]
+    public async Task<IActionResult> GetRoles(Guid eventId,Guid userId,CancellationToken cancellationToken)
     {
-        public Guid RoleId { get; set; }
+        var result = await sender.Send(new GetUserEventRolesQuery(userId, eventId),cancellationToken);
+
+        return Ok(ApiResponse<object?>.Success(result,"User roles retrieved successfully."));
     }
 
+    [HttpDelete("{roleId:guid}")]
+    public async Task<IActionResult> RemoveRole(Guid eventId,Guid userId,Guid roleId,CancellationToken cancellationToken)
+    {
+        await sender.Send(
+            new RemoveUserRoleCommand(userId,eventId,roleId),cancellationToken);
 
-
+        return Ok(ApiResponse<object?>.Success(null,"User role removed successfully."));
+    }
 }

@@ -1,5 +1,5 @@
 using AutoMapper;
-using EventFlow.Event.Api.Common.Models;
+using EventFlow.Contracts.Common;
 using EventFlow.Event.Application.Features.EventFeature.Commands.DisableEventFeature;
 using EventFlow.Event.Application.Features.EventFeature.Commands.EnableEventFeature;
 using EventFlow.Event.Application.Features.EventFeature.Commands.ResetEventFeatures;

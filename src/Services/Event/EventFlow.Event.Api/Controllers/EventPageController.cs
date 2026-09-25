@@ -1,5 +1,5 @@
 using AutoMapper;
-using EventFlow.Event.Api.Common.Models;
+using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.EventPages;
 using EventFlow.Event.Application.Exceptions;
 using EventFlow.Event.Application.Features.EventPages.Commands.CreateEventPage;

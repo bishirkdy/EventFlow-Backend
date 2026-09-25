@@ -1,4 +1,4 @@
-using EventFlow.Event.Api.Common.Models;
+using EventFlow.Contracts.Common;
 using EventFlow.Event.Application.Exceptions;
 using FluentValidation;
 

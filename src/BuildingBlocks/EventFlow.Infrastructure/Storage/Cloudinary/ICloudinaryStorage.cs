@@ -1,11 +1,7 @@
 namespace EventFlow.Infrastructure.Storage.Cloudinary;
 
-public sealed record CloudinaryStoredFile(
-    string Url,
-    string PublicId,
-    string FileName,
-    string ContentType,
-    long Length);
+//Global cloudinary filestorage
+public sealed record CloudinaryStoredFile(string Url,string PublicId,string FileName,string ContentType,long Length);
 
 public interface ICloudinaryStorage
 {

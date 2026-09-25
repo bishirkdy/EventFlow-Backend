@@ -1,4 +1,4 @@
-﻿using EventFlow.Identity.Api.Common;
+﻿using EventFlow.Contracts.Common;
 using EventFlow.Identity.Api.Contracts.Authorization;
 using EventFlow.Identity.Application.Abstractions.Authorization;
 using Microsoft.AspNetCore.Mvc;

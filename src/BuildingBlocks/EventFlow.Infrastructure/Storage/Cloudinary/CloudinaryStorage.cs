@@ -28,12 +28,7 @@ public sealed class CloudinaryStorage : ICloudinaryStorage
         _cloudinary = new CloudinaryDotNet.Cloudinary(account);
     }
 
-    public async Task<CloudinaryStoredFile> UploadAsync(
-        Stream content,
-        string fileName,
-        string contentType,
-        string folder,
-        CancellationToken cancellationToken = default)
+    public async Task<CloudinaryStoredFile> UploadAsync(Stream content,string fileName,string contentType,string folder,CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(content);
 
@@ -81,27 +76,23 @@ public sealed class CloudinaryStorage : ICloudinaryStorage
             length);
     }
 
-    public async Task DeleteAsync(
-        string publicId,
-        CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(string publicId, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(publicId))
             return;
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        var result = await _cloudinary.DestroyAsync(
-            new DeletionParams(publicId)
+        //Delete the resource identified by publicId
+        var result = await _cloudinary.DestroyAsync(new DeletionParams(publicId)
             {
                 ResourceType = ResourceType.Image,
                 Type = "upload",
             });
 
-        if (result.Error is not null &&
-            !string.Equals(result.Result, "not found", StringComparison.OrdinalIgnoreCase))
+        if (result.Error is not null && !string.Equals(result.Result, "not found", StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException(
-                $"Cloudinary delete failed: {result.Error.Message}");
+            throw new InvalidOperationException($"Cloudinary delete failed: {result.Error.Message}");
         }
     }
 }

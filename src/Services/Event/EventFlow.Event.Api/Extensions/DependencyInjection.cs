@@ -1,4 +1,4 @@
-using EventFlow.Event.Api.Common.Models;
+using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Mappings;
 using EventFlow.Event.Api.Services;
 using EventFlow.Event.Application.Abstractions.Authentication;

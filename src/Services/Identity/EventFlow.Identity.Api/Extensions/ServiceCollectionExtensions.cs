@@ -1,4 +1,4 @@
-using EventFlow.Identity.Api.Common;
+using EventFlow.Contracts.Common;
 using EventFlow.Identity.Application;
 using EventFlow.Identity.Infrastructure;
 

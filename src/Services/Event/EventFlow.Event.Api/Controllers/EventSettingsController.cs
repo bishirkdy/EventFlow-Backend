@@ -1,5 +1,5 @@
 using AutoMapper;
-using EventFlow.Event.Api.Common.Models;
+using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.EventSettings;
 using EventFlow.Event.Application.Features.EventSettings.Commands.ResetEventSettings;
 using EventFlow.Event.Application.Features.EventSettings.Commands.UpdateEventSettings;

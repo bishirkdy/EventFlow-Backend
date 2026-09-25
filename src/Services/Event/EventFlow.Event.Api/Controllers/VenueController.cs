@@ -1,4 +1,4 @@
-using EventFlow.Event.Api.Common.Models;
+using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.Venues;
 using EventFlow.Event.Application.Abstractions.Storage;
 using EventFlow.Event.Application.Exceptions;

@@ -1,5 +1,5 @@
 using AutoMapper;
-using EventFlow.Event.Api.Common.Models;
+using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.PageSection;
 using EventFlow.Event.Application.Features.PageSection.Commands.CreatePageSection;
 using EventFlow.Event.Application.Features.PageSection.Commands.DeletePageSection;

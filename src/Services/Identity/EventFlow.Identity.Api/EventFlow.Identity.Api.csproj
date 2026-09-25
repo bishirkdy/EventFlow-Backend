@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\EventFlow.Contracts\EventFlow.Contracts.csproj" />
     <ProjectReference Include="..\EventFlow.Identity.Application\EventFlow.Identity.Application.csproj" />
     <ProjectReference Include="..\EventFlow.Identity.Infrastructure\EventFlow.Identity.Infrastructure.csproj" />
 	  <PackageReference Include="Swashbuckle.AspNetCore" />

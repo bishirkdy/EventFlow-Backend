@@ -1,4 +1,4 @@
-﻿using EventFlow.Event.Api.Common.Models;
+﻿using EventFlow.Contracts.Common;
 using EventFlow.Event.Application.EventTypes.Queries.GetActiveEventTypes;
 using EventFlow.Event.Application.Features.EventType.Queries.GetActiveEventTypes;
 using MediatR;

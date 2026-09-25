@@ -1,4 +1,4 @@
-using EventFlow.Event.Api.Common.Models;
+using EventFlow.Contracts.Common;
 using EventFlow.Event.Application.Features.SessionSpeakers.Commands.AssignSpeaker;
 using EventFlow.Event.Application.Features.SessionSpeakers.Commands.UnassignSpeaker;
 using EventFlow.Event.Application.Features.SessionSpeakers.Queries.GetSessionSpeakers;

@@ -1,4 +1,4 @@
-using EventFlow.Event.Api.Common.Models;
+using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.NavigationMenu;
 using EventFlow.Event.Application.Features.NavigationMenu.Commands.CreateNavigationMenu;
 using EventFlow.Event.Application.Features.NavigationMenu.Commands.DeleteNavigationMenu;

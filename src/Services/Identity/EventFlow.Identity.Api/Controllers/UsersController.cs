@@ -1,6 +1,8 @@
-using EventFlow.Identity.Api.Common;
+using EventFlow.Contracts.Common;
 using EventFlow.Identity.Application.Abstractions.Repositories;
 using EventFlow.Identity.Application.DTOs.Users;
+using EventFlow.Identity.Application.Features.Queries.GetUserSummary;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,45 +10,20 @@ namespace EventFlow.Identity.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/users")]
-public sealed class UsersController(IUserRepository userRepository) : ControllerBase
+public sealed class UsersController(ISender sender) : ControllerBase
 {
     [AllowAnonymous]
     [HttpGet("{userId:guid}/summary")]
-    [ProducesResponseType(typeof(ApiResponse<UserSummaryResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<UserSummaryResponse>),StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetSummary(
-        Guid userId,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> GetSummary(Guid userId,CancellationToken cancellationToken)
     {
-        var user = await userRepository.GetByIdAsync(userId, cancellationToken);
+        var result = await sender.Send(new GetUserSummaryQuery(userId),cancellationToken);
 
-        if (user is null)
-        {
-            return NotFound(new ApiResponse<UserSummaryResponse>
-            {
-                IsSuccess = false,
-                StatusCode = StatusCodes.Status404NotFound,
-                Message = "User not found.",
-                Data = null
-            });
-        }
+        if (result is null)
+            return NotFound();
 
-        var displayName = $"{user.FirstName} {user.LastName}".Trim();
-
-        if (string.IsNullOrWhiteSpace(displayName))
-            displayName = user.UserName;
-
-        return Ok(new ApiResponse<UserSummaryResponse>
-        {
-            IsSuccess = true,
-            StatusCode = StatusCodes.Status200OK,
-            Message = "User retrieved successfully.",
-            Data = new UserSummaryResponse(
-                user.Id,
-                user.UserName,
-                user.FirstName,
-                user.LastName,
-                displayName)
-        });
+        return Ok(
+            ApiResponse<UserSummaryResponse>.Success(result, "User retrieved successfully."));
     }
 }

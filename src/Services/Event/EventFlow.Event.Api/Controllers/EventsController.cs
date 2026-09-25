@@ -1,5 +1,5 @@
 using AutoMapper;
-using EventFlow.Event.Api.Common.Models;
+using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.Events;
 using EventFlow.Event.Api.Responses.Events;
 using EventFlow.Event.Api.Services;
