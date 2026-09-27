@@ -1,11 +1,10 @@
-
 using EventFlow.Event.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EventFlow.Event.Infrastructure.Persistence.Configurations
 {
-    public sealed class NavigationItemConfiguration: IEntityTypeConfiguration<NavigationItem>
+    public sealed class NavigationItemConfiguration : IEntityTypeConfiguration<NavigationItem>
     {
         public void Configure(EntityTypeBuilder<NavigationItem> builder)
         {
@@ -13,25 +12,20 @@ namespace EventFlow.Event.Infrastructure.Persistence.Configurations
 
             builder.HasKey(x => x.Id);
 
-            builder.Property(x => x.NavigationMenuId)
+            builder.Property(x => x.EventId)
                 .IsRequired();
 
             builder.Property(x => x.Label)
                 .IsRequired()
                 .HasMaxLength(200);
 
-            builder.Property(x => x.Url)
-                .HasMaxLength(1000);
-
-            builder.Property(x => x.PageId);
+            builder.Property(x => x.PageId)
+                .IsRequired();
 
             builder.Property(x => x.DisplayOrder)
                 .IsRequired();
 
             builder.Property(x => x.IsVisible)
-                .IsRequired();
-
-            builder.Property(x => x.OpenInNewTab)
                 .IsRequired();
 
             builder.Property(x => x.CreatedAt)
@@ -41,20 +35,19 @@ namespace EventFlow.Event.Infrastructure.Persistence.Configurations
 
             builder.HasIndex(x => new
             {
-                x.NavigationMenuId,
+                x.EventId,
                 x.DisplayOrder
             });
 
-            builder
-                .HasOne(x => x.NavigationMenu)
+            builder.HasOne<EventEntity>()
                 .WithMany()
-                .HasForeignKey(x => x.NavigationMenuId)
+                .HasForeignKey(x => x.EventId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne<EventPage>()
                 .WithMany()
                 .HasForeignKey(x => x.PageId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

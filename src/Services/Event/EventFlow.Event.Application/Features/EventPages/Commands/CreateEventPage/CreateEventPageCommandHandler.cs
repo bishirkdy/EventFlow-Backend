@@ -5,27 +5,39 @@ using MediatR;
 
 namespace EventFlow.Event.Application.Features.EventPages.Commands.CreateEventPage
 {
-    public sealed class CreateEventPageCommandHandler(IEventPageRepository eventPageRepository,IUnitOfWork unitOfWork)
+    public sealed class CreateEventPageCommandHandler(
+        IEventPageRepository eventPageRepository,
+        IUnitOfWork unitOfWork)
         : IRequestHandler<CreateEventPageCommand, Guid>
     {
-        public async Task<Guid> Handle(CreateEventPageCommand request, CancellationToken cancellationToken)
+        public async Task<Guid> Handle(
+            CreateEventPageCommand request,
+            CancellationToken cancellationToken)
         {
-            // Check duplicate page
-            var existingPage = await eventPageRepository.GetBySlugAsync(request.EventId,request.Slug, cancellationToken);
+            var existingPage = await eventPageRepository.GetBySlugAsync(
+                request.EventId,
+                request.Slug,
+                cancellationToken);
 
             if (existingPage is not null)
                 throw new ConflictException("A page with this slug already exists.");
 
-            // Create page
+            var existingPages = await eventPageRepository.GetByEventIdAsync(
+                request.EventId,
+                cancellationToken);
+
+            var displayOrder = existingPages.Count == 0
+                ? 1
+                : existingPages.Max(x => x.DisplayOrder) + 1;
+
             var page = new EventPage(
                 request.EventId,
                 request.Name,
                 request.Slug,
                 request.PageType,
-                request.DisplayOrder);
+                displayOrder);
 
-            // Save page
-            await eventPageRepository.AddAsync(page,cancellationToken);
+            await eventPageRepository.AddAsync(page, cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
             return page.Id;

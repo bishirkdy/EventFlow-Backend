@@ -7,7 +7,7 @@ namespace EventFlow.Event.Application.Features.NavigationItem.Commands.Navigatio
     {
         public SetNavigationItemVisibilityValidator()
         {
-            RuleFor(x => x.NavigationMenuId)
+            RuleFor(x => x.EventId)
                 .NotEmpty()
                 .WithMessage("Navigation menu ID is required.");
 

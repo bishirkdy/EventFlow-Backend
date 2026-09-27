@@ -1,10 +1,8 @@
-
-
 using FluentValidation;
 
 namespace EventFlow.Event.Application.Features.PageSection.Commands.UpdatePageSection
 {
-    public sealed class UpdatePageSectionValidator: AbstractValidator<UpdatePageSectionCommand>
+    public sealed class UpdatePageSectionValidator : AbstractValidator<UpdatePageSectionCommand>
     {
         public UpdatePageSectionValidator()
         {
@@ -28,9 +26,6 @@ namespace EventFlow.Event.Application.Features.PageSection.Commands.UpdatePageSe
 
             RuleFor(x => x.ImageUrl)
                 .MaximumLength(1000);
-
-            RuleFor(x => x.DisplayOrder)
-                .GreaterThanOrEqualTo(0);
         }
     }
 }

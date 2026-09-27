@@ -5,6 +5,7 @@ using EventFlow.Event.Application.Exceptions;
 using EventFlow.Event.Application.Features.EventPages.Commands.CreateEventPage;
 using EventFlow.Event.Application.Features.EventPages.Commands.DeleteEventPage;
 using EventFlow.Event.Application.Features.EventPages.Commands.PublishEventPage;
+using EventFlow.Event.Application.Features.EventPages.Commands.ReorderEventPages;
 using EventFlow.Event.Application.Features.EventPages.Commands.UnpublishEventPage;
 using EventFlow.Event.Application.Features.EventPages.Commands.UpdateEventPage;
 using EventFlow.Event.Application.Features.EventPages.Queries.GetEventPageById;
@@ -29,8 +30,7 @@ namespace EventFlow.Event.Api.Controllers
                 eventId,
                 request.Name,
                 request.Slug,
-                request.PageType,
-                request.DisplayOrder
+                request.PageType
             );
 
             // Send command
@@ -65,6 +65,26 @@ namespace EventFlow.Event.Api.Controllers
                 };
 
             return Ok(response);
+        }
+
+        // Reorder event pages
+        [HttpPut("{eventId:guid}/pages/reorder")]
+        public async Task<IActionResult> ReorderEventPages(
+            Guid eventId,
+            [FromBody] IReadOnlyList<Guid> pageIds,
+            CancellationToken cancellationToken)
+        {
+            await sender.Send(
+                new ReorderEventPagesCommand(eventId, pageIds),
+                cancellationToken);
+
+            return Ok(new ApiResponse<object?>
+            {
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
+                Message = "Event pages reordered successfully.",
+                Data = null
+            });
         }
 
         //Publish event page
@@ -129,8 +149,7 @@ namespace EventFlow.Event.Api.Controllers
                 eventId,
                 request.Name,
                 request.Slug,
-                request.PageType,
-                request.DisplayOrder);
+                request.PageType);
 
             await sender.Send(command, cancellationToken);
 

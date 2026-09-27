@@ -1,15 +1,14 @@
-
 using FluentValidation;
 
 namespace EventFlow.Event.Application.Features.NavigationItem.Commands.ReorderNavigationItems
 {
-    public sealed class ReorderNavigationItemsValidator: AbstractValidator<ReorderNavigationItemsCommand>
+    public sealed class ReorderNavigationItemsValidator : AbstractValidator<ReorderNavigationItemsCommand>
     {
         public ReorderNavigationItemsValidator()
         {
-            RuleFor(x => x.NavigationMenuId)
+            RuleFor(x => x.EventId)
                 .NotEmpty()
-                .WithMessage("Navigation menu ID is required.");
+                .WithMessage("Event ID is required.");
 
             RuleFor(x => x.ItemIds)
                 .NotEmpty()

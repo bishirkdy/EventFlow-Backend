@@ -1,16 +1,14 @@
-
-
 using FluentValidation;
 
 namespace EventFlow.Event.Application.Features.NavigationItem.Commands.DeleteNavigationItem
 {
-    public sealed class DeleteNavigationItemValidator: AbstractValidator<DeleteNavigationItemCommand>
+    public sealed class DeleteNavigationItemValidator : AbstractValidator<DeleteNavigationItemCommand>
     {
         public DeleteNavigationItemValidator()
         {
-            RuleFor(x => x.NavigationMenuId)
+            RuleFor(x => x.EventId)
                 .NotEmpty()
-                .WithMessage("Navigation menu ID is required.");
+                .WithMessage("Event ID is required.");
 
             RuleFor(x => x.Id)
                 .NotEmpty()

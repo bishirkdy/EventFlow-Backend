@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace EventFlow.Event.Application.Features.PageSection.Commands.CreatePageSection
 {
-    public sealed class CreatePageSectionValidator: AbstractValidator<CreatePageSectionCommand>
+    public sealed class CreatePageSectionValidator : AbstractValidator<CreatePageSectionCommand>
     {
         public CreatePageSectionValidator()
         {
@@ -23,10 +23,6 @@ namespace EventFlow.Event.Application.Features.PageSection.Commands.CreatePageSe
 
             RuleFor(x => x.ImageUrl)
                 .MaximumLength(1000);
-
-            RuleFor(x => x.DisplayOrder)
-                .GreaterThanOrEqualTo(0)
-                .WithMessage("Display order must be zero or greater.");
         }
     }
 }

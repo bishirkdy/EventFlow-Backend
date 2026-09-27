@@ -23,7 +23,6 @@ namespace EventFlow.Event.Infrastructure.Persistence
         public DbSet<Venue> Venues => Set<Venue>();
         public DbSet<EventPage> EventPages => Set<EventPage>();
         public DbSet<PageSection> PageSections => Set<PageSection>();
-        public DbSet<NavigationMenu> NavigationMenus => Set<NavigationMenu>();
         public DbSet<NavigationItem> NavigationItems => Set<NavigationItem>();
         public DbSet<EventType> EventTypes => Set<EventType>();
         public DbSet<EventTypeFeature> EventTypeFeatures => Set<EventTypeFeature>();

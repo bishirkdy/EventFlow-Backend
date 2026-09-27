@@ -47,7 +47,6 @@ namespace EventFlow.Event.Api.Controllers
                 request.Content,
                 imageUrl,
                 imagePublicId,
-                request.DisplayOrder,
                 request.Configuration);
 
             var sectionId = await sender.Send(command, cancellationToken);
@@ -111,7 +110,6 @@ namespace EventFlow.Event.Api.Controllers
                 request.Content,
                 imageUrl,
                 imagePublicId,
-                request.DisplayOrder,
                 request.IsVisible,
                 request.Configuration);
 

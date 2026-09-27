@@ -9,7 +9,5 @@ namespace EventFlow.Event.Application.Features.PageSection.Commands.CreatePageSe
         string? Content,
         string? ImageUrl,
         string? ImagePublicId,
-        int DisplayOrder,
-        string? Configuration)
-        : IRequest<Guid>;
+        string? Configuration) : IRequest<Guid>;
 }

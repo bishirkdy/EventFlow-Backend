@@ -3,12 +3,23 @@ using MediatR;
 
 namespace EventFlow.Event.Application.Features.PageSection.Commands.CreatePageSection
 {
-    public sealed class CreatePageSectionHandler(IPageSectionRepository pageSectionRepository,IUnitOfWork unitOfWork)
+    public sealed class CreatePageSectionHandler(
+        IPageSectionRepository pageSectionRepository,
+        IUnitOfWork unitOfWork)
         : IRequestHandler<CreatePageSectionCommand, Guid>
     {
-        public async Task<Guid> Handle(CreatePageSectionCommand request,CancellationToken cancellationToken)
+        public async Task<Guid> Handle(
+            CreatePageSectionCommand request,
+            CancellationToken cancellationToken)
         {
-            // Create page section
+            var existingSections = await pageSectionRepository.GetByPageIdAsync(
+                request.PageId,
+                cancellationToken);
+
+            var displayOrder = existingSections.Count == 0
+                ? 1
+                : existingSections.Max(x => x.DisplayOrder) + 1;
+
             var section = new Domain.Entities.PageSection(
                 request.PageId,
                 request.SectionType,
@@ -16,7 +27,7 @@ namespace EventFlow.Event.Application.Features.PageSection.Commands.CreatePageSe
                 request.Content,
                 request.ImageUrl,
                 request.ImagePublicId,
-                request.DisplayOrder,
+                displayOrder,
                 request.Configuration);
 
             await pageSectionRepository.AddAsync(section, cancellationToken);

@@ -38,13 +38,14 @@ namespace EventFlow.Event.Api.Extensions
                             // Otherwise JwtBearer continues with the Authorization header.
                             var cookieToken = context.Request.Cookies["accessToken"];
 
-                            if (!string.IsNullOrWhiteSpace(cookieToken))
+                          if (!string.IsNullOrWhiteSpace(cookieToken))
                             {
                                 context.Token = cookieToken;
                             }
 
                             return Task.CompletedTask;
                         },
+
                         OnChallenge = async context =>
                         {
                             if (context.Response.HasStarted) return;
@@ -57,7 +58,12 @@ namespace EventFlow.Event.Api.Extensions
                             context.Response.ContentType = "application/json";
                             await context.Response.WriteAsJsonAsync(response);
                         },
-                        OnForbidden = async context =>
+                      OnAuthenticationFailed = context =>
+                      {
+                        Console.WriteLine($"JWT validation failed: {context.Exception.Message}");
+                        return Task.CompletedTask;
+                      },
+                      OnForbidden = async context =>
                         {
                             if (context.Response.HasStarted) return;
                             var response = ApiResponse<object?>.Fail(

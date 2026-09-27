@@ -29,7 +29,6 @@
                     request.Content,
                     imageUrl,
                     imagePublicId,
-                    request.DisplayOrder,
                     request.Configuration);
                 section.SetVisibility(request.IsVisible);
                 await unitOfWork.SaveChangesAsync(cancellationToken);

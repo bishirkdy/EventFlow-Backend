@@ -20,19 +20,16 @@ namespace EventFlow.Event.Api.Controllers
     public class NavigationItemsController(ISender sender) : ControllerBase
     {
         // Create navigation item
-        [HttpPost("{navigationMenuId:guid}/items")]
+        [HttpPost("{eventId:guid}")]
         public async Task<IActionResult> CreateNavigationItem(
-            Guid navigationMenuId,
+            Guid eventId,
             CreateNavigationItemRequest request,
             CancellationToken cancellationToken)
         {
             var command = new CreateNavigationItemCommand(
-                navigationMenuId,
+                eventId,
                 request.Label,
-                request.Url,
-                request.PageId,
-                request.DisplayOrder,
-                request.OpenInNewTab);
+                request.PageId);
 
             var itemId = await sender.Send(command, cancellationToken);
 
@@ -47,13 +44,13 @@ namespace EventFlow.Event.Api.Controllers
 
         // Get navigation items
         [AllowAnonymous]
-        [HttpGet("{navigationMenuId:guid}/items")]
+        [HttpGet("{eventId:guid}")]
         public async Task<IActionResult> GetNavigationItems(
-            Guid navigationMenuId,
+            Guid eventId,
             CancellationToken cancellationToken)
         {
             var items = await sender.Send(
-                new GetNavigationItemsQuery(navigationMenuId),
+                new GetNavigationItemsQuery(eventId),
                 cancellationToken);
 
             return Ok(
@@ -67,21 +64,18 @@ namespace EventFlow.Event.Api.Controllers
         }
 
         // Update navigation item
-        [HttpPut("{navigationMenuId:guid}/items/{id:guid}")]
+        [HttpPut("{eventId:guid}/{id:guid}")]
         public async Task<IActionResult> UpdateNavigationItem(
-            Guid navigationMenuId,
+            Guid eventId,
             Guid id,
             UpdateNavigationItemRequest request,
             CancellationToken cancellationToken)
         {
             var command = new UpdateNavigationItemCommand(
-                navigationMenuId,
                 id,
+                eventId,
                 request.Label,
-                request.Url,
                 request.PageId,
-                request.DisplayOrder,
-                request.OpenInNewTab,
                 request.IsVisible);
 
             await sender.Send(command, cancellationToken);
@@ -96,14 +90,14 @@ namespace EventFlow.Event.Api.Controllers
         }
 
         // Delete navigation item
-        [HttpDelete("{navigationMenuId:guid}/items/{id:guid}")]
+        [HttpDelete("{eventId:guid}/{id:guid}")]
         public async Task<IActionResult> DeleteNavigationItem(
-            Guid navigationMenuId,
+            Guid eventId,
             Guid id,
             CancellationToken cancellationToken)
         {
             await sender.Send(
-                new DeleteNavigationItemCommand(navigationMenuId, id),
+                new DeleteNavigationItemCommand(id, eventId),
                 cancellationToken);
 
             return Ok(new ApiResponse<object?>
@@ -116,14 +110,14 @@ namespace EventFlow.Event.Api.Controllers
         }
 
         // Reorder navigation items
-        [HttpPut("{navigationMenuId:guid}/items/reorder")]
+        [HttpPut("{eventId:guid}/reorder")]
         public async Task<IActionResult> ReorderNavigationItems(
-            Guid navigationMenuId,
+            Guid eventId,
             [FromBody] IReadOnlyList<Guid> itemIds,
             CancellationToken cancellationToken)
         {
             var command = new ReorderNavigationItemsCommand(
-                navigationMenuId,
+                eventId,
                 itemIds);
 
             await sender.Send(command, cancellationToken);
@@ -138,15 +132,15 @@ namespace EventFlow.Event.Api.Controllers
         }
 
         // Set navigation item visibility
-        [HttpPatch("{navigationMenuId:guid}/items/{id:guid}/visibility")]
+        [HttpPatch("{eventId:guid}/{id:guid}/visibility")]
         public async Task<IActionResult> SetNavigationItemVisibility(
-            Guid navigationMenuId,
+            Guid eventId,
             Guid id,
             [FromBody] bool isVisible,
             CancellationToken cancellationToken)
         {
             var command = new SetNavigationItemVisibilityCommand(
-                navigationMenuId,
+                eventId,
                 id,
                 isVisible);
 
@@ -163,10 +157,12 @@ namespace EventFlow.Event.Api.Controllers
             });
         }
 
-        //Get navigation item by page id
+        // Get navigation item by page id
         [AllowAnonymous]
         [HttpGet("page/{pageId:guid}")]
-        public async Task<IActionResult> GetNavigationItemByPage(Guid pageId,CancellationToken cancellationToken)
+        public async Task<IActionResult> GetNavigationItemByPage(
+            Guid pageId,
+            CancellationToken cancellationToken)
         {
             var item = await sender.Send(
                 new GetNavigationItemByPageQuery(pageId),

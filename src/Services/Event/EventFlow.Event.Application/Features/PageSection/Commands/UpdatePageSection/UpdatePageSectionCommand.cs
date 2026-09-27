@@ -1,5 +1,3 @@
-
-
 using MediatR;
 
 namespace EventFlow.Event.Application.Features.PageSection.Commands.UpdatePageSection
@@ -12,7 +10,6 @@ namespace EventFlow.Event.Application.Features.PageSection.Commands.UpdatePageSe
         string? Content,
         string? ImageUrl,
         string? ImagePublicId,
-        int DisplayOrder,
         bool IsVisible,
         string? Configuration) : IRequest<string?>;
 }

@@ -1,4 +1,3 @@
-
 using EventFlow.Event.Domain.Common;
 
 namespace EventFlow.Event.Domain.Entities
@@ -6,36 +5,36 @@ namespace EventFlow.Event.Domain.Entities
     public sealed class NavigationItem : Entity
     {
         public string Label { get; private set; } = string.Empty;
-        public string? Url { get; private set; }
-        public Guid? PageId { get; private set; }
+        public Guid PageId { get; private set; }
         public int DisplayOrder { get; private set; }
         public bool IsVisible { get; private set; }
-        public bool OpenInNewTab { get; private set; }
-        public Guid NavigationMenuId { get; private set; }
-        public NavigationMenu NavigationMenu { get; private set; } = null!;
+        public Guid EventId { get; private set; }
+
         private NavigationItem()
         {
             // Required by EF Core
         }
 
-        public NavigationItem(Guid navigationMenuId,string label,string? url,Guid? pageId,int displayOrder,bool openInNewTab)
+        public NavigationItem(
+            Guid eventId,
+            string label,
+            Guid pageId,
+            int displayOrder)
         {
-            NavigationMenuId = navigationMenuId;
+            Id = Guid.NewGuid();
+            EventId = eventId;
             Label = label;
-            Url = url;
             PageId = pageId;
             DisplayOrder = displayOrder;
             IsVisible = true;
-            OpenInNewTab = openInNewTab;
         }
 
-        public void Update(string label,string? url,Guid? pageId,int displayOrder,bool openInNewTab)
+        public void Update(
+            string label,
+            Guid pageId)
         {
             Label = label;
-            Url = url;
             PageId = pageId;
-            DisplayOrder = displayOrder;
-            OpenInNewTab = openInNewTab;
             UpdatedAt = DateTime.UtcNow;
         }
 

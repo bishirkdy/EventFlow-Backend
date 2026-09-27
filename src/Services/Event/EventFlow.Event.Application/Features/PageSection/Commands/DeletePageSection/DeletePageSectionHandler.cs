@@ -19,6 +19,16 @@ namespace EventFlow.Event.Application.Features.PageSection.Commands.DeletePageSe
 
             pageSectionRepository.Remove(section);
 
+            var remainingSections = (await pageSectionRepository.GetByPageIdAsync(
+                request.PageId,
+                cancellationToken))
+                .Where(x => x.Id != section.Id)
+                .OrderBy(x => x.DisplayOrder)
+                .ToList();
+
+            for (var i = 0; i < remainingSections.Count; i++)
+                remainingSections[i].UpdateDisplayOrder(i + 1);
+
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
             return imagePublicId;

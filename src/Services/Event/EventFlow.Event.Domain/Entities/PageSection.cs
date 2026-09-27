@@ -32,14 +32,13 @@ namespace EventFlow.Event.Domain.Entities
             Configuration = configuration;
         }
 
-        public void Update(string sectionType,string? title,string? content,string? imageUrl,string? imagePublicId,int displayOrder,string? configuration)
+        public void Update(string sectionType,string? title,string? content,string? imageUrl,string? imagePublicId,string? configuration)
         {
             SectionType = sectionType;
             Title = title;
             Content = content;
             ImageUrl = imageUrl;
             ImagePublicId = imagePublicId;
-            DisplayOrder = displayOrder;
             Configuration = configuration;
             UpdatedAt = DateTime.UtcNow;
         }

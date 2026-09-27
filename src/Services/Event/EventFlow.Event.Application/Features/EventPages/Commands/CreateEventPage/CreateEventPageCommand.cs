@@ -6,6 +6,5 @@ namespace EventFlow.Event.Application.Features.EventPages.Commands.CreateEventPa
         Guid EventId,
         string Name,
         string Slug,
-        string PageType,
-        int DisplayOrder) : IRequest<Guid>;
+        string PageType) : IRequest<Guid>;
 }

@@ -15,7 +15,7 @@ namespace EventFlow.Event.Application.Features.NavigationItem.Commands.Navigatio
 
             // Validate item belongs to menu
             if (item is null ||
-                item.NavigationMenuId != request.NavigationMenuId)
+                item.EventId != request.EventId)
             {
                 throw new NotFoundException("Navigation item not found.");
             }

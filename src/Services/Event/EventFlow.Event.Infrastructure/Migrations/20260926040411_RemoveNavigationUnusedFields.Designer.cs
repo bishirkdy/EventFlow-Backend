@@ -3,6 +3,7 @@ using System;
 using EventFlow.Event.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EventFlow.Event.Infrastructure.Migrations
 {
     [DbContext(typeof(EventCoreDbContext))]
-    partial class EventCoreDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260926040411_RemoveNavigationUnusedFields")]
+    partial class RemoveNavigationUnusedFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -768,9 +771,6 @@ namespace EventFlow.Event.Infrastructure.Migrations
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("uuid");
-
                     b.Property<bool>("IsVisible")
                         .HasColumnType("boolean");
 
@@ -778,6 +778,9 @@ namespace EventFlow.Event.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("NavigationMenuId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("PageId")
                         .HasColumnType("uuid");
@@ -789,9 +792,36 @@ namespace EventFlow.Event.Infrastructure.Migrations
 
                     b.HasIndex("PageId");
 
-                    b.HasIndex("EventId", "DisplayOrder");
+                    b.HasIndex("NavigationMenuId", "DisplayOrder");
 
                     b.ToTable("NavigationItems", (string)null);
+                });
+
+            modelBuilder.Entity("EventFlow.Event.Domain.Entities.NavigationMenu", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId");
+
+                    b.ToTable("NavigationMenus", (string)null);
                 });
 
             modelBuilder.Entity("EventFlow.Event.Domain.Entities.PageSection", b =>
@@ -1180,15 +1210,26 @@ namespace EventFlow.Event.Infrastructure.Migrations
 
             modelBuilder.Entity("EventFlow.Event.Domain.Entities.NavigationItem", b =>
                 {
-                    b.HasOne("EventFlow.Event.Domain.Entities.EventEntity", null)
+                    b.HasOne("EventFlow.Event.Domain.Entities.NavigationMenu", "NavigationMenu")
                         .WithMany()
-                        .HasForeignKey("EventId")
+                        .HasForeignKey("NavigationMenuId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("EventFlow.Event.Domain.Entities.EventPage", null)
                         .WithMany()
                         .HasForeignKey("PageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("NavigationMenu");
+                });
+
+            modelBuilder.Entity("EventFlow.Event.Domain.Entities.NavigationMenu", b =>
+                {
+                    b.HasOne("EventFlow.Event.Domain.Entities.EventEntity", null)
+                        .WithMany()
+                        .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

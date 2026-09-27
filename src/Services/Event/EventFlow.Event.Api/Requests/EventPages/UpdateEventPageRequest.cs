@@ -1,8 +1,7 @@
-﻿namespace EventFlow.Event.Api.Requests.EventPages
+namespace EventFlow.Event.Api.Requests.EventPages
 {
     public sealed record UpdateEventPageRequest(
         string Name,
         string Slug,
-        string PageType,
-        int DisplayOrder);
+        string PageType);
 }

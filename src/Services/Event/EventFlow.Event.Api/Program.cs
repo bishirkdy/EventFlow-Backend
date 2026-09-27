@@ -6,6 +6,17 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+if (builder.Environment.IsProduction())
+{
+  builder.Configuration.AddJsonFile(
+      "appsettings.Docker.json",
+      optional: false,
+      reloadOnChange: false);
+
+  // Environment variables must come AFTER Docker JSON
+  builder.Configuration.AddEnvironmentVariables();
+}
+
 // Add services to the container.
 builder.Services.AddOpenApi();
 builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>

@@ -5,7 +5,7 @@ namespace EventFlow.Event.Application.Abstractions.Persistence
 {
     public interface INavigationItemRepository: IRepository<NavigationItem>
     {
-        Task<IReadOnlyList<NavigationItem>> GetByMenuIdAsync(Guid navigationMenuId,CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<NavigationItem>> GetByEventIdAsync(Guid eventId,CancellationToken cancellationToken);
         Task<NavigationItem?> GetByPageIdAsync(Guid pageId, CancellationToken cancellationToken);
     }
 }

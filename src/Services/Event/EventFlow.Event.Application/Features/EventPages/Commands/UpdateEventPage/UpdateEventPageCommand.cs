@@ -9,6 +9,5 @@ namespace EventFlow.Event.Application.Features.EventPages.Commands.UpdateEventPa
         Guid EventId,
         string Name,
         string Slug,
-        string PageType,
-        int DisplayOrder) : IRequest;
+        string PageType) : IRequest;
 }

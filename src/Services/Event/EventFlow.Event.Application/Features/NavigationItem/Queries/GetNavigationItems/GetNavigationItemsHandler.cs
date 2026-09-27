@@ -11,7 +11,7 @@ namespace EventFlow.Event.Application.Features.NavigationItem.Queries.GetNavigat
         public async Task<IReadOnlyList<GetNavigationItemsResponse>> Handle(GetNavigationItemsQuery request, CancellationToken cancellationToken)
         {
             // Get navigation items
-            var items = await navigationItemRepository.GetByMenuIdAsync(request.NavigationMenuId,cancellationToken);
+            var items = await navigationItemRepository.GetByEventIdAsync(request.EventId, cancellationToken);
 
             // Map entities to responses
             return mapper.Map<IReadOnlyList<GetNavigationItemsResponse>>(items);

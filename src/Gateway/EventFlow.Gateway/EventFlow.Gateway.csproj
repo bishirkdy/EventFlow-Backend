@@ -10,4 +10,11 @@
     <PackageReference Include="Yarp.ReverseProxy" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="docker.settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

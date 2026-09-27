@@ -27,11 +27,16 @@ namespace EventFlow.Event.Domain.Entities
             IsPublished = false;
         }
 
-        public void Update(string name,string slug,string pageType,int displayOrder)
+        public void Update(string name,string slug,string pageType)
         {
             Name = name;
             Slug = slug;
             PageType = pageType;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void UpdateDisplayOrder(int displayOrder)
+        {
             DisplayOrder = displayOrder;
             UpdatedAt = DateTime.UtcNow;
         }

@@ -5,7 +5,6 @@ namespace EventFlow.Event.Api.Requests.PageSection
         string? Title,
         string? Content,
         IFormFile? Image,
-        int DisplayOrder,
         bool IsVisible,
         string? Configuration);
 }

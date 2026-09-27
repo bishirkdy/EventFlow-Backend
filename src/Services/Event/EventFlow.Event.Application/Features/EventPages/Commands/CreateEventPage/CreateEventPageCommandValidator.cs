@@ -30,10 +30,6 @@ namespace EventFlow.Event.Application.Features.EventPages.Commands.CreateEventPa
                 .WithMessage("Page type is required.")
                 .MaximumLength(50)
                 .WithMessage("Page type cannot exceed 50 characters.");
-
-            RuleFor(x => x.DisplayOrder)
-                .GreaterThanOrEqualTo(0)
-                .WithMessage("Display order cannot be negative.");
         }
     }
 }

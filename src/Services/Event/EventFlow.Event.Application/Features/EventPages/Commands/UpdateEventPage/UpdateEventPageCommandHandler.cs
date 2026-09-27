@@ -15,7 +15,7 @@ namespace EventFlow.Event.Application.Features.EventPages.Commands.UpdateEventPa
                 throw new NotFoundException("Event page not found.");
             }
 
-            page.Update(request.Name,request.Slug,request.PageType, request.DisplayOrder);
+            page.Update(request.Name,request.Slug,request.PageType);
             eventPageRepository.Update(page);
             await unitOfWork.SaveChangesAsync(cancellationToken);
         }

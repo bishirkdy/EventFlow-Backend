@@ -20,6 +20,17 @@ namespace EventFlow.Event.Application.Features.EventPages.Commands.DeleteEventPa
 
             // Delete page
             eventPageRepository.Remove(page);
+
+            var remainingPages = (await eventPageRepository.GetByEventIdAsync(
+                request.EventId,
+                cancellationToken))
+                .Where(x => x.Id != page.Id)
+                .OrderBy(x => x.DisplayOrder)
+                .ToList();
+
+            for (var i = 0; i < remainingPages.Count; i++)
+                remainingPages[i].UpdateDisplayOrder(i + 1);
+
             await unitOfWork.SaveChangesAsync(cancellationToken);
         }
     }
