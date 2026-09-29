@@ -1,21 +1,9 @@
 using EventFlow.Event.Api.Extensions;
 using EventFlow.Event.Application;
 using EventFlow.Event.Infrastructure;
-using EventFlow.Event.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
-
+using EventFlow.Messaging;
 var builder = WebApplication.CreateBuilder(args);
 
-if (builder.Environment.IsProduction())
-{
-  builder.Configuration.AddJsonFile(
-      "appsettings.Docker.json",
-      optional: false,
-      reloadOnChange: false);
-
-  // Environment variables must come AFTER Docker JSON
-  builder.Configuration.AddEnvironmentVariables();
-}
 
 // Add services to the container.
 builder.Services.AddOpenApi();
@@ -28,6 +16,8 @@ builder.Services.AddApplication()
     .AddApiServices()
     .AddJwtAuthentication(builder.Configuration)
        .AddSwaggerDocumentation();
+
+builder.Services.AddEventFlowMessaging(builder.Configuration);
 
 var app = builder.Build();
 

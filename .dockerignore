@@ -1,0 +1,42 @@
+# .dockerignore
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build output
+**/bin/
+**/obj/
+
+# Test results
+**/TestResults/
+*.trx
+
+# IDE
+.vscode/
+
+# Documentation
+*.md
+
+# Docker
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# Environment / secrets
+.env
+.env.*
+**/appsettings.*.local.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+**/*.log

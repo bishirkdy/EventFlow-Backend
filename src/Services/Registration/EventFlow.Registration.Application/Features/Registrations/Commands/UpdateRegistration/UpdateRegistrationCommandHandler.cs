@@ -1,0 +1,87 @@
+using EventFlow.Contracts.Common;
+using EventFlow.Registration.Application.Abstractions.Persistence;
+using EventFlow.Registration.Application.Abstractions.Services;
+using EventFlow.Registration.Application.Common.Mappings;
+using EventFlow.Registration.Application.Contracts.Registrations;
+using EventFlow.Registration.Domain.Entities;
+using EventFlow.Registration.Domain.Enums;
+using MediatR;
+
+namespace EventFlow.Registration.Application.Features.Registrations.Commands.UpdateRegistration;
+
+public sealed class UpdateRegistrationCommandHandler(
+    IRegistrationRepository registrations,
+    IUnitOfWork unitOfWork,
+    ICurrentUserService user)
+    : IRequestHandler<UpdateRegistrationCommand, ApiResponse<RegistrationDto>>
+{
+    public async Task<ApiResponse<RegistrationDto>> Handle(
+        UpdateRegistrationCommand command,
+        CancellationToken cancellationToken)
+    {
+        var registration = await registrations.GetByIdAsync(
+            command.EventId,
+            command.RegistrationId,
+            userId: user.UserId,
+            includeParticipant: true,
+            includeAnswers: true,
+            cancellationToken: cancellationToken);
+
+        if (registration is null)
+        {
+            return ApiResponse<RegistrationDto>.Fail(
+                ["Registration not found."]);
+        }
+
+        if (registration.Status is
+            RegistrationStatus.Cancelled or
+            RegistrationStatus.Rejected)
+        {
+            return ApiResponse<RegistrationDto>.Fail(
+                ["Registration cannot be edited."]);
+        }
+
+        if (registration.Participant is null)
+        {
+            return ApiResponse<RegistrationDto>.Fail(
+                ["Participant not found."]);
+        }
+
+        var now = DateTime.UtcNow;
+
+        registration.Participant.FirstName =
+            command.Request.FirstName.Trim();
+        registration.Participant.LastName =
+            command.Request.LastName.Trim();
+        registration.Participant.Email =
+            command.Request.Email.Trim();
+        registration.Participant.Phone =
+            command.Request.Phone?.Trim();
+        registration.Participant.Organization =
+            command.Request.Organization?.Trim();
+        registration.Participant.Designation =
+            command.Request.Designation?.Trim();
+        registration.Participant.UpdatedAtUtc = now;
+        registration.UpdatedAtUtc = now;
+
+        registrations.RemoveAnswers(registration.Answers);
+
+        foreach (var answer in command.Request.Answers)
+        {
+            registration.Answers.Add(
+                new RegistrationAnswer
+                {
+                    Id = Guid.NewGuid(),
+                    RegistrationId = registration.Id,
+                    RegistrationFormFieldId = answer.Key,
+                    Value = answer.Value ?? string.Empty
+                });
+        }
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return ApiResponse<RegistrationDto>.Success(
+            registration.ToDto(),
+            "Registration updated successfully.");
+    }
+}

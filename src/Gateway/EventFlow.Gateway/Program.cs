@@ -1,14 +1,5 @@
 var builder = WebApplication.CreateBuilder(args);
 
-//Configure connection between backend and frondent
-if (builder.Environment.IsProduction())
-{
-  builder.Configuration.AddJsonFile(
-      "appsettings.Docker.json",
-      optional: false,
-      reloadOnChange: false);
-}
-
 builder.Services.AddCors(option => {
     option.AddPolicy("Frontend", policy =>
     {

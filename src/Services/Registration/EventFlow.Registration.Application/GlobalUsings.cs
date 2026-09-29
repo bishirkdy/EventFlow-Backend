@@ -1,0 +1,9 @@
+global using EventFlow.Registration.Application.Abstractions.Persistence;
+global using EventFlow.Registration.Application.Abstractions.Services;
+global using EventFlow.Registration.Application.Common.Mappings;
+global using EventFlow.Registration.Application.Contracts.RegistrationForms;
+global using EventFlow.Registration.Application.Contracts.Registrations;
+global using EventFlow.Registration.Domain.Entities;
+global using EventFlow.Registration.Domain.Enums;
+global using FluentValidation;
+global using MediatR;

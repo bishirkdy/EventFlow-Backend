@@ -1,12 +1,16 @@
 <Solution>
   <Folder Name="/Solution Items/">
+    <File Path=".dockerignore" />
+    <File Path=".env" />
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
+    <File Path="docker-compose.yml" />
   </Folder>
   <Folder Name="/src/" />
   <Folder Name="/src/BuildingBlocks/">
     <Project Path="src/BuildingBlocks/EventFlow.Contracts/EventFlow.Contracts.csproj" Id="54342a5c-fcf4-40b1-9b1c-0f753cb2ba92" />
     <Project Path="src/BuildingBlocks/EventFlow.Infrastructure/EventFlow.Infrastructure.csproj" Id="34fb9141-a5f6-456a-aa66-27d6e714e2d1" />
+    <Project Path="src/BuildingBlocks/EventFlow.Messaging/EventFlow.Messaging.csproj" />
     <Project Path="src/BuildingBlocks/EventFlow.SharedKernel/EventFlow.SharedKernel.csproj" Id="685461f1-c58e-4bff-b1fe-f746ff1e65d0" />
   </Folder>
   <Folder Name="/src/Gateway/">

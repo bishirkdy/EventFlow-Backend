@@ -6,6 +6,16 @@
 # dotenv files
 .env
 
+#Docker
+docker-compose.override.yml
+
+# =========================
+# ASP.NET development
+# =========================
+appsettings.Local.json
+appsettings.*.Local.json
+
+
 # User-specific files
 *.rsuser
 *.suo
