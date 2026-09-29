@@ -30,12 +30,13 @@ public sealed class RegistrationFormRepository(RegistrationDbContext db): IRegis
 
     public void ReplaceFields(RegistrationForm form, IEnumerable<RegistrationFormField> fields)
     {
-        db.RegistrationFormFields.RemoveRange(form.Fields);
-        form.Fields.Clear();
+        db.RegistrationFormFields.RemoveRange(
+            db.RegistrationFormFields
+                .Where(x => x.RegistrationFormId == form.Id));
 
         foreach (var field in fields)
         {
-            form.Fields.Add(field);
+            db.RegistrationFormFields.Add(field);
         }
     }
 }
