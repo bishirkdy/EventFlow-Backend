@@ -1,5 +1,7 @@
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddHealthChecks();
+
 builder.Services.AddCors(option => {
     option.AddPolicy("Frontend", policy =>
     {
@@ -17,6 +19,7 @@ builder.Services.AddReverseProxy()
 var app = builder.Build();
 
 app.UseCors("Frontend");
+app.MapHealthChecks("/health");
 app.MapReverseProxy();
 
 app.Run();
