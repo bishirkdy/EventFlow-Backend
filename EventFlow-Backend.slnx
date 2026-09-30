@@ -1,13 +1,17 @@
 <Solution>
   <Folder Name="/Solution Items/">
     <File Path=".dockerignore" />
+    <File Path=".editorconfig" />
     <File Path=".env" />
+    <File Path=".env.example" />
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
     <File Path="docker-compose.yml" />
+    <File Path="global.json" />
   </Folder>
   <Folder Name="/src/" />
   <Folder Name="/src/BuildingBlocks/">
+    <Project Path="EventFlow.Api/EventFlow.Api.csproj" Id="65816d9a-f9e4-4d62-89b1-f86a2e3120f3" />
     <Project Path="src/BuildingBlocks/EventFlow.Contracts/EventFlow.Contracts.csproj" Id="54342a5c-fcf4-40b1-9b1c-0f753cb2ba92" />
     <Project Path="src/BuildingBlocks/EventFlow.Infrastructure/EventFlow.Infrastructure.csproj" Id="34fb9141-a5f6-456a-aa66-27d6e714e2d1" />
     <Project Path="src/BuildingBlocks/EventFlow.Messaging/EventFlow.Messaging.csproj" />

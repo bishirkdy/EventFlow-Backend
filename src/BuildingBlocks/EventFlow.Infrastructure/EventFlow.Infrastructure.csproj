@@ -13,4 +13,8 @@
     <ProjectReference Include="..\EventFlow.SharedKernel\EventFlow.SharedKernel.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Middleware\" />
+  </ItemGroup>
+
 </Project>
