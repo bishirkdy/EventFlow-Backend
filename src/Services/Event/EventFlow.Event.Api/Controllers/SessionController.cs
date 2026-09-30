@@ -1,7 +1,7 @@
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.Sessions;
 using EventFlow.Event.Application.Abstractions.Storage;
-using EventFlow.Event.Application.Exceptions;
+using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Event.Application.Features.Sessions.Commands.CreateSession;
 using EventFlow.Event.Application.Features.Sessions.Commands.DeleteSession;
 using EventFlow.Event.Application.Features.Sessions.Commands.UpdateSession;

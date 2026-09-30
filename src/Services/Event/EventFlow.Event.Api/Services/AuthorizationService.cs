@@ -1,30 +1,43 @@
-﻿using EventFlow.Event.Application.Abstractions.Authorization;
+using EventFlow.Contracts.Common;
+using EventFlow.Event.Application.Abstractions.Authorization;
 
-namespace EventFlow.Event.Api.Services
+namespace EventFlow.Event.Api.Services;
+
+public sealed class AuthorizationService(
+    HttpClient httpClient,
+    IConfiguration configuration) : IAuthorizationService
 {
-    public sealed class AuthorizationService(HttpClient _httpClient) : IAuthorizationService
+    public async Task<bool> HasPermissionAsync(
+        Guid userId,
+        Guid eventId,
+        string permission,
+        CancellationToken cancellationToken = default)
     {
+        var serviceKey = configuration["InternalService:Key"];
 
-        public async Task<bool> HasPermissionAsync(Guid userId,Guid eventId,string permission,CancellationToken cancellationToken = default)
+        if (string.IsNullOrWhiteSpace(serviceKey))
         {
-            var request = new
+            throw new InvalidOperationException("InternalService:Key is not configured.");
+        }
+
+        using var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            "api/authorization/v1/check-permission")
+        {
+            Content = JsonContent.Create(new
             {
                 UserId = userId,
                 EventId = eventId,
                 Permission = permission
-            };
+            })
+        };
 
-            var response = await _httpClient.PostAsJsonAsync("api/authorization/v1/check-permission",request,cancellationToken);
+        request.Headers.Add("X-Internal-Service-Key", serviceKey);
 
-            response.EnsureSuccessStatusCode();
+        using var response = await httpClient.SendAsync(request, cancellationToken);
+        response.EnsureSuccessStatusCode();
 
-            var result =
-                await response.Content.ReadFromJsonAsync<PermissionCheckResponse>(
-                    cancellationToken);
-
-            return result?.HasPermission ?? false;
-        }
-
-        private sealed record PermissionCheckResponse(bool HasPermission);
+        var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>(cancellationToken);
+        return result?.IsSuccess == true && result.Data;
     }
 }

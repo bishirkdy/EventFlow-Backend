@@ -1,6 +1,6 @@
 using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.Event.Application.Common;
-using EventFlow.Event.Application.Exceptions;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 namespace EventFlow.Event.Application.Features.Speakers.Commands.DeleteSpeaker;
 public sealed class DeleteSpeakerCommandHandler(ISpeakerRepository repository, IEventFeatureRepository featureRepository, IUnitOfWork unitOfWork) : IRequestHandler<DeleteSpeakerCommand>

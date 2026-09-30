@@ -2,6 +2,7 @@ using EventFlow.Api.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi;
+using Microsoft.Extensions.Hosting;
 
 namespace EventFlow.Api.Extensions;
 

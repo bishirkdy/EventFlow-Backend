@@ -1,5 +1,5 @@
 using EventFlow.Event.Application.Abstractions.Persistence;
-using EventFlow.Event.Domain.Common;
+using EventFlow.SharedKernel.Domain;
 using EventFlow.Event.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 

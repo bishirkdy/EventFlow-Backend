@@ -1,7 +1,7 @@
 using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.Event.Application.Abstractions.Storage;
 using EventFlow.Event.Application.Common;
-using EventFlow.Event.Application.Exceptions;
+using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Event.Domain.Entities;
 using FluentValidation;
 using FluentValidation.Results;

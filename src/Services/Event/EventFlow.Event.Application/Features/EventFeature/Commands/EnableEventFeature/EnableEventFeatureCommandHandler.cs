@@ -1,3 +1,4 @@
+using EventFlow.SharedKernel.Exceptions;
 
 
 using EventFlow.Event.Application.Abstractions.Persistence;
@@ -12,11 +13,11 @@ namespace EventFlow.Event.Application.Features.EventFeature.Commands.EnableEvent
         {
             var eventEntity = await eventRepository.GetByIdAsync(request.EventId, cancellationToken);
             if (eventEntity is null)
-                throw new EventFlow.Event.Application.Exceptions.NotFoundException("Event not found.");
+                throw new NotFoundException("Event not found.");
 
             var applicableFeatures = await eventTypeFeatureRepository.GetByEventTypeIdAsync(eventEntity.EventTypeId, cancellationToken);
             if (!applicableFeatures.Any(x => x.FeatureId == request.FeatureId))
-                throw new EventFlow.Event.Application.Exceptions.NotFoundException("This feature is not available for this event type.");
+                throw new NotFoundException("This feature is not available for this event type.");
 
             // Find existing event feature
             var eventFeature =

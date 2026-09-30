@@ -1,6 +1,6 @@
 
 
-using EventFlow.Event.Domain.Common;
+using EventFlow.SharedKernel.Domain;
 
 namespace EventFlow.Event.Application.Abstractions.Persistence
 {

@@ -1,5 +1,5 @@
 using EventFlow.Event.Application.Abstractions.Persistence;
-using EventFlow.Event.Application.Exceptions;
+using EventFlow.SharedKernel.Exceptions;
 
 namespace EventFlow.Event.Application.Common;
 

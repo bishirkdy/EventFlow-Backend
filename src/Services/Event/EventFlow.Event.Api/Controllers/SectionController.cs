@@ -1,6 +1,6 @@
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.Sections;
-using EventFlow.Event.Application.Exceptions;
+using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Event.Application.Features.Sections.Commands.CreateSection;
 using EventFlow.Event.Application.Features.Sections.Commands.DeleteSection;
 using EventFlow.Event.Application.Features.Sections.Commands.UpdateSection;

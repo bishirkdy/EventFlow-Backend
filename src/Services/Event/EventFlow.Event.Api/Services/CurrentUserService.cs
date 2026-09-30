@@ -1,15 +1,18 @@
-﻿using EventFlow.Event.Application.Abstractions.Authentication;
+﻿using EventFlow.Security.Authentication;
 using System.Security.Claims;
+
 
 namespace EventFlow.Event.Api.Services
 {
-    public sealed class CurrentUserService : ICurrentUserService
+    public sealed class CurrentUserService : ICurrentUserService    
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         public CurrentUserService(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
         }
+
+        public bool IsAuthenticated => _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated == true;
 
         public Guid UserId
         {

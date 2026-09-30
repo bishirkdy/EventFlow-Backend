@@ -16,5 +16,10 @@ namespace EventFlow.Event.Infrastructure.Repositories
                 .OrderBy(x => x.Name)
                 .ToListAsync(cancellationToken);
         }
+
+        public Task<Feature?> GetByCodeAsync(string code, CancellationToken cancellationToken = default)
+        {
+            return Context.Features.FirstOrDefaultAsync(x => x.Code == code && x.IsActive, cancellationToken);
+        }
     }
 }

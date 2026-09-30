@@ -1,7 +1,7 @@
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.Sponsors;
 using EventFlow.Event.Application.Abstractions.Storage;
-using EventFlow.Event.Application.Exceptions;
+using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Event.Application.Features.Sponsors.Commands.CreateSponsor;
 using EventFlow.Event.Application.Features.Sponsors.Commands.DeleteSponsor;
 using EventFlow.Event.Application.Features.Sponsors.Commands.UpdateSponsor;

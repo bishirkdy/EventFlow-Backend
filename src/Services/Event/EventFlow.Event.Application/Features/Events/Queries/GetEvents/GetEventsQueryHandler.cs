@@ -1,12 +1,12 @@
 using AutoMapper;
 using EventFlow.Event.Application.Abstractions.Persistence;
-using EventFlow.Event.Application.Common.Models;
+using EventFlow.Contracts.Common;
 using MediatR;
 
 namespace EventFlow.Event.Application.Features.Events.Queries.GetEvents
 {
     public sealed class GetEventsQueryHandler
-        : IRequestHandler<GetEventsQuery, PaginatedResult<GetEventResponse>>
+        : IRequestHandler<GetEventsQuery, PaginatedResponse<GetEventResponse>>
     {
         private readonly IEventRepository _eventRepository;
         private readonly IMapper _mapper;
@@ -17,7 +17,7 @@ namespace EventFlow.Event.Application.Features.Events.Queries.GetEvents
             _mapper = mapper;
         }
 
-        public async Task<PaginatedResult<GetEventResponse>> Handle(
+        public async Task<PaginatedResponse<GetEventResponse>> Handle(
             GetEventsQuery request,
             CancellationToken cancellationToken)
         {
@@ -29,10 +29,10 @@ namespace EventFlow.Event.Application.Features.Events.Queries.GetEvents
             var items = _mapper.Map<List<GetEventResponse>>(result.Items);
 
 
-            return new PaginatedResult<GetEventResponse>
+            return new PaginatedResponse<GetEventResponse>
             {
                 Items = items,
-                Page = result.Page,
+                PageNumber = result.PageNumber,
                 PageSize = result.PageSize,
                 TotalCount = result.TotalCount
             };

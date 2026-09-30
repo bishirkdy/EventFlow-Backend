@@ -1,7 +1,7 @@
 
 
 using EventFlow.Event.Application.Abstractions.Persistence;
-using EventFlow.Event.Application.Exceptions;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
 namespace EventFlow.Event.Application.Features.EventFeature.Commands.DisableEventFeature

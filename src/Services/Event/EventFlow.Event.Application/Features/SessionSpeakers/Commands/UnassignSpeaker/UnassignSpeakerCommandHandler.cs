@@ -1,6 +1,6 @@
 using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.Event.Application.Common;
-using EventFlow.Event.Application.Exceptions;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 namespace EventFlow.Event.Application.Features.SessionSpeakers.Commands.UnassignSpeaker;
 public sealed class UnassignSpeakerCommandHandler(ISessionRepository sessionRepository, ISpeakerRepository speakerRepository, ISessionSpeakerRepository linkRepository, IEventFeatureRepository featureRepository, IUnitOfWork unitOfWork) : IRequestHandler<UnassignSpeakerCommand>

@@ -1,7 +1,7 @@
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.Speakers;
 using EventFlow.Event.Application.Abstractions.Storage;
-using EventFlow.Event.Application.Exceptions;
+using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Event.Application.Features.Speakers.Commands.CreateSpeaker;
 using EventFlow.Event.Application.Features.Speakers.Commands.DeleteSpeaker;
 using EventFlow.Event.Application.Features.Speakers.Commands.UpdateSpeaker;

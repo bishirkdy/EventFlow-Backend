@@ -3,7 +3,7 @@ using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.Event.Application.Abstractions.Services;
 using EventFlow.Event.Application.Abstractions.Storage;
 using EventFlow.Event.Application.Common;
-using EventFlow.Event.Application.Exceptions;
+using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Event.Application.Features.Events.Common;
 using EventFlow.Event.Domain.Entities;
 using MediatR;

@@ -1,5 +1,5 @@
 using EventFlow.Event.Application.Abstractions.Persistence;
-using EventFlow.Event.Application.Common.Models;
+using EventFlow.Contracts.Common;
 using EventFlow.Event.Domain.Entities;
 using EventFlow.Event.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +24,7 @@ namespace EventFlow.Event.Infrastructure.Repositories
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
-        public async Task<PaginatedResult<EventEntity>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken)
+        public async Task<PaginatedResponse<EventEntity>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken)
         {
             var query = _context.EventEntities
                 .AsNoTracking()
@@ -36,10 +36,10 @@ namespace EventFlow.Event.Infrastructure.Repositories
             var totalCount = await query.CountAsync(cancellationToken);
             var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
 
-            return new PaginatedResult<EventEntity>
+            return new PaginatedResponse<EventEntity>
             {
                 Items = items,
-                Page = page,
+                PageNumber = page,
                 PageSize = pageSize,
                 TotalCount = totalCount
             };

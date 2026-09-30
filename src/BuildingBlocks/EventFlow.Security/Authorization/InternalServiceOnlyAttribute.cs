@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using EventFlow.Security.Configuration;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.Configuration;
 
 namespace EventFlow.Security.Authorization;
 

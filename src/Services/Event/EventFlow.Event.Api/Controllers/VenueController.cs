@@ -1,7 +1,7 @@
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.Venues;
 using EventFlow.Event.Application.Abstractions.Storage;
-using EventFlow.Event.Application.Exceptions;
+using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Event.Application.Features.Venues.Commands.CreateVenue;
 using EventFlow.Event.Application.Features.Venues.Commands.DeleteVenue;
 using EventFlow.Event.Application.Features.Venues.Commands.UpdateVenue;

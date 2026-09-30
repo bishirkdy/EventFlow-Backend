@@ -1,4 +1,4 @@
-using EventFlow.Event.Domain.Common;
+using EventFlow.SharedKernel.Domain;
 
 namespace EventFlow.Event.Domain.Entities;
 

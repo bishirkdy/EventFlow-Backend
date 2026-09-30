@@ -1,4 +1,4 @@
-using EventFlow.Event.Application.Common.Models;
+using EventFlow.Contracts.Common;
 using EventFlow.Event.Domain.Entities;
 
 namespace EventFlow.Event.Application.Abstractions.Persistence
@@ -9,7 +9,7 @@ namespace EventFlow.Event.Application.Abstractions.Persistence
         Task<EventEntity?> GetByIdWithImagesAsync(Guid id, CancellationToken cancellationToken = default);
 
         // Get events by pagination
-        Task<PaginatedResult<EventEntity>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken);
+        Task<PaginatedResponse<EventEntity>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken);
         
         // Get events created by a specific user
         Task<IReadOnlyList<EventEntity>> GetByCreatedByAsync(Guid userId, CancellationToken cancellationToken = default);

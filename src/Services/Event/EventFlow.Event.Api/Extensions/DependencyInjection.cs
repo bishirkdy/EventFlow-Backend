@@ -8,7 +8,7 @@ namespace EventFlow.Event.Api.Extensions
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddApiServices(this IServiceCollection services)
+        public static IServiceCollection AddApiServices(this IServiceCollection services, IConfiguration configuration)
         {
         services.AddControllers();
         services.Configure<Microsoft.AspNetCore.Mvc.ApiBehaviorOptions>(options =>
@@ -32,11 +32,20 @@ namespace EventFlow.Event.Api.Extensions
             };
         });
         services.AddHttpContextAccessor();
-        services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<
+        EventFlow.Security.Authentication.ICurrentUserService,
+        CurrentUserService>();
+            services.AddScoped<EventFlow.Security.Authentication.ICurrentUserService>(sp => sp.GetRequiredService<CurrentUserService>());
 
         services.AddHttpClient<IAuthorizationService, AuthorizationService>(client =>
         {
-            client.BaseAddress = new Uri("https://localhost:7001/");
+            var baseUrl = configuration["Services:Identity:BaseUrl"];
+            if (string.IsNullOrWhiteSpace(baseUrl))
+            {
+                throw new InvalidOperationException("Services:Identity:BaseUrl is not configured.");
+            }
+
+            client.BaseAddress = new Uri(baseUrl);
         });
 
             services.AddAutoMapper(cfg =>

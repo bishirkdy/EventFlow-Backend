@@ -1,7 +1,7 @@
 using AutoMapper;
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.EventPages;
-using EventFlow.Event.Application.Exceptions;
+using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Event.Application.Features.EventPages.Commands.CreateEventPage;
 using EventFlow.Event.Application.Features.EventPages.Commands.DeleteEventPage;
 using EventFlow.Event.Application.Features.EventPages.Commands.PublishEventPage;

@@ -1,5 +1,5 @@
 using EventFlow.Event.Application.Abstractions.Persistence;
-using EventFlow.Event.Application.Exceptions;
+using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Event.Application.Features.EventFeature.Queries.GetEventFeatures;
 using EventFlow.Event.Domain.Entities;
 using MediatR;

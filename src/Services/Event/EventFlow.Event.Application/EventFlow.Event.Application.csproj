@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EventFlow.Event.Domain\EventFlow.Event.Domain.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\EventFlow.Contracts\EventFlow.Contracts.csproj" />
 
 	  <PackageReference Include="MediatR" />
 	  <PackageReference Include="FluentValidation" />
