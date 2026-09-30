@@ -1,31 +1,43 @@
-
+using EventFlow.Api.Extensions;
 using EventFlow.Identity.Api.Common;
 using EventFlow.Identity.Api.Extensions;
-using EventFlow.Identity.Application.Abstractions.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 
-namespace EventFlow.Identity.Api
+namespace EventFlow.Identity.Api;
+
+public class Program
 {
-    public class Program
+    public static void Main(string[] args)
     {
-        public static void Main(string[] args)
+        var builder = WebApplication.CreateBuilder(args);
+
+        builder.Services.AddEventFlowApiDefaults("EventFlow Identity API");
+        builder.Services.AddRateLimiter(options =>
         {
-            var builder = WebApplication.CreateBuilder(args);
+            options.AddFixedWindowLimiter("auth", limiter =>
+            {
+                limiter.PermitLimit = 10;
+                limiter.Window = TimeSpan.FromMinutes(1);
+                limiter.QueueLimit = 0;
+                limiter.AutoReplenishment = true;
+            });
+        });
+        builder.Services.AddIdentityServices(builder.Configuration);
+        builder.Services.AddJwtAuthentication(builder.Configuration);
+        builder.Services.AddScoped<
+    EventFlow.Security.Authentication.ICurrentUserService,
+    CurrentUserService>();
+        builder.Services.AddScoped<EventFlow.Security.Authentication.ICurrentUserService>(sp => sp.GetRequiredService<CurrentUserService>());
 
+        var app = builder.Build();
 
-      builder.Services.AddControllers();
-            builder.Services.AddOpenApi();
-            builder.Services.AddIdentityServices(builder.Configuration);
-            builder.Services.AddJwtAuthentication(builder.Configuration);
-            builder.Services.AddHttpContextAccessor();
-            builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+        app.UseEventFlowApiDefaults();
+        app.UseRateLimiter();
+        app.UseHttpsRedirection();
+        app.UseAuthentication();
+        app.UseAuthorization();
+        app.MapControllers();
 
-            builder.Services.AddSwaggerDocumentation(); 
-
-            var app = builder.Build();
-
-            app.UseSwaggerDocumentation();
-            app.UseIdentityMiddleware();
-            app.Run();
-        }
+        app.Run();
     }
 }

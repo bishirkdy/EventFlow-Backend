@@ -1,5 +1,5 @@
 using EventFlow.Identity.Application.Abstractions.Services;
-using EventFlow.Identity.Application.Configuration;
+using EventFlow.Security.Configuration;
 using EventFlow.Identity.Domain.Entities;
 using Microsoft.Extensions.Options;
 using System.IdentityModel.Tokens.Jwt;

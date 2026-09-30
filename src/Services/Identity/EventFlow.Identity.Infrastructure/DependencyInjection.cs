@@ -1,7 +1,7 @@
 using EventFlow.Identity.Application.Abstractions.Authorization;
 using EventFlow.Identity.Application.Abstractions.Repositories;
 using EventFlow.Identity.Application.Abstractions.Services;
-using EventFlow.Identity.Application.Configuration;
+using EventFlow.Security.Configuration;
 using EventFlow.Identity.Infrastructure.Authorization;
 using EventFlow.Identity.Infrastructure.Persistence;
 using EventFlow.Identity.Infrastructure.Repositories;

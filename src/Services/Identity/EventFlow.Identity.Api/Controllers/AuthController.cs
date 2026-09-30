@@ -5,9 +5,11 @@ using EventFlow.Identity.Application.DTOs.Authentication;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using EventFlow.Identity.Application.Features.Commands.RegisterUser;
 using EventFlow.Identity.Application.Features.Commands.LoginUser;
 using EventFlow.Identity.Application.Features.Commands.LogoutUser;
+using EventFlow.Identity.Application.Features.Commands.RefreshAccessToken;
 using EventFlow.Identity.Application.Features.Queries.GetProfile;
 
 namespace EventFlow.Identity.Api.Controllers
@@ -17,7 +19,8 @@ namespace EventFlow.Identity.Api.Controllers
     public sealed class AuthController(ISender sender) : ControllerBase
     {
 
-        [HttpPost("register")]
+        [EnableRateLimiting("auth")]
+    [HttpPost("register")]
         [ProducesResponseType(typeof(ApiResponse<RegisterUserResponse>),StatusCodes.Status201Created)]
         public async Task<IActionResult> Register(RegisterUserRequest request, CancellationToken cancellationToken)
         {
@@ -33,7 +36,8 @@ namespace EventFlow.Identity.Api.Controllers
             return StatusCode(StatusCodes.Status201Created,response);
         }
 
-        [HttpPost("login")]
+        [EnableRateLimiting("auth")]
+    [HttpPost("login")]
         [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Login(LoginRequest request, CancellationToken cancellationToken)
         {
@@ -52,7 +56,30 @@ namespace EventFlow.Identity.Api.Controllers
             });
         }
 
-        [HttpPost("logout")]
+        [EnableRateLimiting("auth")]
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh(CancellationToken cancellationToken)
+    {
+        var refreshToken = Request.Cookies["refreshToken"];
+
+        if (string.IsNullOrWhiteSpace(refreshToken))
+        {
+            return Unauthorized(ApiResponse<object?>.Fail(
+                ["Refresh token is required."],
+                "Unauthorized.",
+                System.Net.HttpStatusCode.Unauthorized));
+        }
+
+        var result = await sender.Send(
+            new RefreshAccessTokenCommand(refreshToken),
+            cancellationToken);
+
+        Response.SetAuthCookies(result.AccessToken, result.RefreshToken);
+
+        return Ok(ApiResponse<object?>.Success(null, "Token refreshed successfully."));
+    }
+
+    [HttpPost("logout")]
         public async Task<IActionResult> Logout([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
         {
             var refreshToken = Request.Cookies["refreshToken"];

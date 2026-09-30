@@ -1,10 +1,10 @@
 // Represents a refresh token issued to a user.
 // access token without requiring the user to log in again.
-using EventFlow.Identity.Domain.Common;
+using EventFlow.SharedKernel.Domain;
 
 namespace EventFlow.Identity.Domain.Entities;
 
-public sealed class RefreshToken : BaseEntity
+public sealed class RefreshToken : Entity
 {
     private RefreshToken()
     {

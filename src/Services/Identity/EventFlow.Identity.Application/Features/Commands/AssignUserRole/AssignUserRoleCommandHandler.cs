@@ -1,5 +1,5 @@
 using EventFlow.Identity.Application.Abstractions.Repositories;
-using EventFlow.Identity.Application.Exceptions;
+using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Identity.Domain.Entities;
 using MediatR;
 

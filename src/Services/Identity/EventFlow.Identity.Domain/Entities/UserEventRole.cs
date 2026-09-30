@@ -1,7 +1,7 @@
-using EventFlow.Identity.Domain.Common;
+using EventFlow.SharedKernel.Domain;
 namespace EventFlow.Identity.Domain.Entities
 {
-    public class UserEventRole : BaseEntity
+    public class UserEventRole : Entity
     {
         private UserEventRole()
         {

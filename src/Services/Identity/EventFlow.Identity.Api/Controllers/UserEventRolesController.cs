@@ -3,6 +3,8 @@ using EventFlow.Identity.Api.Contracts.UserEventRoles;
 using EventFlow.Identity.Application.Features.Commands.AssignUserRole;
 using EventFlow.Identity.Application.Features.Commands.RemoveUserRole;
 using EventFlow.Identity.Application.Features.Queries.GetUserEventRoles;
+using EventFlow.Identity.Application.Abstractions.Authorization;
+using EventFlow.Security.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,12 +13,17 @@ namespace EventFlow.Identity.Api.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/events/{eventId}/users/{userId}/roles")]
-public sealed class UserEventRolesController(ISender sender) : ControllerBase
+[Route("api/v1/events/{eventId:guid}/users/{userId:guid}/roles")]
+public sealed class UserEventRolesController(ISender sender, IPermissionService permissions, ICurrentUserService currentUser) : ControllerBase
 {
     [HttpPost]
     public async Task<IActionResult> AssignRole(Guid eventId,Guid userId,[FromBody] AssignUserRoleRequest request,CancellationToken cancellationToken)
     {
+        if (!await permissions.HasPermissionAsync(currentUser.UserId, eventId, "event.update", cancellationToken))
+        {
+            return Forbid();
+        }
+
         var roleId = await sender.Send(new AssignUserRoleCommand(userId,eventId,request.RoleId),cancellationToken);
 
         return Ok(ApiResponse<Guid>.Success(roleId,"User role assigned successfully."));
@@ -25,6 +32,11 @@ public sealed class UserEventRolesController(ISender sender) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetRoles(Guid eventId,Guid userId,CancellationToken cancellationToken)
     {
+        if (!await permissions.HasPermissionAsync(currentUser.UserId, eventId, "event.view", cancellationToken))
+        {
+            return Forbid();
+        }
+
         var result = await sender.Send(new GetUserEventRolesQuery(userId, eventId),cancellationToken);
 
         return Ok(ApiResponse<object?>.Success(result,"User roles retrieved successfully."));
@@ -33,6 +45,11 @@ public sealed class UserEventRolesController(ISender sender) : ControllerBase
     [HttpDelete("{roleId:guid}")]
     public async Task<IActionResult> RemoveRole(Guid eventId,Guid userId,Guid roleId,CancellationToken cancellationToken)
     {
+        if (!await permissions.HasPermissionAsync(currentUser.UserId, eventId, "event.update", cancellationToken))
+        {
+            return Forbid();
+        }
+
         await sender.Send(
             new RemoveUserRoleCommand(userId,eventId,roleId),cancellationToken);
 

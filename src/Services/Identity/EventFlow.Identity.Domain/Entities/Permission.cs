@@ -1,8 +1,8 @@
-﻿using EventFlow.Identity.Domain.Common;
+﻿using EventFlow.SharedKernel.Domain;
 
 namespace EventFlow.Identity.Domain.Entities
 {
-    public class Permission : BaseEntity
+    public class Permission : Entity
     {
         private Permission()
         {

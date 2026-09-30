@@ -1,11 +1,13 @@
 ﻿using EventFlow.Contracts.Common;
 using EventFlow.Identity.Api.Contracts.Authorization;
 using EventFlow.Identity.Application.Abstractions.Authorization;
+using EventFlow.Security.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventFlow.Identity.Api.Controllers
 {
     [ApiController]
+    [InternalServiceOnly]
     [Route("api/authorization/v1")]
     public sealed class AuthorizationController : ControllerBase
     {

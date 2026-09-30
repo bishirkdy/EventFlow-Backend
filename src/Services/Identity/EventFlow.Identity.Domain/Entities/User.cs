@@ -1,9 +1,9 @@
-using EventFlow.Identity.Domain.Common;
+using EventFlow.SharedKernel.Domain;
 
 namespace EventFlow.Identity.Domain.Entities
 {
     //It contains user data and user state, but not authentication workflows.
-    public class User : BaseEntity
+    public class User : Entity
     {
         private User()
         {
