@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using EventFlow.Registration.Application.Abstractions.Services;
+using EventFlow.Security.Authentication;
 namespace EventFlow.Registration.Api.Services;
 
 public sealed class CurrentUserService(IHttpContextAccessor a) : ICurrentUserService

@@ -16,17 +16,11 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         services.AddDbContext<RegistrationDbContext>(
-            
             options =>
             {
                 options.UseNpgsql(
                         configuration.GetConnectionString("RegistrationDatabase"));
                     options.EnableDetailedErrors();
-            options.EnableSensitiveDataLogging();
-
-            options.LogTo(
-                Console.WriteLine,
-                LogLevel.Information);
         });
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();

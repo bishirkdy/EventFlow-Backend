@@ -115,7 +115,7 @@ public sealed class CreateRegistrationCommandHandler(
             EventId = command.EventId,
             UserId = user.UserId,
             RegistrationNumber =
-                $"REG-{now:yyyyMMdd}-{Random.Shared.Next(100000, 999999)}",
+                $"REG-{now:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpperInvariant()}",
             Status = status,
             RegisteredAtUtc = now,
             WaitlistedAtUtc =
@@ -131,7 +131,7 @@ public sealed class CreateRegistrationCommandHandler(
             EventId = command.EventId,
             UserId = user.UserId,
             ParticipantNumber =
-                $"P-{now:yyyyMMdd}-{Random.Shared.Next(100000, 999999)}",
+                $"P-{now:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpperInvariant()}",
             FirstName = command.Request.FirstName.Trim(),
             LastName = command.Request.LastName.Trim(),
             Email = command.Request.Email.Trim(),

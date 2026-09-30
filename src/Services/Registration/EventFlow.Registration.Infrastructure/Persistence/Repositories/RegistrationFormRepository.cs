@@ -30,13 +30,38 @@ public sealed class RegistrationFormRepository(RegistrationDbContext db): IRegis
 
     public void ReplaceFields(RegistrationForm form, IEnumerable<RegistrationFormField> fields)
     {
-        db.RegistrationFormFields.RemoveRange(
-            db.RegistrationFormFields
-                .Where(x => x.RegistrationFormId == form.Id));
+        var incoming = fields.ToList();
+        var incomingIds = incoming
+            .Where(x => x.Id != Guid.Empty)
+            .Select(x => x.Id)
+            .ToHashSet();
 
-        foreach (var field in fields)
+        var existing = db.RegistrationFormFields
+            .Where(x => x.RegistrationFormId == form.Id)
+            .ToList();
+
+        db.RegistrationFormFields.RemoveRange(
+            existing.Where(x => !incomingIds.Contains(x.Id)));
+
+        foreach (var field in incoming)
         {
-            db.RegistrationFormFields.Add(field);
+            var current = existing.FirstOrDefault(x => x.Id == field.Id);
+
+            if (current is null)
+            {
+                field.Id = Guid.NewGuid();
+                field.RegistrationFormId = form.Id;
+                db.RegistrationFormFields.Add(field);
+                continue;
+            }
+
+            current.FieldKey = field.FieldKey;
+            current.Label = field.Label;
+            current.FieldType = field.FieldType;
+            current.IsRequired = field.IsRequired;
+            current.DisplayOrder = field.DisplayOrder;
+            current.OptionsJson = field.OptionsJson;
+            current.ValidationJson = field.ValidationJson;
         }
     }
 }

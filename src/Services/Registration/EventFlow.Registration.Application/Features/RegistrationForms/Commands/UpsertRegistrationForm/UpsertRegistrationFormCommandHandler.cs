@@ -83,7 +83,7 @@ public sealed class UpsertRegistrationFormCommandHandler(
             .OrderBy(x => x.DisplayOrder)
             .Select(x => new RegistrationFormField
             {
-                Id = Guid.NewGuid(),
+                Id = x.Id.GetValueOrDefault(Guid.NewGuid()),
                 RegistrationFormId = form.Id,
                 FieldKey = x.FieldKey.Trim(),
                 Label = x.Label.Trim(),

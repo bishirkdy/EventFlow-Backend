@@ -12,7 +12,9 @@ public static class DependencyInjection
     {
         services.AddHttpContextAccessor();
 
-        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<
+    EventFlow.Security.Authentication.ICurrentUserService, CurrentUserService>();
+        services.AddScoped<EventFlow.Security.Authentication.ICurrentUserService>(sp => sp.GetRequiredService<CurrentUserService>());
         services.AddScoped<IEventRegistrationAccessService, EventRegistrationAccessService>();
 
         services.AddRegistrationApplication();

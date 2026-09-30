@@ -16,6 +16,7 @@ public sealed class UpsertRegistrationFormRequest
 
 public sealed class RegistrationFormFieldRequest
 {
+    public Guid? Id { get; set; }
     public string FieldKey { get; set; } = "";
     public string Label { get; set; } = "";
     public RegistrationFieldType FieldType { get; set; }
