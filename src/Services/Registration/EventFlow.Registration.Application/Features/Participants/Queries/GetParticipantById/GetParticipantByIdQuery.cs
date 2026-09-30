@@ -1,5 +1,4 @@
-using EventFlow.Registration.Application.Contracts.Registrations;
-using MediatR;
+
 
 using EventFlow.Contracts.Common;
 

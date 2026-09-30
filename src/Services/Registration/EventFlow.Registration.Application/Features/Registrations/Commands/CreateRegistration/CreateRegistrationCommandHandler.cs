@@ -1,14 +1,5 @@
 using EventFlow.Contracts.Common;
-using EventFlow.Registration.Application.Abstractions.Persistence;
-using EventFlow.Registration.Application.Abstractions.Services;
-using EventFlow.Registration.Application.Common.Mappings;
-using EventFlow.Registration.Application.Contracts.Registrations;
-using EventFlow.Registration.Domain.Entities;
-using EventFlow.Registration.Domain.Enums;
-using MediatR;
-
-using RegistrationEntity =
-    EventFlow.Registration.Domain.Entities.Registration;
+using RegistrationEntity = EventFlow.Registration.Domain.Entities.Registration;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Commands.CreateRegistration;
 
@@ -40,11 +31,7 @@ public sealed class CreateRegistrationCommandHandler(
                 ["Registration is not enabled for this event."]);
         }
 
-        var form = await forms.GetByEventIdAsync(
-            command.EventId,
-            includeFields: true,
-            asNoTracking: true,
-            cancellationToken: cancellationToken);
+        var form = await forms.GetByEventIdAsync(command.EventId,includeFields: true,asNoTracking: true, cancellationToken: cancellationToken);
 
         var now = DateTime.UtcNow;
 

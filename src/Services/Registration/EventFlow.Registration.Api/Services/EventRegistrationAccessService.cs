@@ -27,15 +27,7 @@ public sealed class EventRegistrationAccessService(
     }
     sealed class Result
     {
-        public bool Enabled
-        {
-            get;
-            set;
-        }
-        public bool Allowed
-        {
-            get;
-            set;
-        }
+        public bool Enabled {get;set;}
+        public bool Allowed {get;set;}
     }
 }

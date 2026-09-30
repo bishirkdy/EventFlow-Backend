@@ -10,17 +10,12 @@ namespace EventFlow.Registration.Api.Controllers;
 [ApiController]
 [Authorize]
 [Route("api/v1/events/{eventId:guid}/participants")]
-public sealed class ParticipantsController(IMediator mediator)
-    : ControllerBase
+//Controller for handling participants
+public sealed class ParticipantsController(IMediator mediator): ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> List(
-        Guid eventId,
-        ParticipantStatus? status,
-        string? search,
-        int page = 1,
-        int pageSize = 20,
-        CancellationToken cancellationToken = default)
+    public async Task<IActionResult> List(Guid eventId, ParticipantStatus? status,
+        string? search, int page = 1, int pageSize = 20, CancellationToken cancellationToken = default)
     {
         var result = await mediator.Send(
             new GetEventParticipantsQuery(
@@ -35,19 +30,11 @@ public sealed class ParticipantsController(IMediator mediator)
     }
 
     [HttpGet("{participantId:guid}")]
-    public async Task<IActionResult> Get(
-        Guid eventId,
-        Guid participantId,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> Get(Guid eventId, Guid participantId, CancellationToken cancellationToken)
     {
         var result = await mediator.Send(
-            new GetParticipantByIdQuery(
-                eventId,
-                participantId),
-            cancellationToken);
+            new GetParticipantByIdQuery(eventId, participantId), cancellationToken);
 
-        return result.IsSuccess
-            ? Ok(result)
-            : NotFound(result);
+        return result.IsSuccess ? Ok(result) : NotFound(result);
     }
 }

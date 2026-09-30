@@ -1,9 +1,5 @@
 using EventFlow.Contracts.Common;
-using EventFlow.Registration.Application.Abstractions.Persistence;
-using EventFlow.Registration.Application.Abstractions.Services;
-using EventFlow.Registration.Application.Common.Mappings;
-using EventFlow.Registration.Application.Contracts.Registrations;
-using MediatR;
+
 
 namespace EventFlow.Registration.Application.Features.Participants.Queries.GetEventParticipants;
 
@@ -15,17 +11,11 @@ public sealed class GetEventParticipantsQueryHandler(
         GetEventParticipantsQuery,
         ApiResponse<PaginatedResponse<ParticipantDto>>>
 {
-    public async Task<ApiResponse<PaginatedResponse<ParticipantDto>>> Handle(
-        GetEventParticipantsQuery query,
-        CancellationToken cancellationToken)
+    public async Task<ApiResponse<PaginatedResponse<ParticipantDto>>> Handle(GetEventParticipantsQuery query, CancellationToken cancellationToken)
     {
-        if (!await access.CanManageRegistrationAsync(
-                query.EventId,
-                user.UserId,
-                cancellationToken))
+        if (!await access.CanManageRegistrationAsync(query.EventId, user.UserId, cancellationToken))
         {
-            return ApiResponse<PaginatedResponse<ParticipantDto>>.Fail(
-                ["You do not have permission."]);
+            return ApiResponse<PaginatedResponse<ParticipantDto>>.Fail(["You do not have permission."]);
         }
 
         var page = Math.Max(1, query.Page);

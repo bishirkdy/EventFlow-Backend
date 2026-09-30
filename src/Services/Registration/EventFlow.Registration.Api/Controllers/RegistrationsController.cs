@@ -17,43 +17,28 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EventFlow.Registration.Api.Controllers;
 
+//Controller for registrations
 [ApiController]
 [Route("api/v1/events/{eventId:guid}/registrations")]
-public sealed class RegistrationsController(IMediator mediator)
-    : ControllerBase
+public sealed class RegistrationsController(ISender sender) : ControllerBase
 {
     [AllowAnonymous]
     [HttpPost]
-    public async Task<IActionResult> Create(
-        Guid eventId,
-        CreateRegistrationRequest request,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> Create(Guid eventId, CreateRegistrationRequest request, CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(
-            new CreateRegistrationCommand(
-                eventId,
-                request),
-            cancellationToken);
+        var result = await sender.Send(
+            new CreateRegistrationCommand(eventId,request), cancellationToken);
 
-        return result.IsSuccess
-            ? Ok(result)
-            : BadRequest(result);
+        return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 
+    //for update registration by event
     [Authorize]
     [HttpPut("{registrationId:guid}")]
-    public async Task<IActionResult> Update(
-        Guid eventId,
-        Guid registrationId,
-        UpdateRegistrationRequest request,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> Update(Guid eventId,Guid registrationId, UpdateRegistrationRequest request, CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(
-            new UpdateRegistrationCommand(
-                eventId,
-                registrationId,
-                request),
-            cancellationToken);
+        var result = await sender.Send(
+            new UpdateRegistrationCommand(eventId,registrationId,request), cancellationToken);
 
         return result.IsSuccess
             ? Ok(result)
@@ -62,16 +47,10 @@ public sealed class RegistrationsController(IMediator mediator)
 
     [Authorize]
     [HttpGet("{registrationId:guid}")]
-    public async Task<IActionResult> Get(
-        Guid eventId,
-        Guid registrationId,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> Get(Guid eventId, Guid registrationId, CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(
-            new GetRegistrationByIdQuery(
-                eventId,
-                registrationId),
-            cancellationToken);
+        var result = await sender.Send(
+            new GetRegistrationByIdQuery(eventId,registrationId),cancellationToken);
 
         return result.IsSuccess
             ? Ok(result)
@@ -85,27 +64,18 @@ public sealed class RegistrationsController(IMediator mediator)
         Guid registrationId,
         CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(
-            new GetRegistrationByIdQuery(
-                eventId,
-                registrationId,
-                true),
-            cancellationToken);
+        var result = await sender.Send(
+            new GetRegistrationByIdQuery(eventId,registrationId,true),cancellationToken);
 
-        return result.IsSuccess
-            ? Ok(result)
-            : NotFound(result);
+        return result.IsSuccess? Ok(result): NotFound(result);
     }
 
     [Authorize]
     [HttpGet("me")]
-    public async Task<IActionResult> Mine(
-        Guid eventId,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> Mine(Guid eventId, CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(
-            new GetMyRegistrationsQuery(eventId),
-            cancellationToken);
+        var result = await sender.Send(
+            new GetMyRegistrationsQuery(eventId), cancellationToken);
 
         return Ok(result);
     }
@@ -113,34 +83,20 @@ public sealed class RegistrationsController(IMediator mediator)
     [Authorize]
     [HttpGet]
     public async Task<IActionResult> List(
-        Guid eventId,
-        RegistrationStatus? status,
-        string? search,
-        int page = 1,
-        int pageSize = 20,
-        CancellationToken cancellationToken = default)
+        Guid eventId,RegistrationStatus? status,string? search,int page = 1,int pageSize = 20,CancellationToken cancellationToken = default)
     {
-        var result = await mediator.Send(
-            new GetEventRegistrationsQuery(
-                eventId,
-                status,
-                search,
-                page,
-                pageSize),
-            cancellationToken);
+        var result = await sender.Send(
+            new GetEventRegistrationsQuery(eventId,status,search,page,pageSize),cancellationToken);
 
         return Ok(result);
     }
 
     [Authorize]
     [HttpGet("stats")]
-    public async Task<IActionResult> Stats(
-        Guid eventId,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> Stats(Guid eventId,CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(
-            new GetRegistrationStatsQuery(eventId),
-            cancellationToken);
+        var result = await sender.Send(
+            new GetRegistrationStatsQuery(eventId), cancellationToken);
 
         return Ok(result);
     }
@@ -152,7 +108,7 @@ public sealed class RegistrationsController(IMediator mediator)
         Guid registrationId,
         CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(
+        var result = await sender.Send(
             new ApproveRegistrationCommand(
                 eventId,
                 registrationId),
@@ -171,7 +127,7 @@ public sealed class RegistrationsController(IMediator mediator)
         RejectRegistrationRequest request,
         CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(
+        var result = await sender.Send(
             new RejectRegistrationCommand(
                 eventId,
                 registrationId,
@@ -191,7 +147,7 @@ public sealed class RegistrationsController(IMediator mediator)
         CancelRegistrationRequest request,
         CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(
+        var result = await sender.Send(
             new CancelRegistrationCommand(
                 eventId,
                 registrationId,
@@ -210,7 +166,7 @@ public sealed class RegistrationsController(IMediator mediator)
         Guid registrationId,
         CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(
+        var result = await sender.Send(
             new WaitlistRegistrationCommand(
                 eventId,
                 registrationId),
@@ -228,7 +184,7 @@ public sealed class RegistrationsController(IMediator mediator)
         Guid registrationId,
         CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(
+        var result = await sender.Send(
             new PromoteWaitlistedRegistrationCommand(
                 eventId,
                 registrationId),

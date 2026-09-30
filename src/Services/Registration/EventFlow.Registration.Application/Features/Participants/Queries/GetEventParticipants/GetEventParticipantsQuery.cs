@@ -1,7 +1,5 @@
 using EventFlow.Contracts.Common;
-using EventFlow.Registration.Application.Contracts.Registrations;
-using EventFlow.Registration.Domain.Enums;
-using MediatR;
+
 
 namespace EventFlow.Registration.Application.Features.Participants.Queries.GetEventParticipants;
 
