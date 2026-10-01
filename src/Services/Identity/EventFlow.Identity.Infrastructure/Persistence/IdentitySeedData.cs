@@ -13,6 +13,7 @@ namespace EventFlow.Identity.Infrastructure.Persistence
             var eventAdminRoleId = Guid.Parse("10000000-0000-0000-0000-000000000002");
             var staffRoleId = Guid.Parse("10000000-0000-0000-0000-000000000003");
             var participantRoleId = Guid.Parse("10000000-0000-0000-0000-000000000004");
+            var ownerRoleId = Guid.Parse("10000000-0000-0000-0000-000000000005");
 
             var eventCreateId = Guid.Parse("20000000-0000-0000-0000-000000000001");
             var eventViewId = Guid.Parse("20000000-0000-0000-0000-000000000002");
@@ -23,6 +24,7 @@ namespace EventFlow.Identity.Infrastructure.Persistence
 
             var attendanceViewId = Guid.Parse("20000000-0000-0000-0000-000000000006");
             var attendanceManageId = Guid.Parse("20000000-0000-0000-0000-000000000007");
+            var eventTeamManageId = Guid.Parse("20000000-0000-0000-0000-000000000008");
 
             modelBuilder.Entity<Role>().HasData(
            new
@@ -51,6 +53,13 @@ namespace EventFlow.Identity.Infrastructure.Persistence
                Id = participantRoleId,
                Name = "Participant",
                Description = "Event participant",
+               CreatedAt = SeedDate
+           },
+           new
+           {
+               Id = ownerRoleId,
+               Name = "Owner",
+               Description = "Event owner",
                CreatedAt = SeedDate
            }
        );
@@ -103,6 +112,13 @@ namespace EventFlow.Identity.Infrastructure.Persistence
                     Id = attendanceManageId,
                     Name = "attendance.manage",
                     Description = "Manage attendance",
+                    CreatedAt = SeedDate
+                },
+                new
+                {
+                    Id = eventTeamManageId,
+                    Name = "event.team.manage",
+                    Description = "Manage event team",
                     CreatedAt = SeedDate
                 }
             );
@@ -199,6 +215,17 @@ namespace EventFlow.Identity.Infrastructure.Persistence
                 {
                     RoleId = participantRoleId,
                     PermissionId = eventViewId
+                },
+                // Owner permissions
+                new
+                {
+                    RoleId = ownerRoleId,
+                    PermissionId = eventViewId
+                },
+                new
+                {
+                    RoleId = ownerRoleId,
+                    PermissionId = eventTeamManageId
                 }
             );
         }

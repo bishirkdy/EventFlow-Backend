@@ -1,58 +1,82 @@
 using System.Net.Http.Json;
 using EventFlow.Event.Application.Abstractions.Services;
+using Microsoft.Extensions.Configuration;
 
 namespace EventFlow.Event.Infrastructure.Services.Identity;
 
-// Client used to communicate with the Identity Service
-public sealed class UserDirectoryClient(HttpClient httpClient) : IUserDirectoryClient
+// Client used to communicate with the Identity Service.
+public sealed class UserDirectoryClient(
+    HttpClient httpClient,
+    IConfiguration configuration) : IUserDirectoryClient
 {
-    // Gets the display name of a user by user ID.
-    public async Task<string?> GetDisplayNameAsync(Guid userId, CancellationToken cancellationToken = default)
-    {
-        // Send a GET request to the Identity Service.
-        using var response = await httpClient.GetAsync(
-            $"api/v1/users/{userId:D}/summary", cancellationToken);
+    private readonly string _serviceKey =
+        configuration["InternalService:Key"]
+        ?? throw new InvalidOperationException(
+            "InternalService:Key is not configured.");
 
-        // If the user does not exist, return null.
+    // Gets the display name of a user by user ID.
+    public async Task<string?> GetDisplayNameAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await httpClient.GetAsync(
+            $"api/v1/users/{userId:D}/summary",
+            cancellationToken);
+
         if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
             return null;
         }
 
-        // Throw an exception if the response is not successful.
         response.EnsureSuccessStatusCode();
 
-        // Convert the JSON response into ApiResponse<UserSummary>.
-        var envelope = await response.Content.ReadFromJsonAsync<ApiResponse<UserSummary>>(cancellationToken);
+        var envelope =
+            await response.Content.ReadFromJsonAsync<ApiResponse<UserSummary>>(
+                cancellationToken);
 
-        // If the response is empty or indicates failure, return null.
         if (envelope is null || !envelope.IsSuccess)
         {
             return null;
         }
 
-        // Return the user's display name.
         return envelope.Data?.DisplayName;
     }
 
+    // Assigns the event creator as the Owner of the event.
     public async Task AssignOwnerAsync(
-    Guid userId,
-    Guid eventId,
-    CancellationToken cancellationToken = default)
+        Guid userId,
+        Guid eventId,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await httpClient.PostAsJsonAsync(
-            "api/authorization/v1/assign-owner",
-            new
+        using var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            "api/authorization/v1/assign-owner")
+        {
+            Content = JsonContent.Create(new
             {
                 UserId = userId,
                 EventId = eventId
-            },
+            })
+        };
+
+        request.Headers.Add(
+            "X-Internal-Service-Key",
+            _serviceKey);
+
+        using var response = await httpClient.SendAsync(
+            request,
             cancellationToken);
 
         response.EnsureSuccessStatusCode();
     }
+
     // Represents the standard API response from the Identity Service.
-    private sealed record ApiResponse<T>(bool IsSuccess,int StatusCode,T? Data,string Message,List<string>? Errors);
+    private sealed record ApiResponse<T>(
+        bool IsSuccess,
+        int StatusCode,
+        T? Data,
+        string Message,
+        List<string>? Errors);
 
     // Represents the user information returned by the Identity Service.
     private sealed record UserSummary(

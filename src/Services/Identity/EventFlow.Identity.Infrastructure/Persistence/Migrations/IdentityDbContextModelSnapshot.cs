@@ -100,6 +100,13 @@ namespace EventFlow.Identity.Infrastructure.Migrations
                             CreatedAt = new DateTime(2026, 9, 7, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Manage attendance",
                             Name = "attendance.manage"
+                        },
+                        new
+                        {
+                            Id = new Guid("20000000-0000-0000-0000-000000000008"),
+                            CreatedAt = new DateTime(2026, 9, 7, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Manage event team",
+                            Name = "event.team.manage"
                         });
                 });
 
@@ -196,6 +203,13 @@ namespace EventFlow.Identity.Infrastructure.Migrations
                             CreatedAt = new DateTime(2026, 9, 7, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Event participant",
                             Name = "Participant"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000000-0000-0000-0000-000000000005"),
+                            CreatedAt = new DateTime(2026, 9, 7, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Event owner",
+                            Name = "Owner"
                         });
                 });
 
@@ -298,6 +312,16 @@ namespace EventFlow.Identity.Infrastructure.Migrations
                         {
                             RoleId = new Guid("10000000-0000-0000-0000-000000000004"),
                             PermissionId = new Guid("20000000-0000-0000-0000-000000000002")
+                        },
+                        new
+                        {
+                            RoleId = new Guid("10000000-0000-0000-0000-000000000005"),
+                            PermissionId = new Guid("20000000-0000-0000-0000-000000000002")
+                        },
+                        new
+                        {
+                            RoleId = new Guid("10000000-0000-0000-0000-000000000005"),
+                            PermissionId = new Guid("20000000-0000-0000-0000-000000000008")
                         });
                 });
 

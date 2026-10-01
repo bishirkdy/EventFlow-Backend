@@ -123,13 +123,10 @@ public sealed class CreateEventCommandHandler
             }
 
             // Add event
-            await _eventRepository.AddAsync(
-                eventEntity,
-                cancellationToken);
+            await _eventRepository.AddAsync(eventEntity, cancellationToken);
 
             // Save event + features + images.
-            await _unitOfWork.SaveChangesAsync(
-                cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             // The creator becomes the Owner of this event.
             // Ownership is stored by Identity because Identity owns roles and permissions.
@@ -140,9 +137,7 @@ public sealed class CreateEventCommandHandler
 
             // Get creator display name
             var createdByName =
-                await _userDirectoryClient.GetDisplayNameAsync(
-                    eventEntity.CreatedBy,
-                    cancellationToken);
+                await _userDirectoryClient.GetDisplayNameAsync(eventEntity.CreatedBy, cancellationToken);
 
             return new CreateEventResult(
                 eventEntity.Id,

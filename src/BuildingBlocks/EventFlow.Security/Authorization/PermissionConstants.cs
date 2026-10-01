@@ -9,6 +9,7 @@ public static class PermissionConstants
         public const string Update = "event.update";
         public const string Delete = "event.delete";
         public const string Manage = "event.manage";
+        public const string TeamManage = "event.team.manage";
     }
 
     public static class Registration
