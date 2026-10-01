@@ -12,7 +12,7 @@ namespace EventFlow.Registration.Application.Features.Registrations.Commands.Upd
 public sealed class UpdateRegistrationCommandHandler(
     IRegistrationRepository registrations,
     IUnitOfWork unitOfWork,
-    ICurrentUserService user)
+    EventFlow.Security.Authentication.ICurrentUserService user)
     : IRequestHandler<UpdateRegistrationCommand, ApiResponse<RegistrationDto>>
 {
     public async Task<ApiResponse<RegistrationDto>> Handle(

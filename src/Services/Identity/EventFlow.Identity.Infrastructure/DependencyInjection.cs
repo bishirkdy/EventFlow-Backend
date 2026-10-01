@@ -4,11 +4,11 @@ using EventFlow.Identity.Application.Abstractions.Services;
 using EventFlow.Security.Configuration;
 using EventFlow.Identity.Infrastructure.Authorization;
 using EventFlow.Identity.Infrastructure.Persistence;
-using EventFlow.Identity.Infrastructure.Repositories;
 using EventFlow.Identity.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using EventFlow.Identity.Infrastructure.Persistence.Repositories;
 
 namespace EventFlow.Identity.Infrastructure
 {

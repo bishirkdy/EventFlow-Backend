@@ -14,16 +14,10 @@ public sealed class TicketsController(IMediator mediator)
 {
     [Authorize]
     [HttpGet("registration/{registrationId:guid}")]
-    public async Task<IActionResult> Get(
-        Guid eventId,
-        Guid registrationId,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> Get(Guid eventId, Guid registrationId, CancellationToken cancellationToken)
     {
         var result = await mediator.Send(
-            new GetTicketQuery(
-                eventId,
-                registrationId),
-            cancellationToken);
+            new GetTicketQuery(eventId,registrationId), cancellationToken);
 
         return result.IsSuccess
             ? Ok(result)

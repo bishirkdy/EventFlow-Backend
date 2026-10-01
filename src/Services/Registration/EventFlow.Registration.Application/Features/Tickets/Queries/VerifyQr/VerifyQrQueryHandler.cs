@@ -2,7 +2,7 @@ using EventFlow.Contracts.Common;
 
 namespace EventFlow.Registration.Application.Features.Tickets.Queries.VerifyQr;
 
-public sealed class VerifyQrQueryHandler(ITicketRepository tickets,ICurrentUserService user,IEventRegistrationAccessService access)
+public sealed class VerifyQrQueryHandler(ITicketRepository tickets,EventFlow.Security.Authentication.ICurrentUserService user,IEventRegistrationAccessService access)
     : IRequestHandler<VerifyQrQuery, ApiResponse<TicketDto>>
 {
     public async Task<ApiResponse<TicketDto>> Handle(VerifyQrQuery query, CancellationToken cancellationToken)

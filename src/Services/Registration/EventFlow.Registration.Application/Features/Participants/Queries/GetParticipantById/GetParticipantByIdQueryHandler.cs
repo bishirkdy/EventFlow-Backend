@@ -3,7 +3,7 @@ using EventFlow.Contracts.Common;
 
 namespace EventFlow.Registration.Application.Features.Participants.Queries.GetParticipantById;
 
-public sealed class GetParticipantByIdQueryHandler(IParticipantRepository participants,ICurrentUserService user,IEventRegistrationAccessService access): IRequestHandler<GetParticipantByIdQuery, ApiResponse<ParticipantDto>>
+public sealed class GetParticipantByIdQueryHandler(IParticipantRepository participants,EventFlow.Security.Authentication.ICurrentUserService user,IEventRegistrationAccessService access): IRequestHandler<GetParticipantByIdQuery, ApiResponse<ParticipantDto>>
 {
     public async Task<ApiResponse<ParticipantDto>> Handle(GetParticipantByIdQuery query, CancellationToken cancellationToken)
     {

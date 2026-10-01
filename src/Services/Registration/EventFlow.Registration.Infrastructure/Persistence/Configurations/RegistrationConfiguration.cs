@@ -15,17 +15,8 @@ public sealed class RegistrationConfiguration : IEntityTypeConfiguration<Registr
         {
             x.EventId,
             x.UserId
-        })
-        .HasFilter("\"Status\" IN (1, 2, 5)")
-        .IsUnique();
-
-        b.HasIndex(x => new
-        {
-            x.EventId,
-            x.WaitlistPosition
-        })
-        .HasFilter("\"Status\" = 5 AND \"WaitlistPosition\" IS NOT NULL")
-        .IsUnique();
+        }
+        );
 
         b.HasOne(x => x.Participant).WithOne(x => x.Registration)
             .HasForeignKey<Participant>(x => x.RegistrationId)

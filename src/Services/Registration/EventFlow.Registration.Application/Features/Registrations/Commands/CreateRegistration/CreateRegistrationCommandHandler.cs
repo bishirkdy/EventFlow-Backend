@@ -7,7 +7,7 @@ public sealed class CreateRegistrationCommandHandler(
     IRegistrationRepository registrations,
     IRegistrationFormRepository forms,
     IUnitOfWork unitOfWork,
-    ICurrentUserService user,
+    EventFlow.Security.Authentication.ICurrentUserService user,
     IEventRegistrationAccessService access)
     : IRequestHandler<
         CreateRegistrationCommand,
@@ -115,7 +115,7 @@ public sealed class CreateRegistrationCommandHandler(
             EventId = command.EventId,
             UserId = user.UserId,
             RegistrationNumber =
-                $"REG-{now:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpperInvariant()}",
+                $"REG-{now:yyyyMMdd}-{Random.Shared.Next(100000, 999999)}",
             Status = status,
             RegisteredAtUtc = now,
             WaitlistedAtUtc =
@@ -131,7 +131,7 @@ public sealed class CreateRegistrationCommandHandler(
             EventId = command.EventId,
             UserId = user.UserId,
             ParticipantNumber =
-                $"P-{now:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpperInvariant()}",
+                $"P-{now:yyyyMMdd}-{Random.Shared.Next(100000, 999999)}",
             FirstName = command.Request.FirstName.Trim(),
             LastName = command.Request.LastName.Trim(),
             Email = command.Request.Email.Trim(),

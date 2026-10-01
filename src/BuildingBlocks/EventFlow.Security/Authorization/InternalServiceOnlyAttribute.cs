@@ -9,6 +9,8 @@ using Microsoft.Extensions.Configuration;
 namespace EventFlow.Security.Authorization;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
+//Attribute = Allows you to use it as: [InternalServiceOnly]
+//IAsyncAuthorizationFilter = Run this authorization logic before executing the controller action.
 public sealed class InternalServiceOnlyAttribute : Attribute, IAsyncAuthorizationFilter
 {
     public Task OnAuthorizationAsync(AuthorizationFilterContext context)

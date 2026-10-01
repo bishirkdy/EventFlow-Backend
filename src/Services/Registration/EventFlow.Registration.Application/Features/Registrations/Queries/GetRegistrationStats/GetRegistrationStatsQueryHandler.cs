@@ -8,7 +8,7 @@ namespace EventFlow.Registration.Application.Features.Registrations.Queries.GetR
 
 public sealed class GetRegistrationStatsQueryHandler(
     IRegistrationRepository registrations,
-    ICurrentUserService user,
+    EventFlow.Security.Authentication.ICurrentUserService user,
     IEventRegistrationAccessService access)
     : IRequestHandler<
         GetRegistrationStatsQuery,

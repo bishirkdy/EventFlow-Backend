@@ -1,5 +1,3 @@
-
-
 using EventFlow.Identity.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 

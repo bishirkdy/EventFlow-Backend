@@ -30,8 +30,7 @@ namespace EventFlow.Event.Infrastructure.Persistence
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.ApplyConfigurationsFromAssembly(
-                typeof(EventCoreDbContext).Assembly);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(EventCoreDbContext).Assembly);
         }
     }
 }

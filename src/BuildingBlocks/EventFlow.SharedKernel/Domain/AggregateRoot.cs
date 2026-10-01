@@ -15,8 +15,7 @@ namespace EventFlow.SharedKernel.Domain
         {
         }
 
-        public IReadOnlyCollection<IDomainEvent> DomainEvents =>
-            _domainEvents.AsReadOnly();
+        public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
 
         protected void AddDomainEvent(IDomainEvent domainEvent)
         {

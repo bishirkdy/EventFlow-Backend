@@ -9,7 +9,7 @@ namespace EventFlow.Registration.Application.Features.Registrations.Queries.GetE
 
 public sealed class GetEventRegistrationsQueryHandler(
     IRegistrationRepository registrations,
-    ICurrentUserService user,
+    EventFlow.Security.Authentication.ICurrentUserService user,
     IEventRegistrationAccessService access)
     : IRequestHandler<
         GetEventRegistrationsQuery,

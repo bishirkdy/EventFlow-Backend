@@ -11,7 +11,7 @@ namespace EventFlow.Registration.Application.Features.Registrations.Commands.Wai
 public sealed class WaitlistRegistrationCommandHandler(
     IRegistrationRepository registrations,
     IUnitOfWork unitOfWork,
-    ICurrentUserService user,
+    EventFlow.Security.Authentication.ICurrentUserService user,
     IEventRegistrationAccessService access)
     : IRequestHandler<
         WaitlistRegistrationCommand,

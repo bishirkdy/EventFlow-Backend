@@ -10,7 +10,7 @@ namespace EventFlow.Registration.Application.Features.Tickets.Commands.RevokeTic
 public sealed class RevokeTicketCommandHandler(
     ITicketRepository tickets,
     IUnitOfWork unitOfWork,
-    ICurrentUserService user,
+    EventFlow.Security.Authentication.ICurrentUserService user,
     IEventRegistrationAccessService access)
     : IRequestHandler<RevokeTicketCommand, ApiResponse<TicketDto>>
 {

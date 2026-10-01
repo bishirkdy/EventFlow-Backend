@@ -22,7 +22,7 @@ namespace EventFlow.Registration.Api.Controllers;
 [Route("api/v1/events/{eventId:guid}/registrations")]
 public sealed class RegistrationsController(ISender sender) : ControllerBase
 {
-    [Authorize]
+    [AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> Create(Guid eventId, CreateRegistrationRequest request, CancellationToken cancellationToken)
     {

@@ -1,4 +1,5 @@
-using EventFlow.Identity.Api.Middleware;
+
+using EventFlow.Api.Middleware;
 
 namespace EventFlow.Identity.Api.Extensions
 {
@@ -6,7 +7,7 @@ namespace EventFlow.Identity.Api.Extensions
     {
         public static WebApplication UseIdentityMiddleware(this WebApplication app)
         {
-            app.UseMiddleware<ExceptionHandlingMiddleware>();
+            app.UseMiddleware<GlobalExceptionMiddleware>();
 
             app.UseHttpsRedirection();
 

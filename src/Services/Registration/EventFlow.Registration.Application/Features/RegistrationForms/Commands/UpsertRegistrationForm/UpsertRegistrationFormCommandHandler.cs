@@ -6,7 +6,7 @@ public sealed class UpsertRegistrationFormCommandHandler(
     IRegistrationFormRepository forms,
     IRegistrationRepository registrations,
     IUnitOfWork unitOfWork,
-    ICurrentUserService user,
+    EventFlow.Security.Authentication.ICurrentUserService user,
     IEventRegistrationAccessService access)
     : IRequestHandler<
         UpsertRegistrationFormCommand,
@@ -83,7 +83,7 @@ public sealed class UpsertRegistrationFormCommandHandler(
             .OrderBy(x => x.DisplayOrder)
             .Select(x => new RegistrationFormField
             {
-                Id = x.Id.GetValueOrDefault(Guid.NewGuid()),
+                Id = Guid.NewGuid(),
                 RegistrationFormId = form.Id,
                 FieldKey = x.FieldKey.Trim(),
                 Label = x.Label.Trim(),

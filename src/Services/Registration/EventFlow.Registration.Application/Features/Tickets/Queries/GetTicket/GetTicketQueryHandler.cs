@@ -2,7 +2,7 @@ using EventFlow.Contracts.Common;
 
 namespace EventFlow.Registration.Application.Features.Tickets.Queries.GetTicket;
 
-public sealed class GetTicketQueryHandler(ITicketRepository tickets,ICurrentUserService user) : IRequestHandler<GetTicketQuery, ApiResponse<TicketDto>>
+public sealed class GetTicketQueryHandler(ITicketRepository tickets,EventFlow.Security.Authentication.ICurrentUserService user) : IRequestHandler<GetTicketQuery, ApiResponse<TicketDto>>
 {
     public async Task<ApiResponse<TicketDto>> Handle(GetTicketQuery query, CancellationToken cancellationToken)
     {

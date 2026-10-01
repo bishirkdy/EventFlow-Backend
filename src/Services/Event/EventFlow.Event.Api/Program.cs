@@ -4,6 +4,7 @@ using EventFlow.Event.Api.Middleware;
 using EventFlow.Event.Application;
 using EventFlow.Event.Infrastructure;
 using EventFlow.Messaging;
+
 var builder = WebApplication.CreateBuilder(args);
 
 
@@ -12,6 +13,7 @@ builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(optio
 {
     options.MultipartBodyLengthLimit = 110 * 1024 * 1024;
 });
+
 builder.Services.AddApplication()
     .AddInfrastructure(builder.Configuration)
     .AddApiServices(builder.Configuration)

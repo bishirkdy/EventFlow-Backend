@@ -1,7 +1,7 @@
-﻿using EventFlow.Identity.Application.Abstractions.Authorization;
-using EventFlow.Identity.Application.Abstractions.Repositories;
+﻿using EventFlow.Identity.Application.Abstractions.Repositories;
 using EventFlow.Identity.Application.DTOs.Authentication;
 using MediatR;
+using EventFlow.Security.Authentication;
 
 namespace EventFlow.Identity.Application.Features.Queries.GetProfile
 {

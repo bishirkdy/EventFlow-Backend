@@ -11,9 +11,7 @@ namespace EventFlow.Security.Authentication;
 
 public static class JwtAuthenticationExtensions
 {
-    public static IServiceCollection AddEventFlowJwtAuthentication(
-        this IServiceCollection services,
-        IConfiguration configuration)
+    public static IServiceCollection AddEventFlowJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddOptions<JwtOptions>()
             .Bind(configuration.GetSection(JwtOptions.SectionName))
@@ -23,7 +21,6 @@ public static class JwtAuthenticationExtensions
             .ValidateOnStart();
 
         services.AddHttpContextAccessor();
-        services.AddScoped<ICurrentUserService, CurrentUserService>();
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>

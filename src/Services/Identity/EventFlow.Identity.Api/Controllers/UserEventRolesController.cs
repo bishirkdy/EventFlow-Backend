@@ -3,11 +3,11 @@ using EventFlow.Identity.Api.Contracts.UserEventRoles;
 using EventFlow.Identity.Application.Features.Commands.AssignUserRole;
 using EventFlow.Identity.Application.Features.Commands.RemoveUserRole;
 using EventFlow.Identity.Application.Features.Queries.GetUserEventRoles;
-using EventFlow.Identity.Application.Abstractions.Authorization;
-using EventFlow.Security.Authorization;
+using EventFlow.Security.Authentication;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using EventFlow.Identity.Application.Abstractions.Authorization;
 
 namespace EventFlow.Identity.Api.Controllers;
 

@@ -1,11 +1,11 @@
-using EventFlow.Event.Application.Abstractions.Authentication;
 using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.Event.Application.Abstractions.Services;
 using EventFlow.Event.Application.Abstractions.Storage;
 using EventFlow.Event.Application.Common;
-using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Event.Application.Features.Events.Common;
 using EventFlow.Event.Domain.Entities;
+using EventFlow.Security.Authentication;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 using Microsoft.Extensions.Logging;
 

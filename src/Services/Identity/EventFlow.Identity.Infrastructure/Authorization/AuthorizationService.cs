@@ -13,11 +13,9 @@ namespace EventFlow.Identity.Infrastructure.Authorization
         {
             return await context.UserEventRoles
                 .Where(x =>
-                    x.UserId == userId &&
-                    x.EventId == eventId)
+                    x.UserId == userId && x.EventId == eventId)
                 .SelectMany(x => x.Role.RolePermissions)
-                .AnyAsync(
-                    x => x.Permission.Name == permission, cancellationToken);
+                .AnyAsync(x => x.Permission.Name == permission, cancellationToken);
         }
     }
 }

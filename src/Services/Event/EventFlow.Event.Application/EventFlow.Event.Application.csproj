@@ -23,4 +23,8 @@
     <Folder Include="Abstractions\Services\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\EventFlow.Security\EventFlow.Security.csproj" />
+  </ItemGroup>
+
 </Project>

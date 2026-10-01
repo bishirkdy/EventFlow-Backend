@@ -1,7 +1,6 @@
 using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.Event.Application.Abstractions.Storage;
 using EventFlow.Event.Infrastructure.Persistence;
-using EventFlow.Event.Infrastructure.Repositories;
 using EventFlow.Event.Infrastructure.Storage;
 using EventFlow.Event.Infrastructure.Services.Identity;
 using EventFlow.Event.Application.Abstractions.Services;
@@ -9,6 +8,7 @@ using EventFlow.Infrastructure.Storage.Cloudinary;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using EventFlow.Event.Infrastructure.Persistence.Repositories;
 
 namespace EventFlow.Event.Infrastructure
 {
@@ -51,8 +51,7 @@ namespace EventFlow.Event.Infrastructure
 
                 if (string.IsNullOrWhiteSpace(identityBaseUrl))
                 {
-                    throw new InvalidOperationException(
-                        "Identity service URL is not configured. Set Services:Identity:BaseUrl.");
+                    throw new InvalidOperationException("Identity service URL is not configured. Set Services:Identity:BaseUrl.");
                 }
 
                 client.BaseAddress = new Uri(identityBaseUrl);

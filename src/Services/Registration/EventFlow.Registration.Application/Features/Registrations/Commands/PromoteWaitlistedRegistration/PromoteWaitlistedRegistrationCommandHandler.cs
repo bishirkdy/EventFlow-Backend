@@ -13,7 +13,7 @@ public sealed class PromoteWaitlistedRegistrationCommandHandler(
     IRegistrationRepository registrations,
     IRegistrationFormRepository forms,
     IUnitOfWork unitOfWork,
-    ICurrentUserService user,
+    EventFlow.Security.Authentication.ICurrentUserService user,
     IEventRegistrationAccessService access)
     : IRequestHandler<
         PromoteWaitlistedRegistrationCommand,
@@ -85,7 +85,7 @@ public sealed class PromoteWaitlistedRegistrationCommandHandler(
                 RegistrationId = registration.Id,
                 ParticipantId = registration.Participant.Id,
                 TicketNumber =
-                    $"TKT-{now:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpperInvariant()}",
+                    $"TKT-{now:yyyyMMdd}-{Random.Shared.Next(100000, 999999)}",
                 QrCodeValue =
                     $"eventflow:{command.EventId}:{registration.Participant.Id}:{ticketId}",
                 IssuedAtUtc = now

@@ -11,7 +11,7 @@ namespace EventFlow.Registration.Application.Features.Registrations.Commands.Rej
 public sealed class RejectRegistrationCommandHandler(
     IRegistrationRepository registrations,
     IUnitOfWork unitOfWork,
-    ICurrentUserService user,
+    EventFlow.Security.Authentication.ICurrentUserService user,
     IEventRegistrationAccessService access)
     : IRequestHandler<RejectRegistrationCommand, ApiResponse<RegistrationDto>>
 {

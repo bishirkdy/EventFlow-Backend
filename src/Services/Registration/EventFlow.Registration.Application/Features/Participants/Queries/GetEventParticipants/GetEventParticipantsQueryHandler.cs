@@ -5,7 +5,7 @@ namespace EventFlow.Registration.Application.Features.Participants.Queries.GetEv
 
 public sealed class GetEventParticipantsQueryHandler(
     IParticipantRepository participants,
-    ICurrentUserService user,
+    EventFlow.Security.Authentication.ICurrentUserService user,
     IEventRegistrationAccessService access)
     : IRequestHandler<
         GetEventParticipantsQuery,

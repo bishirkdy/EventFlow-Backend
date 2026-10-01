@@ -11,7 +11,7 @@ namespace EventFlow.Registration.Application.Features.Registrations.Commands.Can
 public sealed class CancelRegistrationCommandHandler(
     IRegistrationRepository registrations,
     IUnitOfWork unitOfWork,
-    ICurrentUserService user)
+    EventFlow.Security.Authentication.ICurrentUserService user)
     : IRequestHandler<CancelRegistrationCommand, ApiResponse<RegistrationDto>>
 {
     public async Task<ApiResponse<RegistrationDto>> Handle(

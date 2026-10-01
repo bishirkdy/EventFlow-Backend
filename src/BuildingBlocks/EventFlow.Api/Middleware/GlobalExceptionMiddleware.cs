@@ -7,9 +7,8 @@ using FluentValidation;
 
 namespace EventFlow.Api.Middleware;
 
-public sealed class GlobalExceptionMiddleware(
-    RequestDelegate next,
-    ILogger<GlobalExceptionMiddleware> logger)
+//Global exeption middleware to every services
+public sealed class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger)
 {
     public async Task InvokeAsync(HttpContext context)
     {
@@ -19,11 +18,7 @@ public sealed class GlobalExceptionMiddleware(
         }
         catch (Exception exception)
         {
-            logger.LogError(
-                exception,
-                "Unhandled exception while processing {Method} {Path}",
-                context.Request.Method,
-                context.Request.Path);
+            logger.LogError(exception, "Unhandled exception while processing {Method} {Path}", context.Request.Method, context.Request.Path);
 
             await HandleAsync(context, exception);
         }
@@ -42,18 +37,14 @@ public sealed class GlobalExceptionMiddleware(
             _ => HttpStatusCode.InternalServerError
         };
 
-        var errors = exception is ValidationException validation
-            ? validation.Errors
-                .Select(x => string.IsNullOrWhiteSpace(x.PropertyName)
-                    ? x.ErrorMessage
-                    : $"{x.PropertyName}: {x.ErrorMessage}")
+        //Make validation exeption in list
+        var errors = exception is ValidationException validation ? validation.Errors
+                .Select(x => string.IsNullOrWhiteSpace(x.PropertyName) ? x.ErrorMessage : $"{x.PropertyName}: {x.ErrorMessage}")
                 .Distinct()
                 .ToList()
             : [GetSafeMessage(exception, statusCode)];
 
-        var message = exception is ValidationException
-            ? "One or more validation errors occurred."
-            : GetSafeMessage(exception, statusCode);
+        var message = exception is ValidationException ? "One or more validation errors occurred." : GetSafeMessage(exception, statusCode);
 
         var errorCode = statusCode switch
         {
@@ -68,14 +59,11 @@ public sealed class GlobalExceptionMiddleware(
         context.Response.StatusCode = (int)statusCode;
         context.Response.ContentType = "application/json";
 
-        await context.Response.WriteAsJsonAsync(
-            ApiResponse<object?>.Fail(errors, message, statusCode, errorCode));
+        await context.Response.WriteAsJsonAsync(ApiResponse<object?>.Fail(errors, message, statusCode, errorCode));
     }
 
     private static string GetSafeMessage(Exception exception, HttpStatusCode statusCode)
     {
-        return statusCode == HttpStatusCode.InternalServerError
-            ? "An unexpected error occurred."
-            : exception.Message;
+        return statusCode == HttpStatusCode.InternalServerError ? "An unexpected error occurred." : exception.Message;
     }
 }

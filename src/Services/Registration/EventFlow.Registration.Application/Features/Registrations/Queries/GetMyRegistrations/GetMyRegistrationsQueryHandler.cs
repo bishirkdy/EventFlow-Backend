@@ -9,7 +9,7 @@ namespace EventFlow.Registration.Application.Features.Registrations.Queries.GetM
 
 public sealed class GetMyRegistrationsQueryHandler(
     IRegistrationRepository registrations,
-    ICurrentUserService user)
+    EventFlow.Security.Authentication.ICurrentUserService user)
     : IRequestHandler<
         GetMyRegistrationsQuery,
         ApiResponse<IReadOnlyList<RegistrationDto>>>
