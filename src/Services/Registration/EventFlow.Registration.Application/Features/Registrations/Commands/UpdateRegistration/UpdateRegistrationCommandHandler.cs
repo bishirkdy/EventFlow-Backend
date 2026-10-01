@@ -5,6 +5,7 @@ using EventFlow.Registration.Application.Common.Mappings;
 using EventFlow.Registration.Application.Contracts.Registrations;
 using EventFlow.Registration.Domain.Entities;
 using EventFlow.Registration.Domain.Enums;
+using EventFlow.Registration.Application.Features.Registrations;
 using MediatR;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Commands.UpdateRegistration;
@@ -12,6 +13,7 @@ namespace EventFlow.Registration.Application.Features.Registrations.Commands.Upd
 public sealed class UpdateRegistrationCommandHandler(
     IRegistrationRepository registrations,
     IUnitOfWork unitOfWork,
+    IRegistrationFormRepository forms,
     EventFlow.Security.Authentication.ICurrentUserService user)
     : IRequestHandler<UpdateRegistrationCommand, ApiResponse<RegistrationDto>>
 {
@@ -31,6 +33,21 @@ public sealed class UpdateRegistrationCommandHandler(
         {
             return ApiResponse<RegistrationDto>.Fail(
                 ["Registration not found."]);
+        }
+
+        var form = await forms.GetByEventIdAsync(
+            command.EventId,
+            includeFields: true,
+            asNoTracking: true,
+            cancellationToken: cancellationToken);
+
+        var answerErrors = RegistrationFormAnswerValidator.Validate(
+            form,
+            command.Request.Answers);
+
+        if (answerErrors.Count > 0)
+        {
+            return ApiResponse<RegistrationDto>.Fail(answerErrors);
         }
 
         if (registration.Status is

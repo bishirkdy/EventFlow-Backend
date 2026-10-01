@@ -10,6 +10,10 @@ public interface IRegistrationFormRepository
         bool asNoTracking = false,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlySet<Guid>> GetFieldIdsWithAnswersAsync(
+        IReadOnlyCollection<Guid> fieldIds,
+        CancellationToken cancellationToken = default);
+
     void Add(RegistrationForm form);
 
     void ReplaceFields(

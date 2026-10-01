@@ -1,5 +1,4 @@
 using EventFlow.Api.Middleware;
-using EventFlow.Event.Api.Middleware;
 
 namespace EventFlow.Event.Api.Extensions
 {

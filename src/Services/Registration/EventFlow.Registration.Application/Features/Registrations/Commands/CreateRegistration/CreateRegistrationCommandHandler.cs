@@ -1,5 +1,6 @@
 using EventFlow.Contracts.Common;
 using RegistrationEntity = EventFlow.Registration.Domain.Entities.Registration;
+using EventFlow.Registration.Application.Features.Registrations;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Commands.CreateRegistration;
 
@@ -57,16 +58,13 @@ public sealed class CreateRegistrationCommandHandler(
                     ["Registration is closed."]);
             }
 
-            foreach (var field in form.Fields.Where(x => x.IsRequired))
+            var answerErrors = RegistrationFormAnswerValidator.Validate(
+                form,
+                command.Request.Answers);
+
+            if (answerErrors.Count > 0)
             {
-                if (!command.Request.Answers.TryGetValue(
-                        field.Id,
-                        out var value) ||
-                    string.IsNullOrWhiteSpace(value))
-                {
-                    return ApiResponse<RegistrationDto>.Fail(
-                        [$"Required field '{field.Label}' is missing."]);
-                }
+                return ApiResponse<RegistrationDto>.Fail(answerErrors);
             }
         }
 

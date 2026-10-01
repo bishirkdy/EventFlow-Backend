@@ -54,16 +54,11 @@ public sealed class EventPermissionMiddleware(
         await next(context);
     }
 
-    private static bool TryGetEventId(
-        HttpContext context,
-        out Guid eventId)
+    private static bool TryGetEventId(HttpContext context,out Guid eventId)
     {
         var value =
-            context.Request.RouteValues.TryGetValue("eventId", out var routeValue)
-                ? routeValue?.ToString()
-                : context.Request.RouteValues.TryGetValue("id", out var idValue)
-                    ? idValue?.ToString()
-                    : null;
+            context.Request.RouteValues.TryGetValue("eventId", out var routeValue) ? routeValue?.ToString()
+                : context.Request.RouteValues.TryGetValue("id", out var idValue) ? idValue?.ToString() : null;
 
         return Guid.TryParse(value, out eventId);
     }

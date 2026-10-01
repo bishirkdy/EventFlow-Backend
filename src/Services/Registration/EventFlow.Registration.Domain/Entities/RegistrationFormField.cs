@@ -24,5 +24,6 @@ public sealed class RegistrationFormField
 
     public RegistrationForm RegistrationForm { get; set; } = null!;
 
+
     public ICollection<RegistrationAnswer> Answers { get; set; } = new List<RegistrationAnswer>();
 }
