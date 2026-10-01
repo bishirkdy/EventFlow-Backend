@@ -35,6 +35,22 @@ public sealed class UserDirectoryClient(HttpClient httpClient) : IUserDirectoryC
         return envelope.Data?.DisplayName;
     }
 
+    public async Task AssignOwnerAsync(
+    Guid userId,
+    Guid eventId,
+    CancellationToken cancellationToken = default)
+    {
+        using var response = await httpClient.PostAsJsonAsync(
+            "api/authorization/v1/assign-owner",
+            new
+            {
+                UserId = userId,
+                EventId = eventId
+            },
+            cancellationToken);
+
+        response.EnsureSuccessStatusCode();
+    }
     // Represents the standard API response from the Identity Service.
     private sealed record ApiResponse<T>(bool IsSuccess,int StatusCode,T? Data,string Message,List<string>? Errors);
 

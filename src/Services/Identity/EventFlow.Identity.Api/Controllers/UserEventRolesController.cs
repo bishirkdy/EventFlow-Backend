@@ -19,7 +19,7 @@ public sealed class UserEventRolesController(ISender sender, IPermissionService 
     [HttpPost]
     public async Task<IActionResult> AssignRole(Guid eventId,Guid userId,[FromBody] AssignUserRoleRequest request,CancellationToken cancellationToken)
     {
-        if (!await permissions.HasPermissionAsync(currentUser.UserId, eventId, "event.update", cancellationToken))
+        if (!await permissions.HasPermissionAsync(currentUser.UserId, eventId, "event.team.manage", cancellationToken))
         {
             return Forbid();
         }
@@ -45,7 +45,7 @@ public sealed class UserEventRolesController(ISender sender, IPermissionService 
     [HttpDelete("{roleId:guid}")]
     public async Task<IActionResult> RemoveRole(Guid eventId,Guid userId,Guid roleId,CancellationToken cancellationToken)
     {
-        if (!await permissions.HasPermissionAsync(currentUser.UserId, eventId, "event.update", cancellationToken))
+        if (!await permissions.HasPermissionAsync(currentUser.UserId, eventId, "event.team.manage", cancellationToken))
         {
             return Forbid();
         }

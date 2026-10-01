@@ -1,6 +1,8 @@
-﻿using EventFlow.Contracts.Common;
+using EventFlow.Contracts.Common;
 using EventFlow.Identity.Api.Contracts.Authorization;
 using EventFlow.Identity.Application.Abstractions.Authorization;
+using EventFlow.Identity.Application.Features.Commands.AssignOwnerRole;
+using MediatR;
 using EventFlow.Security.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,14 +14,26 @@ namespace EventFlow.Identity.Api.Controllers
 
     // Base route for authorization endpoints.
     [Route("api/authorization/v1")]
-    public sealed class AuthorizationController : ControllerBase
+    public sealed class AuthorizationController(
+        IPermissionService permissionService,
+        ISender sender) : ControllerBase
     {
-        // Service used to check user permissions.
-        private readonly IPermissionService _permissionService;
+        private readonly IPermissionService _permissionService = permissionService;
+        private readonly ISender _sender = sender;
 
-        public AuthorizationController(IPermissionService permissionService)
+        [HttpPost("assign-owner")]
+        public async Task<IActionResult> AssignOwner(
+            AssignOwnerRequest request,
+            CancellationToken cancellationToken)
         {
-            _permissionService = permissionService;
+            var roleId = await _sender.Send(
+                new AssignOwnerRoleCommand(request.UserId, request.EventId),
+                cancellationToken);
+
+            return Ok(
+                ApiResponse<Guid>.Success(
+                    roleId,
+                    "Event owner assigned successfully."));
         }
 
         [HttpPost("check-permission")]
