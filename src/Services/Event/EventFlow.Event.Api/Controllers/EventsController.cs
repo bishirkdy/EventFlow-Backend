@@ -2,15 +2,16 @@ using AutoMapper;
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.Events;
 using EventFlow.Event.Api.Responses.Events;
-using EventFlow.Security.Authentication;
 using EventFlow.Event.Application.Abstractions.Storage;
 using EventFlow.Event.Application.Features.Events.Commands.CancelEvent;
+using EventFlow.Event.Application.Features.Events.Commands.ClaimEventOwner;
 using EventFlow.Event.Application.Features.Events.Commands.CreateEvent;
 using EventFlow.Event.Application.Features.Events.Commands.PublishEvent;
 using EventFlow.Event.Application.Features.Events.Commands.UpdateEvent;
 using EventFlow.Event.Application.Features.Events.Queries.GetEventById;
 using EventFlow.Event.Application.Features.Events.Queries.GetMyEvents;
 using EventFlow.Event.Application.Features.Events.Queries.GetPublicEvents;
+using EventFlow.Security.Authentication;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -186,6 +187,19 @@ namespace EventFlow.Event.Api.Controllers
                 cancellationToken);
 
             return Ok(ApiResponse<object?>.Success(null, "Event cancelled successfully."));
+        }
+
+        [HttpPost("{id:guid}/claim-owner")]
+        [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> ClaimOwner(Guid id,CancellationToken cancellationToken)
+        {
+            await sender.Send(
+                new ClaimEventOwnerCommand(id,currentUserService.UserId), cancellationToken);
+
+            return Ok(ApiResponse<object?>.Success(null, "Event owner assigned successfully."));
         }
     }
 }

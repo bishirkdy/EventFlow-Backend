@@ -20,6 +20,14 @@ public sealed class EventPermissionMiddleware(
             return;
         }
 
+        // Claim ownership is authorized by the command handler,
+        // which verifies that the authenticated user created the event.
+        if (IsClaimOwnerRequest(context))
+        {
+            await next(context);
+            return;
+        }
+
         if (!TryGetEventId(context, out var eventId))
         {
             await next(context);
@@ -54,14 +62,28 @@ public sealed class EventPermissionMiddleware(
         await next(context);
     }
 
+    private static bool IsClaimOwnerRequest(HttpContext context)
+    {
+        return context.Request.Method.Equals(
+                   HttpMethods.Post,
+                   StringComparison.OrdinalIgnoreCase)
+               && context.Request.Path.Value?.EndsWith(
+                   "/claim-owner",
+                   StringComparison.OrdinalIgnoreCase) == true;
+    }
+
     private static bool TryGetEventId(
         HttpContext context,
         out Guid eventId)
     {
         var value =
-            context.Request.RouteValues.TryGetValue("eventId", out var routeValue)
+            context.Request.RouteValues.TryGetValue(
+                "eventId",
+                out var routeValue)
                 ? routeValue?.ToString()
-                : context.Request.RouteValues.TryGetValue("id", out var idValue)
+                : context.Request.RouteValues.TryGetValue(
+                    "id",
+                    out var idValue)
                     ? idValue?.ToString()
                     : null;
 
