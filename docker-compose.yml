@@ -12,6 +12,8 @@ services:
 
       ReverseProxy__Clusters__identity-cluster__Destinations__identity-api__Address: "http://eventflow-identity:8080/"
       ReverseProxy__Clusters__event-cluster__Destinations__event-api__Address: "http://eventflow-event:8080/"
+      ReverseProxy__Clusters__registration-cluster__Destinations__registration-api__Address: "http://eventflow-registration:8080/"
+      ReverseProxy__Clusters__operations-cluster__Destinations__operations-api__Address: "http://eventflow-operations:8080/"
 
     develop:
       watch:
@@ -91,3 +93,48 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
 
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+
+  registration:
+    build:
+      context: .
+      dockerfile: Dockerfile.registration
+    container_name: eventflow-registration
+    ports:
+      - "5003:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Jwt__SecretKey: "${JWT_SECRET_KEY}"
+      InternalService__Key: "${INTERNAL_SERVICE_KEY}"
+      ConnectionStrings__RegistrationDatabase: "Host=host.docker.internal;Port=5432;Database=RegistrationDatabase;Username=postgres;Password=${POSTGRES_PASSWORD}"
+      Services__Event__BaseUrl: "http://eventflow-event:8080/"
+    develop:
+      watch:
+        - action: rebuild
+          path: ./src/Services/Registration
+        - action: rebuild
+          path: ./src/BuildingBlocks
+
+  operations:
+    build:
+      context: .
+      dockerfile: Dockerfile.operations
+    container_name: eventflow-operations
+    ports:
+      - "5004:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Jwt__SecretKey: "${JWT_SECRET_KEY}"
+      InternalService__Key: "${INTERNAL_SERVICE_KEY}"
+      ConnectionStrings__OperationsDatabase: "Host=host.docker.internal;Port=5432;Database=OperationsDatabase;Username=postgres;Password=${POSTGRES_PASSWORD}"
+      Services__Identity__BaseUrl: "http://eventflow-identity:8080/"
+      Services__Event__BaseUrl: "http://eventflow-event:8080/"
+      Services__Registration__BaseUrl: "http://eventflow-registration:8080/"
+    depends_on:
+      - identity
+      - registration
+    develop:
+      watch:
+        - action: rebuild
+          path: ./src/Services/Operations
+        - action: rebuild
+          path: ./src/BuildingBlocks
