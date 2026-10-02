@@ -1,6 +1,8 @@
 using EventFlow.Registration.Application.Features.Tickets.Commands.RevokeTicket;
 using EventFlow.Registration.Application.Features.Tickets.Queries.GetTicket;
 using EventFlow.Registration.Application.Features.Tickets.Queries.VerifyQr;
+using EventFlow.Registration.Application.Features.Tickets.Queries.VerifyQrInternal;
+using EventFlow.Security.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +24,14 @@ public sealed class TicketsController(IMediator mediator)
         return result.IsSuccess
             ? Ok(result)
             : NotFound(result);
+    }
+
+    [InternalServiceOnly]
+    [HttpGet("verify-internal")]
+    public async Task<IActionResult> VerifyInternal(Guid eventId,string qrCode,CancellationToken cancellationToken)
+    {
+        var result = await mediator.Send(new VerifyQrInternalQuery(eventId,qrCode),cancellationToken);
+        return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 
     [Authorize]

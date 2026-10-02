@@ -11,6 +11,7 @@ public sealed class TicketRepository(RegistrationDbContext db)
         return db.Tickets
             .AsNoTracking()
             .Include(x => x.Registration)
+            .Include(x => x.Participant)
             .SingleOrDefaultAsync(
                 x =>
                     x.RegistrationId == registrationId &&
@@ -27,6 +28,7 @@ public sealed class TicketRepository(RegistrationDbContext db)
         return db.Tickets
             .AsNoTracking()
             .Include(x => x.Registration)
+            .Include(x => x.Participant)
             .SingleOrDefaultAsync(
                 x =>
                     x.Registration.EventId == eventId &&
@@ -41,6 +43,7 @@ public sealed class TicketRepository(RegistrationDbContext db)
     {
         return db.Tickets
             .Include(x => x.Registration)
+            .Include(x => x.Participant)
             .SingleOrDefaultAsync(
                 x =>
                     x.Id == ticketId &&

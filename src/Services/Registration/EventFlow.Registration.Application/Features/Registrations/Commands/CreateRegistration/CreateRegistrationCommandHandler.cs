@@ -1,6 +1,5 @@
 using EventFlow.Contracts.Common;
 using RegistrationEntity = EventFlow.Registration.Domain.Entities.Registration;
-using EventFlow.Registration.Application.Features.Registrations;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Commands.CreateRegistration;
 

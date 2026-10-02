@@ -1,7 +1,5 @@
 using EventFlow.Registration.Application.Abstractions.Persistence;
-using EventFlow.Registration.Domain.Entities;
 using EventFlow.Registration.Domain.Enums;
-using Microsoft.EntityFrameworkCore;
 
 using RegistrationEntity = EventFlow.Registration.Domain.Entities.Registration;
 

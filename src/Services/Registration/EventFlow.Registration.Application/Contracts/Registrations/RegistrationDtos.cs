@@ -60,6 +60,8 @@ public sealed class TicketDto
 
     public Guid ParticipantId { get; set; }
 
+    public Guid ParticipantUserId { get; set; }
+
     public string TicketNumber { get; set; } = "";
 
     public string QrCodeValue { get; set; } = "";
