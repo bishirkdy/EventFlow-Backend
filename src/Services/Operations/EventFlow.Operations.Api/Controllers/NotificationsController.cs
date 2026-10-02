@@ -1,0 +1,4 @@
+using EventFlow.Operations.Application.Contracts;using EventFlow.Operations.Application.Features.Notifications;using EventFlow.Security.Authentication;using Microsoft.AspNetCore.Authorization;using Microsoft.AspNetCore.Mvc;
+namespace EventFlow.Operations.Api.Controllers;
+[Authorize,ApiController,Route("api/v1/operations/events/{eventId:guid}/notifications")]
+public sealed class NotificationsController(NotificationService s,ICurrentUserService u):ControllerBase{[HttpGet]public async Task<IActionResult>List(Guid eventId,CancellationToken c){var r=await s.ListAsync(eventId,u.UserId,c);return r.IsSuccess?Ok(r):Forbid();}[HttpPost]public async Task<IActionResult>Queue(Guid eventId,QueueNotificationRequest q,CancellationToken c){var r=await s.QueueAsync(eventId,u.UserId,q,c);return r.IsSuccess?Ok(r):BadRequest(r);}}

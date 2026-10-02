@@ -1,21 +1,28 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>b8f2fa5e-0d89-4e68-9b7b-70eac0bbd5dc</UserSecretsId>
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	  <UserSecretsId>4c90c045-9afd-4942-a5ec-23c700e17c9b</UserSecretsId>
   </PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\BuildingBlocks\EventFlow.Api\EventFlow.Api.csproj" />
-    <ProjectReference Include="..\..\..\BuildingBlocks\EventFlow.Security\EventFlow.Security.csproj" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\EventFlow.Operations.Application\EventFlow.Operations.Application.csproj" />
 
-  <ItemGroup>
-    <ProjectReference Include="..\EventFlow.Operations.Application\EventFlow.Operations.Application.csproj" />
-    <ProjectReference Include="..\EventFlow.Operations.Infrastructure\EventFlow.Operations.Infrastructure.csproj" />
-  </ItemGroup>
+		<ProjectReference Include="..\EventFlow.Operations.Infrastructure\EventFlow.Operations.Infrastructure.csproj" />
+
+		<ProjectReference Include="..\..\..\BuildingBlocks\EventFlow.Api\EventFlow.Api.csproj" />
+
+		<ProjectReference Include="..\..\..\BuildingBlocks\EventFlow.Security\EventFlow.Security.csproj" />
+
+		<ProjectReference Include="..\..\..\BuildingBlocks\EventFlow.Contracts\EventFlow.Contracts.csproj" />
+	</ItemGroup>
 
 </Project>
