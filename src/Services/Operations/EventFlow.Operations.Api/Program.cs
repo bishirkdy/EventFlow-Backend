@@ -4,6 +4,8 @@ using EventFlow.Security.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddEventFlowApiDefaults(
     "EventFlow Operations API");
 

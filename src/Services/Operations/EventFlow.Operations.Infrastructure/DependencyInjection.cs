@@ -1,3 +1,4 @@
+using EventFlow.Operations.Application.Abstractions;
 using EventFlow.Operations.Infrastructure.Background;
 using EventFlow.Operations.Infrastructure.Persistence;
 using EventFlow.Operations.Infrastructure.Services;
@@ -21,8 +22,10 @@ public static class DependencyInjection
 
         services.AddHttpClient();
 
-        services.AddScoped<RegistrationClient>();
-        services.AddScoped<EventAuthorizationClient>();
+        services.AddScoped<IRegistrationClient, RegistrationClient>();
+        services.AddScoped<IEventAuthorizationClient, EventAuthorizationClient>();
+        services.AddScoped<IEventScheduleClient, EventScheduleClient>();
+        services.AddScoped<IIdentityClient, IdentityClient>();
 
         services.AddHostedService<NotificationWorker>();
 

@@ -3,7 +3,7 @@ using EventFlow.Operations.Domain.Enums;
 namespace EventFlow.Operations.Application.Contracts;
 
 public sealed record AssignAttendanceStaffRequest(
-    Guid UserId,
+    string Email,
     AttendanceScopeType ScopeType,
     Guid? ScopeId);
 
