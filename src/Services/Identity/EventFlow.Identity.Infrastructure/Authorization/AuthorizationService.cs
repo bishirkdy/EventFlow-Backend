@@ -2,20 +2,41 @@ using EventFlow.Identity.Application.Abstractions.Authorization;
 using EventFlow.Identity.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
+namespace EventFlow.Identity.Infrastructure.Authorization;
 
-namespace EventFlow.Identity.Infrastructure.Authorization
+public sealed class PermissionService(IdentityDbContext context) : IPermissionService
 {
-    public class PermissionService(IdentityDbContext context) : IPermissionService
+    public async Task<bool> HasPermissionAsync(
+        Guid userId,
+        Guid eventId,
+        string permission,
+        CancellationToken cancellationToken = default)
     {
+        var normalizedPermission = permission.Trim();
 
-        // Find the user's role for this event and check whether that role has the requested permission.
-        public async Task<bool> HasPermissionAsync(Guid userId,Guid eventId,string permission,CancellationToken cancellationToken = default)
+        var directPermission = await context.UserEventRoles
+            .Where(x => x.UserId == userId && x.EventId == eventId)
+            .SelectMany(x => x.Role.RolePermissions)
+            .AnyAsync(
+                x => x.Permission.Name == normalizedPermission,
+                cancellationToken);
+
+        if (directPermission)
         {
-            return await context.UserEventRoles
-                .Where(x =>
-                    x.UserId == userId && x.EventId == eventId)
-                .SelectMany(x => x.Role.RolePermissions)
-                .AnyAsync(x => x.Permission.Name == permission, cancellationToken);
+            return true;
         }
+
+        // Owner inherits Organizer permissions for the same event only.
+        return await context.UserEventRoles
+            .Where(x =>
+                x.UserId == userId &&
+                x.EventId == eventId &&
+                x.Role.Name == "Owner")
+            .SelectMany(_ => context.Roles
+                .Where(role => role.Name == "Organizer")
+                .SelectMany(role => role.RolePermissions))
+            .AnyAsync(
+                x => x.Permission.Name == normalizedPermission,
+                cancellationToken);
     }
 }

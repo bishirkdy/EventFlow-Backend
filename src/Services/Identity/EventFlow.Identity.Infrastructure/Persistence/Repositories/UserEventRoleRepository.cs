@@ -27,6 +27,16 @@ namespace EventFlow.Identity.Infrastructure.Persistence.Repositories
                 .ToListAsync(cancellationToken);
         }
 
+        public async Task<List<UserEventRole>> GetByUserAsync(Guid userId,CancellationToken cancellationToken = default)
+        {
+            return await context.UserEventRoles
+                .AsNoTracking()
+                .Include(x => x.Role)
+                .Where(x => x.UserId == userId)
+                .OrderByDescending(x => x.AssignedAt)
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<List<UserEventRole>> GetByEventAsync(Guid eventId,CancellationToken cancellationToken = default)
         {
             return await context.UserEventRoles
