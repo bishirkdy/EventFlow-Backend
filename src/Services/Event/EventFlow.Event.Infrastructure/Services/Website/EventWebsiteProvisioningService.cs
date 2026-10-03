@@ -22,6 +22,19 @@ public sealed class EventWebsiteProvisioningService(
             ["registration"] = new("Registration", "register", "Registration", "rsvp", "Registration"),
         };
 
+    // Feature code -> website page that should exist once the feature is on
+    private static readonly IReadOnlyDictionary<string, string> FeaturePages =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["schedule"] = "schedule",
+            ["sessions"] = "schedule",
+            ["venues"] = "venue",
+            ["speakers"] = "speakers",
+            ["sponsors"] = "sponsors",
+            ["gallery"] = "gallery",
+            ["registration"] = "registration",
+        };
+
     public async Task EnsureInitialWebsiteAsync(
         Guid eventId,
         CancellationToken cancellationToken = default)
@@ -34,6 +47,21 @@ public sealed class EventWebsiteProvisioningService(
         {
             await EnsureResourcePageAsync(eventId, resourceType, cancellationToken);
         }
+    }
+
+    public async Task EnsureFeaturePageAsync(
+        Guid eventId,
+        string featureCode,
+        CancellationToken cancellationToken = default)
+    {
+        if (!FeaturePages.TryGetValue(featureCode, out var resourceType))
+        {
+            // Features such as attendance, feedback or certificates
+            // do not own a website page, so there is nothing to provision.
+            return;
+        }
+
+        await EnsureResourcePageAsync(eventId, resourceType, cancellationToken);
     }
 
     public async Task EnsureResourcePageAsync(

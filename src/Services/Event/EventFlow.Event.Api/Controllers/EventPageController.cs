@@ -3,6 +3,7 @@ using EventFlow.Event.Api.Requests.EventPages;
 using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Event.Application.Features.EventPages.Commands.CreateEventPage;
 using EventFlow.Event.Application.Features.EventPages.Commands.DeleteEventPage;
+using EventFlow.Event.Application.Features.EventPages.Commands.EnsureEventWebsite;
 using EventFlow.Event.Application.Features.EventPages.Commands.PublishEventPage;
 using EventFlow.Event.Application.Features.EventPages.Commands.ReorderEventPages;
 using EventFlow.Event.Application.Features.EventPages.Commands.UnpublishEventPage;
@@ -41,6 +42,23 @@ namespace EventFlow.Event.Api.Controllers
                 StatusCode = StatusCodes.Status200OK,
                 Message = "Event page created successfully.",
                 Data = pageId
+            };
+
+            return Ok(response);
+        }
+
+        //Make sure the default pages, sections and navigation exist for this event
+        [HttpPost("{eventId:guid}/ensure-website")]
+        public async Task<IActionResult> EnsureEventWebsite(Guid eventId, CancellationToken cancellationToken)
+        {
+            await sender.Send(new EnsureEventWebsiteCommand(eventId), cancellationToken);
+
+            var response = new ApiResponse<object>
+            {
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
+                Message = "Event website pages are ready.",
+                Data = null
             };
 
             return Ok(response);
