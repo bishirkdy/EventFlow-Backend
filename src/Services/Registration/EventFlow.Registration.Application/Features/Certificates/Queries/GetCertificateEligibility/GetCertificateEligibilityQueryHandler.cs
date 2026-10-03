@@ -1,8 +1,8 @@
 using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
+using EventFlow.Registration.Application.Common.Certificates;
 using EventFlow.Registration.Application.Contracts.Certificates;
-using EventFlow.Registration.Domain.Enums;
 using MediatR;
 
 namespace EventFlow.Registration.Application.Features.Certificates.Queries.GetCertificateEligibility;
@@ -62,7 +62,7 @@ public sealed class GetCertificateEligibilityQueryHandler(
 
             if (participant is null)
             {
-                item.Reasons.Add("No participant profile.");
+                item.ParticipantName = registration.RegistrationNumber;
             }
             else
             {
@@ -71,23 +71,10 @@ public sealed class GetCertificateEligibilityQueryHandler(
                 item.Email = participant.Email;
             }
 
-            if (registration.Status is
-                RegistrationStatus.Cancelled or RegistrationStatus.Rejected)
-            {
-                item.Reasons.Add(
-                    registration.Status == RegistrationStatus.Cancelled
-                        ? "Registration was cancelled."
-                        : "Registration was rejected.");
-            }
-            else if (requireApproved &&
-                     registration.Status != RegistrationStatus.Approved)
-            {
-                item.Reasons.Add("Registration is not approved.");
-            }
-
+            double? attendance = null;
             if (minAttendance.HasValue)
             {
-                if (!attendanceCache.TryGetValue(registration.UserId, out var attendance))
+                if (!attendanceCache.TryGetValue(registration.UserId, out attendance))
                 {
                     attendance = await sourceData.GetAttendancePercentAsync(
                         query.EventId,
@@ -97,17 +84,15 @@ public sealed class GetCertificateEligibilityQueryHandler(
                 }
 
                 item.AttendancePercent = attendance;
-
-                if (attendance is null)
-                {
-                    item.Reasons.Add("Attendance could not be verified.");
-                }
-                else if (attendance.Value < minAttendance.Value)
-                {
-                    item.Reasons.Add(
-                        $"Attendance {attendance.Value:0.#}% is below the required {minAttendance.Value:0.#}%.");
-                }
             }
+
+            item.Reasons.AddRange(
+                CertificateRules.Evaluate(
+                    requireApproved,
+                    minAttendance,
+                    registration.Status,
+                    participant is not null,
+                    attendance));
 
             item.AlreadyIssued = issuedRegistrationIds.Contains(registration.Id);
             item.Eligible = !item.AlreadyIssued && item.Reasons.Count == 0;

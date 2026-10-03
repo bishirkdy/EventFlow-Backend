@@ -17,6 +17,7 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IEventRegistrationAccessService, EventRegistrationAccessService>();
         services.AddScoped<ICertificateSourceDataService, CertificateSourceDataService>();
+        services.AddSingleton<ICertificateVerifyUrlProvider, CertificateVerifyUrlProvider>();
 
         services.AddRegistrationApplication();
         services.AddRegistrationInfrastructure(configuration);

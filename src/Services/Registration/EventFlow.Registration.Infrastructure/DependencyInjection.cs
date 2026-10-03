@@ -1,6 +1,8 @@
 using EventFlow.Registration.Application.Abstractions.Persistence;
+using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Infrastructure.Persistence;
 using EventFlow.Registration.Infrastructure.Persistence.Repositories;
+using EventFlow.Registration.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,6 +26,8 @@ public static class DependencyInjection
         services.AddScoped<IRegistrationFormRepository, RegistrationFormRepository>();
         services.AddScoped<ICertificateRepository, CertificateRepository>();
         services.AddScoped<ICertificateSettingsRepository, CertificateSettingsRepository>();
+        services.AddSingleton<ICertificateDocumentService, CertificateDocumentService>();
+        services.AddScoped<ICertificateFileStore, FileCertificateStore>();
 
         return services;
     }
