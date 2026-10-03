@@ -1,6 +1,7 @@
 using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Contracts.RegistrationForms;
+using EventFlow.Registration.Domain.Entities;
 using EventFlow.Registration.Domain.Enums;
 using MediatR;
 
@@ -8,7 +9,8 @@ namespace EventFlow.Registration.Application.Features.RegistrationForms.Queries.
 
 public sealed class GetRegistrationFormQueryHandler(
     IRegistrationFormRepository forms,
-    IRegistrationRepository registrations)
+    IRegistrationRepository registrations,
+    IUnitOfWork unitOfWork)
     : IRequestHandler<
         GetRegistrationFormQuery,
         ApiResponse<RegistrationFormDto>>
@@ -25,8 +27,21 @@ public sealed class GetRegistrationFormQueryHandler(
 
         if (form is null)
         {
-            return ApiResponse<RegistrationFormDto>.Fail(
-                ["Registration form not found."]);
+            // Events get a ready to use registration form the first time
+            // somebody opens it, so registration never starts empty handed.
+            await CreateDefaultFormAsync(query.EventId, cancellationToken);
+
+            form = await forms.GetByEventIdAsync(
+                query.EventId,
+                includeFields: true,
+                asNoTracking: true,
+                cancellationToken: cancellationToken);
+
+            if (form is null)
+            {
+                return ApiResponse<RegistrationFormDto>.Fail(
+                    ["Registration form not found."]);
+            }
         }
 
         var approvedCount = await registrations.CountByStatusAsync(
@@ -71,5 +86,48 @@ public sealed class GetRegistrationFormQueryHandler(
         };
 
         return ApiResponse<RegistrationFormDto>.Success(response);
+    }
+
+    private async Task CreateDefaultFormAsync(
+        Guid eventId,
+        CancellationToken cancellationToken)
+    {
+        var now = DateTime.UtcNow;
+
+        var form = new RegistrationForm
+        {
+            Id = Guid.NewGuid(),
+            EventId = eventId,
+            Name = "Event Registration",
+            Description = null,
+            IsActive = true,
+            CapacityMode = CapacityMode.Unlimited,
+            Capacity = null,
+            EnableWaitlist = false,
+            OpensAtUtc = null,
+            ClosesAtUtc = null,
+            CreatedAtUtc = now,
+            UpdatedAtUtc = now
+        };
+
+        forms.Add(form);
+
+        try
+        {
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch (Exception)
+        {
+            // Another request created the form at the same time
+            // (EventId is unique), so simply keep using that one.
+            var existing = await forms.GetByEventIdAsync(
+                eventId,
+                cancellationToken: cancellationToken);
+
+            if (existing is null)
+            {
+                throw;
+            }
+        }
     }
 }
