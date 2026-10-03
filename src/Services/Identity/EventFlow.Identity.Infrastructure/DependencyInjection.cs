@@ -31,6 +31,7 @@ namespace EventFlow.Identity.Infrastructure
             services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<IPermissionRepository, PermissionRepository>();
             services.AddScoped<IUserEventRoleRepository, UserEventRoleRepository>();
+            services.AddScoped<IPhotographerInvitationRepository, PhotographerInvitationRepository>();
 
             // Services
             services.AddScoped<IPasswordHasher, PasswordHasher>();
