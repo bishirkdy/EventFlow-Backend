@@ -12,6 +12,8 @@ public sealed class RegistrationDbContext(
     public DbSet<RegistrationFormField> RegistrationFormFields => Set<RegistrationFormField>();
     public DbSet<RegistrationAnswer> RegistrationAnswers => Set<RegistrationAnswer>();
     public DbSet<Ticket> Tickets => Set<Ticket>();
+    public DbSet<Certificate> Certificates => Set<Certificate>();
+    public DbSet<CertificateSettings> CertificateSettings => Set<CertificateSettings>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
