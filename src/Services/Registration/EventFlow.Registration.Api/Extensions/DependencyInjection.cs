@@ -16,6 +16,7 @@ public static class DependencyInjection
 
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IEventRegistrationAccessService, EventRegistrationAccessService>();
+        services.AddScoped<ICertificateSourceDataService, CertificateSourceDataService>();
 
         services.AddRegistrationApplication();
         services.AddRegistrationInfrastructure(configuration);
@@ -25,6 +26,18 @@ public static class DependencyInjection
             client =>
             {
                 var baseUrl = configuration["Services:Event:BaseUrl"];
+
+                if (!string.IsNullOrWhiteSpace(baseUrl))
+                {
+                    client.BaseAddress = new Uri(baseUrl);
+                }
+            });
+
+        services.AddHttpClient(
+            "OperationsService",
+            client =>
+            {
+                var baseUrl = configuration["Services:Operations:BaseUrl"];
 
                 if (!string.IsNullOrWhiteSpace(baseUrl))
                 {

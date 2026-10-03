@@ -177,6 +177,18 @@ public sealed class RegistrationRepository(RegistrationDbContext db)
                 ActiveTickets: 0);
     }
 
+    public async Task<IReadOnlyList<RegistrationEntity>> GetWithParticipantsAsync(
+        Guid eventId,
+        CancellationToken cancellationToken = default)
+    {
+        return await db.Registrations
+            .AsNoTracking()
+            .Include(x => x.Participant)
+            .Where(x => x.EventId == eventId)
+            .OrderBy(x => x.RegisteredAtUtc)
+            .ToListAsync(cancellationToken);
+    }
+
     public void Add(RegistrationEntity registration)
     {
         db.Registrations.Add(registration);

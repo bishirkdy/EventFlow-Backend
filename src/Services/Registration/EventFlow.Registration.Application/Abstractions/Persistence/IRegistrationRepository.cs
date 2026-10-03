@@ -44,7 +44,12 @@ public interface IRegistrationRepository
         Guid eventId,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<RegistrationEntity>> GetWithParticipantsAsync(
+        Guid eventId,
+        CancellationToken cancellationToken = default);
+
     void Add(RegistrationEntity registration);
 
     void RemoveAnswers(IEnumerable<RegistrationAnswer> answers);
 }
+
