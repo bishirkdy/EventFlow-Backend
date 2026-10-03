@@ -2,11 +2,18 @@ using EventFlow.SharedKernel.Exceptions;
 
 
 using EventFlow.Event.Application.Abstractions.Persistence;
+using EventFlow.Event.Application.Abstractions.Services;
 using MediatR;
 
 namespace EventFlow.Event.Application.Features.EventFeature.Commands.EnableEventFeature
 {
-    public sealed class EnableEventFeatureCommandHandler(IEventFeatureRepository eventFeatureRepository, IEventRepository eventRepository, IEventTypeFeatureRepository eventTypeFeatureRepository, IUnitOfWork unitOfWork)
+    public sealed class EnableEventFeatureCommandHandler(
+        IEventFeatureRepository eventFeatureRepository,
+        IEventRepository eventRepository,
+        IEventTypeFeatureRepository eventTypeFeatureRepository,
+        IFeatureRepository featureRepository,
+        IEventWebsiteProvisioningService websiteProvisioning,
+        IUnitOfWork unitOfWork)
         : IRequestHandler<EnableEventFeatureCommand>
     {
         public async Task Handle(EnableEventFeatureCommand request,CancellationToken cancellationToken)
@@ -40,6 +47,17 @@ namespace EventFlow.Event.Application.Features.EventFeature.Commands.EnableEvent
             }
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
+
+            // Turning a feature on also sets up its website page and section
+            var feature = await featureRepository.GetByIdAsync(request.FeatureId, cancellationToken);
+
+            if (feature is not null)
+            {
+                await websiteProvisioning.EnsureFeaturePageAsync(
+                    request.EventId,
+                    feature.Code,
+                    cancellationToken);
+            }
         }
     }
 }

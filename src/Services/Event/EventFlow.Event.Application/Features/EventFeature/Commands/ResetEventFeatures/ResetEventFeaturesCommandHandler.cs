@@ -1,4 +1,5 @@
 using EventFlow.Event.Application.Abstractions.Persistence;
+using EventFlow.Event.Application.Abstractions.Services;
 using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Event.Application.Features.EventFeature.Queries.GetEventFeatures;
 using EventFlow.Event.Domain.Entities;
@@ -10,6 +11,7 @@ public sealed class ResetEventFeaturesCommandHandler(
     IEventRepository eventRepository,
     IEventFeatureRepository eventFeatureRepository,
     IEventTypeFeatureRepository eventTypeFeatureRepository,
+    IEventWebsiteProvisioningService websiteProvisioning,
     IUnitOfWork unitOfWork)
     : IRequestHandler<
         ResetEventFeaturesCommand,
@@ -53,6 +55,15 @@ public sealed class ResetEventFeaturesCommandHandler(
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         var resetFeatures = await eventFeatureRepository.GetByEventIdAsync(request.EventId, cancellationToken);
+
+        // Re-create the website pages of every feature that is on by default
+        foreach (var enabledFeature in resetFeatures.Where(x => x.IsEnabled))
+        {
+            await websiteProvisioning.EnsureFeaturePageAsync(
+                request.EventId,
+                enabledFeature.Feature.Code,
+                cancellationToken);
+        }
 
         return resetFeatures
             .Select(feature => new GetEventFeaturesResponse(
