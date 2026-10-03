@@ -1,5 +1,6 @@
 
 using EventFlow.Event.Application.Abstractions.Persistence;
+using EventFlow.Event.Domain.Entities;
 using MediatR;
 
 namespace EventFlow.Event.Application.Features.EventSettings.Commands.ResetEventSettings
@@ -13,9 +14,13 @@ namespace EventFlow.Event.Application.Features.EventSettings.Commands.ResetEvent
             // Get settings for the event
             var settings = await settingsRepository.GetByEventIdAsync(request.EventId, cancellationToken);
 
-            // Check whether settings exist
             if (settings is null)
-                throw new KeyNotFoundException("Event settings not found.");
+            {
+                // The defaults are identical to a reset, so just create them
+                await settingsRepository.AddAsync(new EventFlow.Event.Domain.Entities.EventSettings(request.EventId), cancellationToken);
+                await unitOfWork.SaveChangesAsync(cancellationToken);
+                return;
+            }
 
             // Restore default settings
             settings.Reset();
