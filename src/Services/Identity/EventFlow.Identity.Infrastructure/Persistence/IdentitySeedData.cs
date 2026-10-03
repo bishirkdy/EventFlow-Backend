@@ -14,6 +14,7 @@ namespace EventFlow.Identity.Infrastructure.Persistence
             var staffRoleId = Guid.Parse("10000000-0000-0000-0000-000000000003");
             var participantRoleId = Guid.Parse("10000000-0000-0000-0000-000000000004");
             var ownerRoleId = Guid.Parse("10000000-0000-0000-0000-000000000005");
+            var photographerRoleId = Guid.Parse("10000000-0000-0000-0000-000000000006");
 
             var eventCreateId = Guid.Parse("20000000-0000-0000-0000-000000000001");
             var eventViewId = Guid.Parse("20000000-0000-0000-0000-000000000002");
@@ -25,6 +26,10 @@ namespace EventFlow.Identity.Infrastructure.Persistence
             var attendanceViewId = Guid.Parse("20000000-0000-0000-0000-000000000006");
             var attendanceManageId = Guid.Parse("20000000-0000-0000-0000-000000000007");
             var eventTeamManageId = Guid.Parse("20000000-0000-0000-0000-000000000008");
+
+            var photoUploadId = Guid.Parse("20000000-0000-0000-0000-000000000009");
+            var photoViewId = Guid.Parse("20000000-0000-0000-0000-000000000010");
+            var photoManageId = Guid.Parse("20000000-0000-0000-0000-000000000011");
 
             modelBuilder.Entity<Role>().HasData(
            new
@@ -60,6 +65,13 @@ namespace EventFlow.Identity.Infrastructure.Persistence
                Id = ownerRoleId,
                Name = "Owner",
                Description = "Event owner",
+               CreatedAt = SeedDate
+           },
+           new
+           {
+               Id = photographerRoleId,
+               Name = "Photographer",
+               Description = "Event photographer",
                CreatedAt = SeedDate
            }
        );
@@ -119,6 +131,27 @@ namespace EventFlow.Identity.Infrastructure.Persistence
                     Id = eventTeamManageId,
                     Name = "event.team.manage",
                     Description = "Manage event team",
+                    CreatedAt = SeedDate
+                },
+                new
+                {
+                    Id = photoUploadId,
+                    Name = "photo.upload",
+                    Description = "Upload photos",
+                    CreatedAt = SeedDate
+                },
+                new
+                {
+                    Id = photoViewId,
+                    Name = "photo.view",
+                    Description = "View photos",
+                    CreatedAt = SeedDate
+                },
+                new
+                {
+                    Id = photoManageId,
+                    Name = "photo.manage",
+                    Description = "Manage photos",
                     CreatedAt = SeedDate
                 }
             );
@@ -226,6 +259,23 @@ namespace EventFlow.Identity.Infrastructure.Persistence
                 {
                     RoleId = ownerRoleId,
                     PermissionId = eventTeamManageId
+                },
+
+                // Photographer permissions
+                new
+                {
+                    RoleId = photographerRoleId,
+                    PermissionId = photoUploadId
+                },
+                new
+                {
+                    RoleId = photographerRoleId,
+                    PermissionId = photoViewId
+                },
+                new
+                {
+                    RoleId = photographerRoleId,
+                    PermissionId = photoManageId
                 }
             );
         }
