@@ -3,6 +3,7 @@ using EventFlow.Event.Application.Abstractions.Storage;
 using EventFlow.Event.Infrastructure.Persistence;
 using EventFlow.Event.Infrastructure.Storage;
 using EventFlow.Event.Infrastructure.Services.Identity;
+using EventFlow.Event.Infrastructure.Services.Website;
 using EventFlow.Event.Application.Abstractions.Services;
 using EventFlow.Infrastructure.Storage.Cloudinary;
 using Microsoft.EntityFrameworkCore;
@@ -40,6 +41,7 @@ namespace EventFlow.Event.Infrastructure
             services.AddScoped<IEventTypeRepository, EventTypeRepository>();
             services.AddScoped<IFeatureRepository, FeatureRepository>();
             services.AddScoped<IEventTypeFeatureRepository,EventTypeFeatureRepository>();
+            services.AddScoped<IEventWebsiteProvisioningService, EventWebsiteProvisioningService>();
 
             services.Configure<CloudinaryStorageOptions>(configuration.GetSection("Cloudinary"));
             services.AddSingleton<ICloudinaryStorage, CloudinaryStorage>();

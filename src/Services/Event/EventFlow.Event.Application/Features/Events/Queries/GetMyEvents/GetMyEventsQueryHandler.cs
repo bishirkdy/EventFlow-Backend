@@ -15,8 +15,21 @@ public sealed class GetMyEventsQueryHandler(
         GetMyEventsQuery request,
         CancellationToken cancellationToken)
     {
-        var events = await eventRepository.GetByCreatedByAsync(
+        var accessibleEventIds = await userDirectoryClient.GetEventIdsForUserAsync(
             request.UserId,
+            cancellationToken);
+
+        var createdEvents = await eventRepository.GetByCreatedByAsync(
+            request.UserId,
+            cancellationToken);
+
+        var eventIds = accessibleEventIds
+            .Concat(createdEvents.Select(x => x.Id))
+            .Distinct()
+            .ToArray();
+
+        var events = await eventRepository.GetByIdsAsync(
+            eventIds,
             cancellationToken);
 
         var responses = mapper.Map<List<GetMyEventsResponse>>(events);

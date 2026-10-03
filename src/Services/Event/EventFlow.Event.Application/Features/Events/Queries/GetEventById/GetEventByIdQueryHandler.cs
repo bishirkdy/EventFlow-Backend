@@ -22,6 +22,12 @@ public sealed class GetEventByIdQueryHandler(
         if (eventEntity is null)
             return null;
 
+        if (request.PublicOnly &&
+            eventEntity.Status != EventFlow.Event.Domain.Enums.EventStatus.Published)
+        {
+            return null;
+        }
+
         var response = mapper.Map<GetEventByIdResponse>(eventEntity);
 
         response.CreatedByName = await userDirectoryClient.GetDisplayNameAsync(

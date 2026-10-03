@@ -57,6 +57,25 @@ namespace EventFlow.Event.Infrastructure.Persistence.Repositories
                 .ToListAsync(cancellationToken);
         }
 
+        public async Task<IReadOnlyList<EventEntity>> GetByIdsAsync(
+            IReadOnlyCollection<Guid> eventIds,
+            CancellationToken cancellationToken = default)
+        {
+            if (eventIds.Count == 0)
+            {
+                return [];
+            }
+
+            return await _context.EventEntities
+                .AsNoTracking()
+                .Include(x => x.EventType)
+                .Include(x => x.Images.OrderBy(image => image.DisplayOrder))
+                .AsSplitQuery()
+                .Where(x => eventIds.Contains(x.Id))
+                .OrderByDescending(x => x.CreatedAt)
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<IReadOnlyList<EventEntity>> GetPublishedUpcomingAsync(int take, CancellationToken cancellationToken = default)
         {
             return await _context.EventEntities

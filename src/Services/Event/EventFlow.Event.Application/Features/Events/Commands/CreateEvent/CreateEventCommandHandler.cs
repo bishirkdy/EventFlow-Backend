@@ -22,6 +22,7 @@ public sealed class CreateEventCommandHandler
     private readonly IEventTypeRepository _eventTypeRepository;
     private readonly IEventFeatureRepository _eventFeatureRepository;
     private readonly IEventTypeFeatureRepository _eventTypeFeatureRepository;
+    private readonly IEventWebsiteProvisioningService _websiteProvisioningService;
     private readonly ILogger<CreateEventCommandHandler> _logger;
 
     public CreateEventCommandHandler(
@@ -33,6 +34,7 @@ public sealed class CreateEventCommandHandler
         IEventTypeRepository eventTypeRepository,
         IEventTypeFeatureRepository eventTypeFeatureRepository,
         IEventFeatureRepository eventFeatureRepository,
+        IEventWebsiteProvisioningService websiteProvisioningService,
         ILogger<CreateEventCommandHandler> logger)
     {
         _eventRepository = eventRepository;
@@ -43,6 +45,7 @@ public sealed class CreateEventCommandHandler
         _eventTypeRepository = eventTypeRepository;
         _eventTypeFeatureRepository = eventTypeFeatureRepository;
         _eventFeatureRepository = eventFeatureRepository;
+        _websiteProvisioningService = websiteProvisioningService;
         _logger = logger;
     }
 
@@ -122,8 +125,11 @@ public sealed class CreateEventCommandHandler
                         index));
             }
 
-            // Add event
+            // Add event and provision a complete starter website.
             await _eventRepository.AddAsync(eventEntity, cancellationToken);
+            await _websiteProvisioningService.EnsureInitialWebsiteAsync(
+                eventEntity.Id,
+                cancellationToken);
 
             // Save event + features + images.
             await _unitOfWork.SaveChangesAsync(cancellationToken);

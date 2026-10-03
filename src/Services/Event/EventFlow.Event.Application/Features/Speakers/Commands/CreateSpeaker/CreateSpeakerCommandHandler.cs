@@ -1,12 +1,13 @@
 using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.Event.Application.Abstractions.Storage;
+using EventFlow.Event.Application.Abstractions.Services;
 using EventFlow.Event.Application.Common;
 using EventFlow.Event.Domain.Entities;
 using MediatR;
 
 namespace EventFlow.Event.Application.Features.Speakers.Commands.CreateSpeaker;
 
-public sealed class CreateSpeakerCommandHandler(ISpeakerRepository repository, IEventFeatureRepository featureRepository, IFileStorage fileStorage, IUnitOfWork unitOfWork) : IRequestHandler<CreateSpeakerCommand, Guid>
+public sealed class CreateSpeakerCommandHandler(ISpeakerRepository repository, IEventFeatureRepository featureRepository, IFileStorage fileStorage, IUnitOfWork unitOfWork, IEventWebsiteProvisioningService websiteProvisioningService) : IRequestHandler<CreateSpeakerCommand, Guid>
 {
     public async Task<Guid> Handle(CreateSpeakerCommand request, CancellationToken cancellationToken)
     {
@@ -17,6 +18,7 @@ public sealed class CreateSpeakerCommandHandler(ISpeakerRepository repository, I
         var speaker = new Speaker(request.EventId, request.Name.Trim(), request.Bio, request.Designation, request.Organization, request.Email, imageUrl, request.DisplayOrder);
         await repository.AddAsync(speaker, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+        await websiteProvisioningService.EnsureResourcePageAsync(request.EventId, "speakers", cancellationToken);
         return speaker.Id;
     }
 }

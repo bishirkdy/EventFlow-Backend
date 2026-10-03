@@ -1,5 +1,6 @@
 using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.Event.Domain.Entities;
+using EventFlow.Event.Application.Abstractions.Services;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Text;
 
 namespace EventFlow.Event.Application.Features.Sections.Commands.CreateSection
 {
-    public sealed class CreateSectionCommandHandler(ISectionRepository sectionRepository, IUnitOfWork unitOfWork)
+    public sealed class CreateSectionCommandHandler(ISectionRepository sectionRepository, IUnitOfWork unitOfWork, IEventWebsiteProvisioningService websiteProvisioningService)
         : IRequestHandler<CreateSectionCommand, Guid>
     {
         public async Task<Guid> Handle(
@@ -23,6 +24,7 @@ namespace EventFlow.Event.Application.Features.Sections.Commands.CreateSection
 
             await sectionRepository.AddAsync(section, cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);
+            await websiteProvisioningService.EnsureResourcePageAsync(request.EventId, "schedule", cancellationToken);
 
             return section.Id;
         }

@@ -1,4 +1,3 @@
-using AutoMapper;
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.EventPages;
 using EventFlow.SharedKernel.Exceptions;
@@ -53,7 +52,7 @@ namespace EventFlow.Event.Api.Controllers
         public async Task<IActionResult> GetEventPagesByEvent(Guid eventId,CancellationToken cancellationToken)
         {
             // Send query
-            var pages = await sender.Send(new GetEventPagesByEventQuery(eventId),cancellationToken);
+            var pages = await sender.Send(new GetEventPagesByEventQuery(eventId, IncludeUnpublished: false),cancellationToken);
 
             var response =
                 new ApiResponse<IReadOnlyList<GetEventPagesByEventResponse>>
@@ -65,6 +64,42 @@ namespace EventFlow.Event.Api.Controllers
                 };
 
             return Ok(response);
+        }
+
+        [HttpGet("{eventId:guid}/manage-pages")]
+        public async Task<IActionResult> GetManageEventPages(
+            Guid eventId,
+            CancellationToken cancellationToken)
+        {
+            var pages = await sender.Send(
+                new GetEventPagesByEventQuery(eventId, IncludeUnpublished: true),
+                cancellationToken);
+
+            return Ok(new ApiResponse<IReadOnlyList<GetEventPagesByEventResponse>>
+            {
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
+                Message = "Event pages retrieved successfully.",
+                Data = pages,
+            });
+        }
+
+        [HttpGet("{eventId:guid}/preview")]
+        public async Task<IActionResult> GetPreviewPages(
+            Guid eventId,
+            CancellationToken cancellationToken)
+        {
+            var pages = await sender.Send(
+                new GetEventPagesByEventQuery(eventId, IncludeUnpublished: true),
+                cancellationToken);
+
+            return Ok(new ApiResponse<IReadOnlyList<GetEventPagesByEventResponse>>
+            {
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
+                Message = "Event preview pages retrieved successfully.",
+                Data = pages,
+            });
         }
 
         // Reorder event pages
@@ -159,6 +194,30 @@ namespace EventFlow.Event.Api.Controllers
                 StatusCode = StatusCodes.Status200OK,
                 Message = "Event page updated successfully.",
                 Data = null
+            });
+        }
+
+        [HttpGet("{eventId:guid}/manage-pages/{id:guid}")]
+        public async Task<IActionResult> GetManageEventPageById(
+            Guid eventId,
+            Guid id,
+            CancellationToken cancellationToken)
+        {
+            var page = await sender.Send(
+                new GetEventPageByIdQuery(eventId, id, IncludeUnpublished: true),
+                cancellationToken);
+
+            if (page is null)
+            {
+                throw new NotFoundException("Event page not found.");
+            }
+
+            return Ok(new ApiResponse<GetEventPageByIdResponse>
+            {
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
+                Message = "Event page retrieved successfully.",
+                Data = page,
             });
         }
 

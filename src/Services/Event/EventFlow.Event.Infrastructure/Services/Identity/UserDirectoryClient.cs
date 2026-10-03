@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 
 namespace EventFlow.Event.Infrastructure.Services.Identity;
 
-// Client used to communicate with the Identity Service.
 public sealed class UserDirectoryClient(
     HttpClient httpClient,
     IConfiguration configuration) : IUserDirectoryClient
@@ -14,13 +13,18 @@ public sealed class UserDirectoryClient(
         ?? throw new InvalidOperationException(
             "InternalService:Key is not configured.");
 
-    // Gets the display name of a user by user ID.
     public async Task<string?> GetDisplayNameAsync(
         Guid userId,
         CancellationToken cancellationToken = default)
     {
-        using var response = await httpClient.GetAsync(
-            $"api/v1/users/{userId:D}/summary",
+        using var request = new HttpRequestMessage(
+            HttpMethod.Get,
+            $"api/v1/users/{userId:D}/summary");
+
+        request.Headers.Add("X-Internal-Service-Key", _serviceKey);
+
+        using var response = await httpClient.SendAsync(
+            request,
             cancellationToken);
 
         if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -30,9 +34,8 @@ public sealed class UserDirectoryClient(
 
         response.EnsureSuccessStatusCode();
 
-        var envelope =
-            await response.Content.ReadFromJsonAsync<ApiResponse<UserSummary>>(
-                cancellationToken);
+        var envelope = await response.Content.ReadFromJsonAsync<
+            ApiResponse<UserSummary>>(cancellationToken);
 
         if (envelope is null || !envelope.IsSuccess)
         {
@@ -42,7 +45,6 @@ public sealed class UserDirectoryClient(
         return envelope.Data?.DisplayName;
     }
 
-    // Assigns the event creator as the Owner of the event.
     public async Task AssignOwnerAsync(
         Guid userId,
         Guid eventId,
@@ -59,9 +61,7 @@ public sealed class UserDirectoryClient(
             })
         };
 
-        request.Headers.Add(
-            "X-Internal-Service-Key",
-            _serviceKey);
+        request.Headers.Add("X-Internal-Service-Key", _serviceKey);
 
         using var response = await httpClient.SendAsync(
             request,
@@ -70,7 +70,32 @@ public sealed class UserDirectoryClient(
         response.EnsureSuccessStatusCode();
     }
 
-    // Represents the standard API response from the Identity Service.
+    public async Task<IReadOnlyList<Guid>> GetEventIdsForUserAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        using var request = new HttpRequestMessage(
+            HttpMethod.Get,
+            $"api/v1/users/{userId:D}/event-roles");
+
+        request.Headers.Add("X-Internal-Service-Key", _serviceKey);
+
+        using var response = await httpClient.SendAsync(
+            request,
+            cancellationToken);
+
+        response.EnsureSuccessStatusCode();
+
+        var envelope = await response.Content.ReadFromJsonAsync<
+            ApiResponse<IReadOnlyList<UserEventRoleLookup>>>(cancellationToken);
+
+        return envelope?.Data?
+            .Select(x => x.EventId)
+            .Distinct()
+            .ToArray()
+            ?? [];
+    }
+
     private sealed record ApiResponse<T>(
         bool IsSuccess,
         int StatusCode,
@@ -78,7 +103,10 @@ public sealed class UserDirectoryClient(
         string Message,
         List<string>? Errors);
 
-    // Represents the user information returned by the Identity Service.
+    private sealed record UserEventRoleLookup(
+        Guid EventId,
+        IReadOnlyList<string> RoleNames);
+
     private sealed record UserSummary(
         Guid Id,
         string UserName,

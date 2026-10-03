@@ -1,5 +1,6 @@
 using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.Event.Application.Abstractions.Storage;
+using EventFlow.Event.Application.Abstractions.Services;
 using EventFlow.Event.Application.Common;
 using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Event.Domain.Entities;
@@ -15,7 +16,8 @@ namespace EventFlow.Event.Application.Features.Sessions.Commands.CreateSession
         IVenueRepository venueRepository,
         IEventRepository eventRepository,
         IUnitOfWork unitOfWork,
-        IFileStorage fileStorage) : IRequestHandler<CreateSessionCommand, Guid>
+        IFileStorage fileStorage,
+        IEventWebsiteProvisioningService websiteProvisioningService) : IRequestHandler<CreateSessionCommand, Guid>
     {
         public async Task<Guid> Handle(CreateSessionCommand request, CancellationToken cancellationToken)
         {
@@ -58,6 +60,7 @@ namespace EventFlow.Event.Application.Features.Sessions.Commands.CreateSession
             var session = new Session(request.EventId, request.SectionId, request.Title, request.Description, request.SessionType, request.Capacity, startUtc, endUtc, request.VenueId, imageUrl);
             await sessionRepository.AddAsync(session, cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);
+            await websiteProvisioningService.EnsureResourcePageAsync(request.EventId, "schedule", cancellationToken);
             return session.Id;
         }
 

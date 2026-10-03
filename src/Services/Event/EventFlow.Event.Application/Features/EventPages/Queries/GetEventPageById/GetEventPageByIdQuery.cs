@@ -1,10 +1,9 @@
-﻿
-
 using MediatR;
 
-namespace EventFlow.Event.Application.Features.EventPages.Queries.GetEventPageById
-{
-    public sealed record GetEventPageByIdQuery(
-        Guid EventId,
-        Guid Id) : IRequest<GetEventPageByIdResponse?>;
-}
+namespace EventFlow.Event.Application.Features.EventPages.Queries.GetEventPageById;
+
+public sealed record GetEventPageByIdQuery(
+    Guid EventId,
+    Guid Id,
+    bool IncludeUnpublished = false)
+    : IRequest<GetEventPageByIdResponse?>;

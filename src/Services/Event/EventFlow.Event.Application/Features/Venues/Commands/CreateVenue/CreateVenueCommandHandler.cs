@@ -1,11 +1,12 @@
 using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.Event.Application.Abstractions.Storage;
+using EventFlow.Event.Application.Abstractions.Services;
 using EventFlow.Event.Domain.Entities;
 using MediatR;
 
 namespace EventFlow.Event.Application.Features.Venues.Commands.CreateVenue
 {
-    public sealed class CreateVenueCommandHandler(IVenueRepository venueRepository, IUnitOfWork unitOfWork, IFileStorage fileStorage)
+    public sealed class CreateVenueCommandHandler(IVenueRepository venueRepository, IUnitOfWork unitOfWork, IFileStorage fileStorage, IEventWebsiteProvisioningService websiteProvisioningService)
         : IRequestHandler<CreateVenueCommand, Guid>
     {
         public async Task<Guid> Handle(CreateVenueCommand request, CancellationToken cancellationToken)
@@ -20,6 +21,7 @@ namespace EventFlow.Event.Application.Features.Venues.Commands.CreateVenue
             var venue = new Venue(request.EventId, request.Name, request.Description, request.Address, request.Capacity, imageUrl);
             await venueRepository.AddAsync(venue, cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);
+            await websiteProvisioningService.EnsureResourcePageAsync(request.EventId, "venue", cancellationToken);
             return venue.Id;
         }
     }

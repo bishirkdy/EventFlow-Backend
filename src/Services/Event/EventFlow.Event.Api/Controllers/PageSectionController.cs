@@ -1,4 +1,3 @@
-using AutoMapper;
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.PageSection;
 using EventFlow.Event.Application.Features.PageSection.Commands.CreatePageSection;
@@ -6,6 +5,7 @@ using EventFlow.Event.Application.Features.PageSection.Commands.DeletePageSectio
 using EventFlow.Event.Application.Features.PageSection.Commands.ReorderPageSections;
 using EventFlow.Event.Application.Features.PageSection.Commands.UpdatePageSection;
 using EventFlow.Event.Application.Features.PageSection.Queries.GetPageSections;
+using EventFlow.Event.Application.Features.PageSection.Queries.GetPageSectionsByEvent;
 using EventFlow.Infrastructure.Storage.Cloudinary;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -60,13 +60,46 @@ namespace EventFlow.Event.Api.Controllers
             });
         }
 
+        [AllowAnonymous]
+        [HttpGet("event/{eventId:guid}/sections")]
+        public async Task<IActionResult> GetPageSectionsByEvent(Guid eventId, CancellationToken cancellationToken)
+        {
+            var sections = await sender.Send(
+                new GetPageSectionsByEventQuery(eventId, IncludeUnpublished: false),
+                cancellationToken);
+
+            return Ok(new ApiResponse<IReadOnlyList<GetPageSectionsResponse>>
+            {
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
+                Message = "Published event page sections retrieved successfully.",
+                Data = sections,
+            });
+        }
+
+        [HttpGet("event/{eventId:guid}/preview-sections")]
+        public async Task<IActionResult> GetPreviewPageSectionsByEvent(Guid eventId, CancellationToken cancellationToken)
+        {
+            var sections = await sender.Send(
+                new GetPageSectionsByEventQuery(eventId, IncludeUnpublished: true),
+                cancellationToken);
+
+            return Ok(new ApiResponse<IReadOnlyList<GetPageSectionsResponse>>
+            {
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
+                Message = "Event preview page sections retrieved successfully.",
+                Data = sections,
+            });
+        }
+
         //Get page sections
         [AllowAnonymous]
         [HttpGet("{pageId:guid}/sections")]
         public async Task<IActionResult> GetPageSections(Guid pageId, CancellationToken cancellationToken)
         {
             // Send query
-            var sections = await sender.Send(new GetPageSectionsQuery(pageId),cancellationToken);
+            var sections = await sender.Send(new GetPageSectionsQuery(pageId, IncludeUnpublished: false),cancellationToken);
 
             var response = new ApiResponse<IReadOnlyList<GetPageSectionsResponse>>
                 {
@@ -77,6 +110,22 @@ namespace EventFlow.Event.Api.Controllers
                 };
 
             return Ok(response);
+        }
+
+        [HttpGet("{pageId:guid}/manage-sections")]
+        public async Task<IActionResult> GetManagePageSections(Guid pageId, CancellationToken cancellationToken)
+        {
+            var sections = await sender.Send(
+                new GetPageSectionsQuery(pageId, IncludeUnpublished: true),
+                cancellationToken);
+
+            return Ok(new ApiResponse<IReadOnlyList<GetPageSectionsResponse>>
+            {
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
+                Message = "Page sections retrieved successfully.",
+                Data = sections,
+            });
         }
 
         //Update event sections by id

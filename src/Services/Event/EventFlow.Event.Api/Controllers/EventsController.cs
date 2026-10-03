@@ -73,6 +73,38 @@ namespace EventFlow.Event.Api.Controllers
         }
 
         [AllowAnonymous]
+        [HttpGet("published/{id:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<GetEventResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetPublishedById(
+            Guid id,
+            CancellationToken cancellationToken)
+        {
+            var result = await sender.Send(
+                new GetEventByIdQuery(id, PublicOnly: true),
+                cancellationToken);
+
+            if (result is null)
+            {
+                return NotFound(new ApiResponse<GetEventResponse>
+                {
+                    IsSuccess = false,
+                    StatusCode = StatusCodes.Status404NotFound,
+                    Message = "Published event not found.",
+                    Data = null,
+                });
+            }
+
+            return Ok(new ApiResponse<GetEventResponse>
+            {
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
+                Message = "Published event retrieved successfully.",
+                Data = mapper.Map<GetEventResponse>(result),
+            });
+        }
+
+        [AllowAnonymous]
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<GetEventResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
