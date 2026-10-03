@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
@@ -95,7 +96,10 @@ public sealed class ApproveRegistrationCommandHandler(
                 TicketNumber =
                     $"TKT-{now:yyyyMMdd}-{Random.Shared.Next(100000, 999999)}",
                 QrCodeValue =
-                    $"eventflow:{command.EventId}:{registration.Participant.Id}:{ticketId}",
+                    Convert.ToBase64String(RandomNumberGenerator.GetBytes(32))
+                        .Replace("+", "-")
+                        .Replace("/", "_")
+                        .TrimEnd('='),
                 IssuedAtUtc = now
             };
         }
