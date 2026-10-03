@@ -22,6 +22,8 @@ public static class DependencyInjection
         services.AddScoped<IParticipantRepository, ParticipantRepository>();
         services.AddScoped<ITicketRepository, TicketRepository>();
         services.AddScoped<IRegistrationFormRepository, RegistrationFormRepository>();
+        services.AddScoped<ICertificateRepository, CertificateRepository>();
+        services.AddScoped<ICertificateSettingsRepository, CertificateSettingsRepository>();
 
         return services;
     }
