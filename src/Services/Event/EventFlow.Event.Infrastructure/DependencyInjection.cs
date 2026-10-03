@@ -40,9 +40,10 @@ namespace EventFlow.Event.Infrastructure
             services.AddScoped<INavigationItemRepository, NavigationItemRepository>();
             services.AddScoped<IEventTypeRepository, EventTypeRepository>();
             services.AddScoped<IFeatureRepository, FeatureRepository>();
-            services.AddScoped<IEventTypeFeatureRepository,EventTypeFeatureRepository>();
-            services.AddScoped<IEventWebsiteProvisioningService, EventWebsiteProvisioningService>();
+services.AddScoped<IEventTypeFeatureRepository,EventTypeFeatureRepository>();
+            services.AddScoped<IEventPhotoRepository, EventPhotoRepository>();
 
+            services.AddScoped<IEventWebsiteProvisioningService, EventWebsiteProvisioningService>();
             services.Configure<CloudinaryStorageOptions>(configuration.GetSection("Cloudinary"));
             services.AddSingleton<ICloudinaryStorage, CloudinaryStorage>();
             services.AddScoped<IFileStorage, CloudinaryFileStorage>();
