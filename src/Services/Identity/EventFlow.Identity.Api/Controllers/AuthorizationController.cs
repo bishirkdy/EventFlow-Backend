@@ -2,6 +2,8 @@ using EventFlow.Contracts.Common;
 using EventFlow.Identity.Api.Contracts.Authorization;
 using EventFlow.Identity.Application.Abstractions.Authorization;
 using EventFlow.Identity.Application.Features.Commands.AssignOwnerRole;
+using EventFlow.Identity.Application.Features.Commands.AssignEventRole;
+using EventFlow.Identity.Application.Features.Commands.RemoveEventRole;
 using MediatR;
 using EventFlow.Security.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -51,6 +53,42 @@ namespace EventFlow.Identity.Api.Controllers
             // Return the permission result.
             return Ok(
                 ApiResponse<bool>.Success(hasPermission, "Permission check completed successfully."));
+        }
+
+        [HttpPost("assign-event-role")]
+        public async Task<IActionResult> AssignEventRole(
+            AssignEventRoleRequest request,
+            CancellationToken cancellationToken)
+        {
+            var userEventRoleId = await _sender.Send(
+                new AssignEventRoleCommand(
+                    request.UserId,
+                    request.EventId,
+                    request.RoleName),
+                cancellationToken);
+
+            return Ok(
+                ApiResponse<Guid>.Success(
+                    userEventRoleId,
+                    "Event role assigned successfully."));
+        }
+
+        [HttpPost("remove-event-role")]
+        public async Task<IActionResult> RemoveEventRole(
+            RemoveEventRoleRequest request,
+            CancellationToken cancellationToken)
+        {
+            await _sender.Send(
+                new RemoveEventRoleCommand(
+                    request.UserId,
+                    request.EventId,
+                    request.RoleName),
+                cancellationToken);
+
+            return Ok(
+                ApiResponse<object?>.Success(
+                    null,
+                    "Event role removed successfully."));
         }
     }
 }

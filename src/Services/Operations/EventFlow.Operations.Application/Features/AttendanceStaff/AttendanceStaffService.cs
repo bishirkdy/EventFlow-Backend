@@ -8,6 +8,8 @@ namespace EventFlow.Operations.Application.Features.AttendanceStaff;
 
 public sealed class AttendanceStaffService(IOperationsDbContext db, IEventAuthorizationClient authorization, IIdentityClient identity)
 {
+    private const string AttendanceStaffRoleName = "AttendanceStaff";
+
     public async Task<ApiResponse<AttendanceStaffDto>> AssignAsync(Guid eventId, Guid actorUserId, AssignAttendanceStaffRequest request, CancellationToken ct)
     {
         if (!await authorization.HasPermissionAsync(actorUserId, eventId, "event.team.manage", ct))
@@ -24,11 +26,26 @@ public sealed class AttendanceStaffService(IOperationsDbContext db, IEventAuthor
             db.AttendanceStaffAssignments,
             x => x.EventId == eventId && x.UserId == user.Id && x.ScopeType == request.ScopeType && x.ScopeId == request.ScopeId && x.IsActive, ct);
         if (exists is not null)
+        {
+            // Repair older assignments that predate event-role provisioning.
+            await identity.AssignEventRoleAsync(user.Id, eventId, AttendanceStaffRoleName, ct);
             return ApiResponse<AttendanceStaffDto>.Success(ToDto(exists, user.Email), "Attendance staff assignment already exists.");
+        }
 
         var entity = new AttendanceStaffAssignment { EventId = eventId, UserId = user.Id, ScopeType = request.ScopeType, ScopeId = request.ScopeId };
         db.AttendanceStaffAssignments.Add(entity);
         await db.SaveChangesAsync(ct);
+
+        // The assignee needs the AttendanceStaff event role so they can open
+        // the staff portal (frontend guard + event.view checks).
+        var roleAssigned = await identity.AssignEventRoleAsync(user.Id, eventId, AttendanceStaffRoleName, ct);
+        if (!roleAssigned)
+        {
+            db.AttendanceStaffAssignments.Remove(entity);
+            await db.SaveChangesAsync(ct);
+            return ApiResponse<AttendanceStaffDto>.Fail(["Attendance staff assignment failed because the event role could not be assigned."]);
+        }
+
         return ApiResponse<AttendanceStaffDto>.Success(ToDto(entity, user.Email), "Attendance staff assigned successfully.");
     }
 
@@ -55,6 +72,14 @@ public sealed class AttendanceStaffService(IOperationsDbContext db, IEventAuthor
         if (entity is null) return ApiResponse<object?>.Fail(["Attendance staff assignment not found."]);
         entity.IsActive = false; entity.RevokedAtUtc = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
+
+        // Drop the event role only when no other active assignment remains.
+        var stillAssigned = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AnyAsync(
+            db.AttendanceStaffAssignments,
+            x => x.EventId == eventId && x.UserId == entity.UserId && x.IsActive, ct);
+        if (!stillAssigned)
+            await identity.RemoveEventRoleAsync(entity.UserId, eventId, AttendanceStaffRoleName, ct);
+
         return ApiResponse<object?>.Success(null, "Attendance staff assignment revoked.");
     }
 

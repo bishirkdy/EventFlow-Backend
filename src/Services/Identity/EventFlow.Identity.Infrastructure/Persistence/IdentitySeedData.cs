@@ -15,6 +15,7 @@ namespace EventFlow.Identity.Infrastructure.Persistence
             var participantRoleId = Guid.Parse("10000000-0000-0000-0000-000000000004");
             var ownerRoleId = Guid.Parse("10000000-0000-0000-0000-000000000005");
             var photographerRoleId = Guid.Parse("10000000-0000-0000-0000-000000000006");
+            var attendanceStaffRoleId = Guid.Parse("10000000-0000-0000-0000-000000000007");
 
             var eventCreateId = Guid.Parse("20000000-0000-0000-0000-000000000001");
             var eventViewId = Guid.Parse("20000000-0000-0000-0000-000000000002");
@@ -72,6 +73,13 @@ namespace EventFlow.Identity.Infrastructure.Persistence
                Id = photographerRoleId,
                Name = "Photographer",
                Description = "Event photographer",
+               CreatedAt = SeedDate
+           },
+           new
+           {
+               Id = attendanceStaffRoleId,
+               Name = "AttendanceStaff",
+               Description = "Event attendance staff",
                CreatedAt = SeedDate
            }
        );
@@ -276,6 +284,24 @@ namespace EventFlow.Identity.Infrastructure.Persistence
                 {
                     RoleId = photographerRoleId,
                     PermissionId = photoManageId
+                },
+
+                // Attendance staff permissions (event.view is required for
+                // the roles endpoint, attendance dashboard and staff list)
+                new
+                {
+                    RoleId = attendanceStaffRoleId,
+                    PermissionId = eventViewId
+                },
+                new
+                {
+                    RoleId = attendanceStaffRoleId,
+                    PermissionId = attendanceViewId
+                },
+                new
+                {
+                    RoleId = attendanceStaffRoleId,
+                    PermissionId = attendanceManageId
                 }
             );
         }
