@@ -14,6 +14,7 @@ namespace EventFlow.Event.Application.Features.PageSection.Commands.CreatePageSe
         {
             var existingSections = await pageSectionRepository.GetByPageIdAsync(
                 request.PageId,
+                includeUnpublished: true,
                 cancellationToken);
 
             var displayOrder = existingSections.Count == 0

@@ -25,6 +25,7 @@ public sealed class PageSectionRepository(EventCoreDbContext context)
         if (!includeUnpublished)
         {
             query = query.Where(section =>
+                section.IsVisible &&
                 Context.EventPages.Any(page =>
                     page.Id == section.PageId &&
                     page.IsPublished &&
@@ -47,6 +48,7 @@ public sealed class PageSectionRepository(EventCoreDbContext context)
         if (!includeUnpublished)
         {
             query = query.Where(section =>
+                section.IsVisible &&
                 Context.EventPages.Any(page => page.Id == section.PageId && page.IsPublished) &&
                 Context.EventEntities.Any(eventEntity =>
                     eventEntity.Id == eventId &&

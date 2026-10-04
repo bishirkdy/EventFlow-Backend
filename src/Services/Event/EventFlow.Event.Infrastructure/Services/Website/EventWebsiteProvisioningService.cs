@@ -115,6 +115,7 @@ public sealed class EventWebsiteProvisioningService(
         {
             var sections = await pageSections.GetByPageIdAsync(
                 page.Id,
+                includeUnpublished: true,
                 cancellationToken);
 
             var displayOrder = sections.Count == 0

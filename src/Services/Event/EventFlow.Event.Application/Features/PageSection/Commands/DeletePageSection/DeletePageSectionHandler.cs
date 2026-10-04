@@ -21,6 +21,7 @@ namespace EventFlow.Event.Application.Features.PageSection.Commands.DeletePageSe
 
             var remainingSections = (await pageSectionRepository.GetByPageIdAsync(
                 request.PageId,
+                includeUnpublished: true,
                 cancellationToken))
                 .Where(x => x.Id != section.Id)
                 .OrderBy(x => x.DisplayOrder)

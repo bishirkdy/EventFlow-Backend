@@ -12,7 +12,10 @@ namespace EventFlow.Event.Application.Features.PageSection.Commands.ReorderPageS
         public async Task Handle(ReorderPageSectionsCommand request, CancellationToken cancellationToken)
         {
             // Get all sections belonging to the page
-            var sections = await pageSectionRepository.GetByPageIdAsync(request.PageId,cancellationToken);
+            var sections = await pageSectionRepository.GetByPageIdAsync(
+                request.PageId,
+                includeUnpublished: true,
+                cancellationToken);
 
             // Validate all section IDs belong to this page
             if (sections.Count != request.SectionIds.Count || request.SectionIds.Any(id => sections.All(x => x.Id != id)))
