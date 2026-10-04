@@ -2,7 +2,7 @@
 
 Source: `test.txt` (flows 02-19) x implemented roles: `participant`, `photographer`, `organizer`, `owner`, `attendance-staff`.
 
-Status legend: **PASS** verified working / **FIX** planned repair (text after arrow names the fix); statuses flip to **FIXED** in the release commit after verification.
+Status legend: **PASS** verified working / **FIXED** gap repaired and verified in this release (text after arrow names the fix).
 
 ## Role capability matrix
 
@@ -30,20 +30,20 @@ Status legend: **PASS** verified working / **FIX** planned repair (text after ar
 | 02 | Participant registration + participant creation + status | `Registration/.../RegistrationsController`, `ParticipantsController`, `CreateRegistrationCommandHandler` | `platform/registration/pages/public/register`, `registration-form` | PASS |
 | 03 | Organizer registration management (list/search/filter/details) | `RegistrationsController` List/Get, `GetRegistrationAnalytics` | `organizer/pages/registration/{registrations,participants,registration-details}` | PASS |
 | 04 | Approve/reject + status + reason + ticket trigger | `ApproveRegistration`, `RejectRegistration` handlers (capacity-checked) | `registrations.ts`, `registration-details.ts` | PASS |
-| 05 | Cancellation + ticket revocation + capacity release | `CancelRegistration` handler; counts filter `Approved` only | `my-registrations.ts` | FIX: auto-promote on cancel/reject |
+| 05 | Cancellation + ticket revocation + capacity release | `CancelRegistration` handler; counts filter `Approved` only | `my-registrations.ts` | FIXED: auto-promote on cancel/reject |
 | 06 | Capacity + availability + full handling | `Create/Approve/Promote` capacity checks (`CapacityMode`, `Capacity`) | `registration-form.ts` capacity settings | PASS |
-| 07 | Waitlist queue + position + promotion | `WaitlistRegistration`, `PromoteWaitlistedRegistration` | `registration.service.ts` waitlist/promote | FIX: auto-promote on cancel/reject |
-| 08 | Participant portal (events, registration, ticket, schedule, attendance, photos, certificate, feedback) | composed across services | `platform/my-events`, `attendance-history`, `photos/*`, `certificates/my-certificate`, `website.ts` | FIX: add feedback module |
+| 07 | Waitlist queue + position + promotion | `WaitlistRegistration`, `PromoteWaitlistedRegistration` | `registration.service.ts` waitlist/promote | FIXED: auto-promote on cancel/reject |
+| 08 | Participant portal (events, registration, ticket, schedule, attendance, photos, certificate, feedback) | composed across services | `platform/my-events`, `attendance-history`, `photos/*`, `certificates/my-certificate`, `website.ts` | FIXED: feedback module (submit + results) |
 | 09 | Ticket + secure QR + verification | `TicketsController`, `verify-internal` -> `Operations AttendanceService` | `ticket.ts`, `qr-code.ts` | PASS |
-| 10 | Sections + sessions + venues + speakers + conflict | `SectionController`, `SessionController`, `VenueController`, `SpeakerController`; conflict in `Create/UpdateSessionCommandHandler` | `organizer/pages/{sections,sessions,venues,speakers}/*` | FIX: speaker conflict check |
-| 11 | Scoped attendance staff + dashboard | `AttendanceStaffController`, `AttendanceStaffService` | `organizer/pages/attendance-staff` + staff routes | FIX: staff routes + guard + scope UI |
-| 12 | Event check-in/out QR + verification | `AttendanceController` `checkInQr`/`checkInManual`/`checkOut`, `CanOperateAsync` | `attendance-staff/pages/scanner`, `organizer/pages/attendance` | FIX: send scope from scanner |
-| 13 | Session attendance + participation tracking | `AttendanceController` with `sectionId/sessionId` | scanner + attendance pages | FIX: scope picker |
+| 10 | Sections + sessions + venues + speakers + conflict | `SectionController`, `SessionController`, `VenueController`, `SpeakerController`; conflict in `Create/UpdateSessionCommandHandler` | `organizer/pages/{sections,sessions,venues,speakers}/*` | FIXED: speaker conflict check (assign + reschedule) |
+| 11 | Scoped attendance staff + dashboard | `AttendanceStaffController`, `AttendanceStaffService` | `organizer/pages/attendance-staff` + staff routes | FIXED: staff routes + guard + scope UI |
+| 12 | Event check-in/out QR + verification | `AttendanceController` `checkInQr`/`checkInManual`/`checkOut`, `CanOperateAsync` | `attendance-staff/pages/scanner`, `organizer/pages/attendance` | FIXED: send scope from scanner |
+| 13 | Session attendance + participation tracking | `AttendanceController` with `sectionId/sessionId` | scanner + attendance pages | FIXED: scope picker |
 | 14 | Attendance history + % | `GetAttendanceHistory`, `GetAttendanceAnalytics` | `platform/attendance-history` | PASS |
-| 15 | Notifications + targeted + email + background | `NotificationsController`, `NotificationWorker`, `IEmailSender` | `organizer/pages/notifications` | FIX: worker drain + MailKit |
-| 16 | Photographer upload + media + Cloudinary | `EventPhotoController`, `PhotographerInvitationController` | `photographer/dashboard/*`, `photo-moderation-grid`, gallery | FIX: multipart upload + `photo.*` |
+| 15 | Notifications + targeted + email + background | `NotificationsController`, `NotificationWorker`, `IEmailSender` | `organizer/pages/notifications` | FIXED: worker drain + MailKit SMTP |
+| 16 | Photographer upload + media + Cloudinary | `EventPhotoController`, `PhotographerInvitationController` | `photographer/dashboard/*`, `photo-moderation-grid`, gallery | FIXED: multipart upload + `photo.*` |
 | 17 | Certificates rules + eligibility + generation + download | `CertificatesController`, `CertificateVerifyController` | `my-certificate`, `certificate-verify`, `certificate-settings` | PASS |
-| 18 | Feedback event/session/speaker/venue + organizer results | `Features/Feedback/*` (Event service) | participant submit + organizer results pages | FIX: add feedback module |
+| 18 | Feedback event/session/speaker/venue + organizer results | `Features/Feedback/*` (Event service) | participant submit + organizer results pages | FIXED: feedback module (submit + results) |
 | 19 | Organizer analytics | `EventAnalyticsController`, `RegistrationAnalyticsController`, `CertificateAnalyticsController`, `AttendanceAnalyticsController`, `EventTeamAnalyticsController` | `owner-dashboard`, `organizer/pages/overview` | PASS |
 
 ## Gateway routes (YARP)
