@@ -15,7 +15,7 @@ public sealed class Result<T> : Result
 
     public static Result<T> Success(T value) => new(value);
 
-    public static Result<T> Failure(Error error)
+    public static new Result<T> Failure(Error error)
     {
         ArgumentNullException.ThrowIfNull(error);
         return new Result<T>(error);
