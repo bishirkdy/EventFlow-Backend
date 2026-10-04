@@ -1,4 +1,5 @@
 using EventFlow.Api.Extensions;
+using EventFlow.Operations.Application;
 using EventFlow.Operations.Infrastructure;
 using EventFlow.Security.Authentication;
 
