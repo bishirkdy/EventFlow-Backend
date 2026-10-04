@@ -11,6 +11,7 @@ namespace EventFlow.Registration.Application.Features.Registrations.Commands.Rej
 public sealed class RejectRegistrationCommandHandler(
     IRegistrationRepository registrations,
     IUnitOfWork unitOfWork,
+    IWaitlistPromotionService promotions,
     EventFlow.Security.Authentication.ICurrentUserService user,
     IEventRegistrationAccessService access)
     : IRequestHandler<RejectRegistrationCommand, ApiResponse<RegistrationDto>>
@@ -47,6 +48,7 @@ public sealed class RejectRegistrationCommandHandler(
                 ["Cancelled registration cannot be rejected."]);
         }
 
+        var previousStatus = registration.Status;
         var now = DateTime.UtcNow;
 
         registration.Status = RegistrationStatus.Rejected;
@@ -62,6 +64,13 @@ public sealed class RejectRegistrationCommandHandler(
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        if (previousStatus == RegistrationStatus.Approved)
+        {
+            await promotions.PromoteWaitlistedUntilCapacityAsync(
+                command.EventId,
+                cancellationToken);
+        }
 
         return ApiResponse<RegistrationDto>.Success(
             registration.ToDto(),

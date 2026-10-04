@@ -139,6 +139,22 @@ public sealed class RegistrationRepository(RegistrationDbContext db)
             cancellationToken);
     }
 
+    public async Task<RegistrationEntity?> GetNextWaitlistedAsync(
+        Guid eventId,
+        CancellationToken cancellationToken = default)
+    {
+        return await db.Registrations
+            .Include(x => x.Participant)
+            .Include(x => x.Ticket)
+            .Where(
+                x =>
+                    x.EventId == eventId &&
+                    x.Status == RegistrationStatus.Waitlisted)
+            .OrderBy(x => x.WaitlistPosition ?? int.MaxValue)
+            .ThenBy(x => x.WaitlistedAtUtc)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
     public async Task<RegistrationStatisticsReadModel> GetStatisticsAsync(
         Guid eventId,
         CancellationToken cancellationToken = default)

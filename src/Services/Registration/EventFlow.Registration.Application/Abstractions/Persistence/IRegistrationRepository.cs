@@ -40,6 +40,10 @@ public interface IRegistrationRepository
         RegistrationStatus status,
         CancellationToken cancellationToken = default);
 
+    Task<RegistrationEntity?> GetNextWaitlistedAsync(
+        Guid eventId,
+        CancellationToken cancellationToken = default);
+
     Task<RegistrationStatisticsReadModel> GetStatisticsAsync(
         Guid eventId,
         CancellationToken cancellationToken = default);

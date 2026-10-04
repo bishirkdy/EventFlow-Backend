@@ -1,5 +1,7 @@
 ﻿
 using EventFlow.Registration.Application.Behaviors;
+using EventFlow.Registration.Application.Abstractions.Services;
+using EventFlow.Registration.Application.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EventFlow.Registration.Application
@@ -8,6 +10,8 @@ namespace EventFlow.Registration.Application
     {
         public static IServiceCollection AddRegistrationApplication(this IServiceCollection services)
         {
+            services.AddScoped<IWaitlistPromotionService, WaitlistPromotionService>();
+
             services.AddMediatR(
                 options =>
                 {

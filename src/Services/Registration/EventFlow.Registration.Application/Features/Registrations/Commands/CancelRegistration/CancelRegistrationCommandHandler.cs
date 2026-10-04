@@ -11,6 +11,7 @@ namespace EventFlow.Registration.Application.Features.Registrations.Commands.Can
 public sealed class CancelRegistrationCommandHandler(
     IRegistrationRepository registrations,
     IUnitOfWork unitOfWork,
+    IWaitlistPromotionService promotions,
     EventFlow.Security.Authentication.ICurrentUserService user)
     : IRequestHandler<CancelRegistrationCommand, ApiResponse<RegistrationDto>>
 {
@@ -39,6 +40,7 @@ public sealed class CancelRegistrationCommandHandler(
                 "Already cancelled.");
         }
 
+        var previousStatus = registration.Status;
         var now = DateTime.UtcNow;
 
         registration.Status = RegistrationStatus.Cancelled;
@@ -58,6 +60,13 @@ public sealed class CancelRegistrationCommandHandler(
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        if (previousStatus == RegistrationStatus.Approved)
+        {
+            await promotions.PromoteWaitlistedUntilCapacityAsync(
+                command.EventId,
+                cancellationToken);
+        }
 
         return ApiResponse<RegistrationDto>.Success(
             registration.ToDto(),
