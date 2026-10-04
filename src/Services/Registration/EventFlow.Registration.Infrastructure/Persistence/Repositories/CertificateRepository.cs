@@ -17,6 +17,17 @@ public sealed class CertificateRepository(RegistrationDbContext db)
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Certificate>> GetForUserAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        return await db.Certificates
+            .AsNoTracking()
+            .Where(x => x.UserId == userId)
+            .OrderByDescending(x => x.IssuedAtUtc)
+            .ToListAsync(cancellationToken);
+    }
+
     public Task<Certificate?> GetByIdAsync(
         Guid eventId,
         Guid certificateId,

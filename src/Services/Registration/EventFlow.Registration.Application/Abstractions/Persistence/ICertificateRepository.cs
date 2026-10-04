@@ -8,6 +8,10 @@ public interface ICertificateRepository
         Guid eventId,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<Certificate>> GetForUserAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default);
+
     Task<Certificate?> GetByIdAsync(
         Guid eventId,
         Guid certificateId,
