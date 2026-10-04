@@ -126,6 +126,7 @@ services:
       ConnectionStrings__RegistrationDatabase: "Host=host.docker.internal;Port=5432;Database=RegistrationDatabase;Username=postgres;Password=${POSTGRES_PASSWORD}"
 
       Services__Event__BaseUrl: "http://eventflow-event:8080/"
+      Services__Operations__BaseUrl: "http://eventflow-operations:8080/"
 
     develop:
       watch:
