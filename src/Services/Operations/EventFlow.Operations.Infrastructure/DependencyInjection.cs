@@ -32,6 +32,17 @@ public static class DependencyInjection
 
         services.AddHostedService<NotificationWorker>();
 
+        services.AddScoped<INotificationQueueProcessor, NotificationQueueProcessor>();
+
+        if (!string.IsNullOrWhiteSpace(configuration["Smtp:Host"]))
+        {
+            services.AddScoped<IEmailSender, SmtpEmailSender>();
+        }
+        else
+        {
+            services.AddScoped<IEmailSender, LoggingEmailSender>();
+        }
+
         services.AddScoped<LoggingEmailSender>();
 
         return services;

@@ -1,3 +1,4 @@
+using EventFlow.Operations.Application.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -9,6 +10,8 @@ public sealed class NotificationWorker(
     ILogger<NotificationWorker> logger)
     : BackgroundService
 {
+    private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(10);
+
     protected override async Task ExecuteAsync(
         CancellationToken stoppingToken)
     {
@@ -21,15 +24,12 @@ public sealed class NotificationWorker(
             {
                 using var scope = scopeFactory.CreateScope();
 
-                // Process queued notifications here.
-                //
-                // Keep this worker responsible only for orchestration.
-                // The actual notification query/sending logic belongs
-                // to application/infrastructure services.
+                var processor = scope.ServiceProvider
+                    .GetRequiredService<INotificationQueueProcessor>();
 
-                await Task.Delay(
-                    TimeSpan.FromSeconds(10),
-                    stoppingToken);
+                await processor.ProcessDueAsync(stoppingToken);
+
+                await Task.Delay(PollInterval, stoppingToken);
             }
             catch (OperationCanceledException)
                 when (stoppingToken.IsCancellationRequested)
@@ -42,9 +42,16 @@ public sealed class NotificationWorker(
                     exception,
                     "Error while processing notification queue.");
 
-                await Task.Delay(
-                    TimeSpan.FromSeconds(5),
-                    stoppingToken);
+                try
+                {
+                    await Task.Delay(
+                        TimeSpan.FromSeconds(5),
+                        stoppingToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
             }
         }
 
