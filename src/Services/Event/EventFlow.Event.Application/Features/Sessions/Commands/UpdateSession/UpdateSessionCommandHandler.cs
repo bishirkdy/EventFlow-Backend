@@ -12,6 +12,8 @@ namespace EventFlow.Event.Application.Features.Sessions.Commands.UpdateSession
         ISessionRepository sessionRepository,
         IVenueRepository venueRepository,
         IEventRepository eventRepository,
+        ISessionSpeakerRepository linkRepository,
+        ISpeakerRepository speakerRepository,
         IUnitOfWork unitOfWork,
         IFileStorage fileStorage) : IRequestHandler<UpdateSessionCommand>
     {
@@ -48,6 +50,28 @@ namespace EventFlow.Event.Application.Features.Sessions.Commands.UpdateSession
                     startUtc < x.EndTimeUtc && endUtc > x.StartTimeUtc);
                 if (conflict)
                     throw new ValidationException(new[] { new ValidationFailure("VenueId", "This venue is already assigned to another session during the selected time.") });
+            }
+
+            if (startUtc.HasValue && endUtc.HasValue)
+            {
+                var links = await linkRepository.GetBySessionIdAsync(request.Id, cancellationToken);
+                foreach (var link in links)
+                {
+                    var clash = (await speakerRepository.GetSessionsAsync(link.SpeakerId, cancellationToken))
+                        .FirstOrDefault(x =>
+                            x.Id != request.Id &&
+                            x.StartTimeUtc.HasValue && x.EndTimeUtc.HasValue &&
+                            startUtc < x.EndTimeUtc &&
+                            endUtc > x.StartTimeUtc);
+
+                    if (clash is not null)
+                        throw new ValidationException(new[]
+                        {
+                            new ValidationFailure(
+                                "StartTime",
+                                $"Speaker \"{link.Speaker?.Name}\" is already scheduled for \"{clash.Title}\" during this time.")
+                        });
+                }
             }
 
             var imageUrl = session.ImageUrl;
