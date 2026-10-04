@@ -13,6 +13,10 @@ builder.Services.AddEventFlowApiDefaults(
 builder.Services.AddEventFlowJwtAuthentication(
     builder.Configuration);
 
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+
+builder.Services.AddOperationsApplication();
+
 builder.Services.AddOperationsInfrastructure(
     builder.Configuration);
 

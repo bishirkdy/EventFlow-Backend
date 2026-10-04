@@ -20,6 +20,9 @@ public static class DependencyInjection
                 configuration.GetConnectionString("OperationsDatabase"));
         });
 
+        services.AddScoped<IOperationsDbContext>(
+            provider => provider.GetRequiredService<OperationsDbContext>());
+
         services.AddHttpClient();
 
         services.AddScoped<IRegistrationClient, RegistrationClient>();
