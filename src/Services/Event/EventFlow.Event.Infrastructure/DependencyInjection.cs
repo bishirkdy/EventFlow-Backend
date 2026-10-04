@@ -42,6 +42,7 @@ namespace EventFlow.Event.Infrastructure
             services.AddScoped<IFeatureRepository, FeatureRepository>();
 services.AddScoped<IEventTypeFeatureRepository,EventTypeFeatureRepository>();
             services.AddScoped<IEventPhotoRepository, EventPhotoRepository>();
+    services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 
             services.AddScoped<IEventWebsiteProvisioningService, EventWebsiteProvisioningService>();
             services.Configure<CloudinaryStorageOptions>(configuration.GetSection("Cloudinary"));

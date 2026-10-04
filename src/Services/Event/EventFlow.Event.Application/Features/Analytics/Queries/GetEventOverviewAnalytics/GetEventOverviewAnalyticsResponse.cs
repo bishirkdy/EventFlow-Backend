@@ -28,6 +28,10 @@ public sealed class GetEventOverviewAnalyticsResponse
 
     public int PhotosVisible { get; init; }
 
+    public int FeedbackCount { get; init; }
+
+    public double FeedbackAverageRating { get; init; }
+
     public int FeaturesEnabled { get; init; }
 
     public int DaysUntilStart { get; init; }

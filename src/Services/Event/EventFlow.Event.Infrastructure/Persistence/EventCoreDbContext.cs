@@ -27,6 +27,7 @@ namespace EventFlow.Event.Infrastructure.Persistence
         public DbSet<EventType> EventTypes => Set<EventType>();
         public DbSet<EventTypeFeature> EventTypeFeatures => Set<EventTypeFeature>();
         public DbSet<EventPhoto> EventPhotos => Set<EventPhoto>();
+    public DbSet<Feedback> Feedbacks => Set<Feedback>();
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

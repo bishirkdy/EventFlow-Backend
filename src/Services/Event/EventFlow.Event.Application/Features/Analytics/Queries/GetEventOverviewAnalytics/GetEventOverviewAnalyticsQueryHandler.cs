@@ -17,6 +17,7 @@ public sealed class GetEventOverviewAnalyticsQueryHandler(
     IPageSectionRepository pageSections,
     INavigationItemRepository navigationItems,
     IEventPhotoRepository photos,
+    IFeedbackRepository feedback,
     IEventFeatureRepository eventFeatures,
     IMapper mapper,
     IUserDirectoryClient userDirectoryClient)
@@ -47,6 +48,7 @@ public sealed class GetEventOverviewAnalyticsQueryHandler(
             cancellationToken);
         var navRows = await navigationItems.GetByEventIdAsync(request.EventId, cancellationToken);
         var photoRows = await photos.GetByEventIdAsync(request.EventId, cancellationToken);
+        var feedbackRows = await feedback.GetByEventAsync(request.EventId, cancellationToken);
         var featureRows = await eventFeatures.GetByEventIdAsync(request.EventId, cancellationToken);
 
         var eventHeader = mapper.Map<GetEventByIdResponse>(eventEntity);
@@ -72,6 +74,10 @@ public sealed class GetEventOverviewAnalyticsQueryHandler(
             NavigationItems = navRows.Count,
             Photos = photoRows.Count,
             PhotosVisible = photoRows.Count(x => x.IsVisible),
+            FeedbackCount = feedbackRows.Count,
+            FeedbackAverageRating = feedbackRows.Count == 0
+                ? 0d
+                : Math.Round(feedbackRows.Average(x => x.Rating), 2),
             FeaturesEnabled = featureRows.Count(x => x.IsEnabled),
 
             DaysUntilStart = (eventEntity.StartDate.Date - now.Date).Days,
