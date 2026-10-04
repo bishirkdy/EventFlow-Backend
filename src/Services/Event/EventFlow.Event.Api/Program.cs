@@ -17,7 +17,7 @@ builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(optio
 builder.Services.AddApplication()
     .AddInfrastructure(builder.Configuration)
     .AddApiServices(builder.Configuration)
-    .AddEventFlowApiDefaults("EventFlow Event API")
+    .AddEventFlowApiDefaults("EventFlow Event API", configuration: builder.Configuration)
     .AddJwtAuthentication(builder.Configuration);
 
 builder.Services.AddEventFlowMessaging(builder.Configuration);
@@ -36,6 +36,8 @@ app.UseAuthorization();
 app.UseMiddleware<EventPermissionMiddleware>();
 
 app.MapControllers();
+
+app.ApplyMigrations<EventFlow.Event.Infrastructure.Persistence.EventCoreDbContext>();
 
 app.Run();
 

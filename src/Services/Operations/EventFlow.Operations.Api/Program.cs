@@ -8,7 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddEventFlowApiDefaults(
-    "EventFlow Operations API");
+    "EventFlow Operations API",
+    configuration: builder.Configuration);
 
 builder.Services.AddEventFlowJwtAuthentication(
     builder.Configuration);
@@ -30,5 +31,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.ApplyMigrations<EventFlow.Operations.Infrastructure.Persistence.OperationsDbContext>();
 
 app.Run();

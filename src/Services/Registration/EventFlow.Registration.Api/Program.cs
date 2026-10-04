@@ -4,7 +4,7 @@ using EventFlow.Registration.Api.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddEventFlowApiDefaults("EventFlow Registration API");
+builder.Services.AddEventFlowApiDefaults("EventFlow Registration API", configuration: builder.Configuration);
 
 builder.Services.Configure<Microsoft.AspNetCore.Mvc.ApiBehaviorOptions>(options =>
 {
@@ -42,5 +42,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.ApplyMigrations<EventFlow.Registration.Infrastructure.Persistence.RegistrationDbContext>();
 
 app.Run();

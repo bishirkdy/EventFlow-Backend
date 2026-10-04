@@ -1,5 +1,23 @@
 services:
 
+  postgres:
+    image: postgres:17-alpine
+    container_name: eventflow-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
   gateway:
     build:
       context: .
@@ -13,7 +31,10 @@ services:
       - registration
       - operations
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_ENVIRONMENT: "${ASPNETCORE_ENVIRONMENT:-Development}"
+
+      Cors__AllowedOrigins__0: "${CORS_ORIGIN_0:-http://localhost:4200}"
+      Cors__AllowedOrigins__1: "${CORS_ORIGIN_1:-https://localhost:4200}"
 
       ReverseProxy__Clusters__identity-cluster__Destinations__identity-api__Address: "http://eventflow-identity:8080/"
       ReverseProxy__Clusters__event-cluster__Destinations__event-api__Address: "http://eventflow-event:8080/"
@@ -34,13 +55,19 @@ services:
     container_name: eventflow-identity
     ports:
       - "5001:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_ENVIRONMENT: "${ASPNETCORE_ENVIRONMENT:-Development}"
 
       Jwt__SecretKey: "${JWT_SECRET_KEY}"
       InternalService__Key: "${INTERNAL_SERVICE_KEY}"
 
-      ConnectionStrings__IdentityDatabase: "Host=host.docker.internal;Port=5432;Database=IdentityDatabase;Username=postgres;Password=${POSTGRES_PASSWORD}"
+      Cors__AllowedOrigins__0: "${CORS_ORIGIN_0:-http://localhost:4200}"
+      Cors__AllowedOrigins__1: "${CORS_ORIGIN_1:-https://localhost:4200}"
+
+      ConnectionStrings__IdentityDatabase: "Host=postgres;Port=5432;Database=IdentityDatabase;Username=postgres;Password=${POSTGRES_PASSWORD}"
 
     develop:
       watch:
@@ -57,14 +84,19 @@ services:
     ports:
       - "5002:8080"
     depends_on:
-      - identity
-      - kafka
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_ENVIRONMENT: "${ASPNETCORE_ENVIRONMENT:-Development}"
 
       InternalService__Key: "${INTERNAL_SERVICE_KEY}"
 
-      ConnectionStrings__EventCoreDatabase: "Host=host.docker.internal;Port=5432;Database=EventCoreDatabase;Username=postgres;Password=${POSTGRES_PASSWORD}"
+      Cors__AllowedOrigins__0: "${CORS_ORIGIN_0:-http://localhost:4200}"
+      Cors__AllowedOrigins__1: "${CORS_ORIGIN_1:-https://localhost:4200}"
+
+      ConnectionStrings__EventCoreDatabase: "Host=postgres;Port=5432;Database=EventCoreDatabase;Username=postgres;Password=${POSTGRES_PASSWORD}"
 
       Services__Identity__BaseUrl: "http://eventflow-identity:8080/"
 
@@ -115,15 +147,22 @@ services:
     ports:
       - "5003:8080"
     depends_on:
-      - event
-      - kafka
+      postgres:
+        condition: service_healthy
+      event:
+        condition: service_started
+      kafka:
+        condition: service_started
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_ENVIRONMENT: "${ASPNETCORE_ENVIRONMENT:-Development}"
 
       Jwt__SecretKey: "${JWT_SECRET_KEY}"
       InternalService__Key: "${INTERNAL_SERVICE_KEY}"
 
-      ConnectionStrings__RegistrationDatabase: "Host=host.docker.internal;Port=5432;Database=RegistrationDatabase;Username=postgres;Password=${POSTGRES_PASSWORD}"
+      Cors__AllowedOrigins__0: "${CORS_ORIGIN_0:-http://localhost:4200}"
+      Cors__AllowedOrigins__1: "${CORS_ORIGIN_1:-https://localhost:4200}"
+
+      ConnectionStrings__RegistrationDatabase: "Host=postgres;Port=5432;Database=RegistrationDatabase;Username=postgres;Password=${POSTGRES_PASSWORD}"
 
       Services__Event__BaseUrl: "http://eventflow-event:8080/"
       Services__Operations__BaseUrl: "http://eventflow-operations:8080/"
@@ -142,21 +181,34 @@ services:
     container_name: eventflow-operations
     ports:
       - "5004:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      identity:
+        condition: service_started
+      registration:
+        condition: service_started
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_ENVIRONMENT: "${ASPNETCORE_ENVIRONMENT:-Development}"
 
       Jwt__SecretKey: "${JWT_SECRET_KEY}"
       InternalService__Key: "${INTERNAL_SERVICE_KEY}"
 
-      ConnectionStrings__OperationsDatabase: "Host=host.docker.internal;Port=5432;Database=OperationsDatabase;Username=postgres;Password=${POSTGRES_PASSWORD}"
+      Cors__AllowedOrigins__0: "${CORS_ORIGIN_0:-http://localhost:4200}"
+      Cors__AllowedOrigins__1: "${CORS_ORIGIN_1:-https://localhost:4200}"
+
+      ConnectionStrings__OperationsDatabase: "Host=postgres;Port=5432;Database=OperationsDatabase;Username=postgres;Password=${POSTGRES_PASSWORD}"
 
       Services__Identity__BaseUrl: "http://eventflow-identity:8080/"
       Services__Event__BaseUrl: "http://eventflow-event:8080/"
       Services__Registration__BaseUrl: "http://eventflow-registration:8080/"
 
-    depends_on:
-      - identity
-      - registration
+      Smtp__Host: "${SMTP_HOST:-}"
+      Smtp__Port: "${SMTP_PORT:-587}"
+      Smtp__UseSsl: "${SMTP_USE_SSL:-true}"
+      Smtp__Username: "${SMTP_USERNAME:-}"
+      Smtp__Password: "${SMTP_PASSWORD:-}"
+      Smtp__From: "${SMTP_FROM:-no-reply@eventflow.local}"
 
     develop:
       watch:
@@ -164,3 +216,6 @@ services:
           path: ./src/Services/Operations
         - action: rebuild
           path: ./src/BuildingBlocks
+
+volumes:
+  postgres-data:

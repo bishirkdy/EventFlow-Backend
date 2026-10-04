@@ -11,7 +11,7 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddEventFlowApiDefaults("EventFlow Identity API");
+        builder.Services.AddEventFlowApiDefaults("EventFlow Identity API", configuration: builder.Configuration);
 
         builder.Services.AddRateLimiter(options =>
         {
@@ -43,6 +43,8 @@ public class Program
         app.UseAuthorization();
 
         app.MapControllers();
+
+        app.ApplyMigrations<EventFlow.Identity.Infrastructure.Persistence.IdentityDbContext>();
 
         app.Run();
     }
