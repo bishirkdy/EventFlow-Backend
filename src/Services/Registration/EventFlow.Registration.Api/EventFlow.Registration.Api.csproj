@@ -10,6 +10,8 @@
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		  <PrivateAssets>all</PrivateAssets>
 		</PackageReference>
+		<ProjectReference Include="..\..\..\BuildingBlocks\EventFlow.Api\EventFlow.Api.csproj" />
+		<ProjectReference Include="..\..\..\BuildingBlocks\EventFlow.Contracts\EventFlow.Contracts.csproj" />
 		<ProjectReference Include="..\EventFlow.Registration.Application\EventFlow.Registration.Application.csproj" />
 		<ProjectReference Include="..\EventFlow.Registration.Infrastructure\EventFlow.Registration.Infrastructure.csproj" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />

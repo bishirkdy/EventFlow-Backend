@@ -66,9 +66,14 @@ public static class AuthenticationExtensions
 
                         OnAuthenticationFailed = context =>
                         {
-                            Console.WriteLine(
-                                $"Registration JWT validation failed: " +
-                                $"{context.Exception.Message}");
+                            var logger = context.HttpContext
+                                .RequestServices
+                                .GetService<ILoggerFactory>()
+                                ?.CreateLogger("Registration JwtBearer");
+
+                            logger?.LogWarning(
+                                context.Exception,
+                                "Registration JWT validation failed.");
 
                             return Task.CompletedTask;
                         }
