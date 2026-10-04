@@ -44,12 +44,8 @@ public sealed class WaitlistPromotionService(
             }
 
             Approve(next);
-            promoted++;
-        }
-
-        if (promoted > 0)
-        {
             await unitOfWork.SaveChangesAsync(cancellationToken);
+            promoted++;
         }
 
         return promoted;
@@ -70,7 +66,6 @@ public sealed class WaitlistPromotionService(
         {
             registration.Ticket = new Ticket
             {
-                Id = Guid.NewGuid(),
                 RegistrationId = registration.Id,
                 ParticipantId = registration.Participant.Id,
                 TicketNumber =

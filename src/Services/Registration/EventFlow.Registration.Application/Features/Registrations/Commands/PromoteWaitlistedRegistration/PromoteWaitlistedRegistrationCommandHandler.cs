@@ -72,11 +72,8 @@ public sealed class PromoteWaitlistedRegistrationCommandHandler(
         if (registration.Participant is not null &&
             registration.Ticket is null)
         {
-            var ticketId = Guid.NewGuid();
-
             registration.Ticket = new Ticket
             {
-                Id = ticketId,
                 RegistrationId = registration.Id,
                 ParticipantId = registration.Participant.Id,
                 TicketNumber =

@@ -46,4 +46,8 @@
     <Project Path="src/Services/Registration/EventFlow.Registration.Domain/EventFlow.Registration.Domain.csproj" Id="c8d225ea-0b62-452a-af3c-a77b2dacc31a" />
     <Project Path="src/Services/Registration/EventFlow.Registration.Infrastructure/EventFlow.Registration.Infrastructure.csproj" Id="cc52a40e-8629-4d89-bcf9-76067f6104fa" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/EventFlow.Event.Tests/EventFlow.Event.Tests.csproj" />
+    <Project Path="tests/EventFlow.Registration.Tests/EventFlow.Registration.Tests.csproj" />
+  </Folder>
 </Solution>
