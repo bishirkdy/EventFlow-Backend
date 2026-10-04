@@ -34,17 +34,22 @@ public sealed class EventPermissionMiddleware(
             return;
         }
 
-        var permission = context.Request.Method.Equals(
-            HttpMethods.Get,
-            StringComparison.OrdinalIgnoreCase)
-            ? "event.view"
-            : "event.update";
+        var requiredPermissions = ResolveRequiredPermissions(context.Request);
 
-        var allowed = await permissionService.HasPermissionAsync(
-            currentUserService.UserId,
-            eventId,
-            permission,
-            context.RequestAborted);
+        var allowed = false;
+
+        foreach (var permission in requiredPermissions)
+        {
+            if (await permissionService.HasPermissionAsync(
+                    currentUserService.UserId,
+                    eventId,
+                    permission,
+                    context.RequestAborted))
+            {
+                allowed = true;
+                break;
+            }
+        }
 
         if (!allowed)
         {
@@ -60,6 +65,37 @@ public sealed class EventPermissionMiddleware(
         }
 
         await next(context);
+    }
+
+    // Photo endpoints mix two audiences: photographers (photo.* permissions)
+    // and organizers (event.update via role inheritance). Read endpoints stay
+    // open to anyone with event.view OR photo.view (authenticated gallery).
+    private static string[] ResolveRequiredPermissions(HttpRequest request)
+    {
+        var isPhotoRequest =
+            request.Path.Value?.Contains(
+                "/photos",
+                StringComparison.OrdinalIgnoreCase) == true;
+
+        if (isPhotoRequest)
+        {
+            if (HttpMethods.IsGet(request.Method))
+                return ["event.view", "photo.view"];
+
+            if (HttpMethods.IsPost(request.Method))
+                return ["photo.upload", "event.update"];
+
+            if (HttpMethods.IsDelete(request.Method))
+                return ["photo.manage", "event.update"];
+
+            // Visibility moderation is organizer-only.
+            if (HttpMethods.IsPatch(request.Method) || HttpMethods.IsPut(request.Method))
+                return ["event.update"];
+        }
+
+        return HttpMethods.IsGet(request.Method)
+            ? ["event.view"]
+            : ["event.update"];
     }
 
     private static bool IsClaimOwnerRequest(HttpContext context)
