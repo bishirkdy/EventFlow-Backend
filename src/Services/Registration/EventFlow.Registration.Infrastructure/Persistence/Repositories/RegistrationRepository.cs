@@ -72,6 +72,18 @@ public sealed class RegistrationRepository(RegistrationDbContext db)
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Guid>> GetEventIdsForUserAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        return await db.Registrations
+            .AsNoTracking()
+            .Where(x => x.UserId == userId)
+            .Select(x => x.EventId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<(IReadOnlyList<RegistrationEntity> Items, int TotalCount)> GetPagedForEventAsync(
         Guid eventId,
         RegistrationStatus? status,

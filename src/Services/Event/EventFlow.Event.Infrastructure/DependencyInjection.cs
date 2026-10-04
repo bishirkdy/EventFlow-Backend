@@ -3,6 +3,7 @@ using EventFlow.Event.Application.Abstractions.Storage;
 using EventFlow.Event.Infrastructure.Persistence;
 using EventFlow.Event.Infrastructure.Storage;
 using EventFlow.Event.Infrastructure.Services.Identity;
+using EventFlow.Event.Infrastructure.Services.Registration;
 using EventFlow.Event.Infrastructure.Services.Website;
 using EventFlow.Event.Application.Abstractions.Services;
 using EventFlow.Infrastructure.Storage.Cloudinary;
@@ -59,6 +60,18 @@ services.AddScoped<IEventTypeFeatureRepository,EventTypeFeatureRepository>();
                 }
 
                 client.BaseAddress = new Uri(identityBaseUrl);
+            });
+
+            services.AddHttpClient<IRegistrationClient, RegistrationClient>(client =>
+            {
+                var registrationBaseUrl = configuration["Services:Registration:BaseUrl"];
+
+                if (string.IsNullOrWhiteSpace(registrationBaseUrl))
+                {
+                    throw new InvalidOperationException("Registration service URL is not configured. Set Services:Registration:BaseUrl.");
+                }
+
+                client.BaseAddress = new Uri(registrationBaseUrl);
             });
 
             return services;

@@ -8,7 +8,8 @@ namespace EventFlow.Event.Application.Features.Events.Queries.GetMyEvents;
 public sealed class GetMyEventsQueryHandler(
     IEventRepository eventRepository,
     IMapper mapper,
-    IUserDirectoryClient userDirectoryClient)
+    IUserDirectoryClient userDirectoryClient,
+    IRegistrationClient registrationClient)
     : IRequestHandler<GetMyEventsQuery, IReadOnlyList<GetMyEventsResponse>>
 {
     public async Task<IReadOnlyList<GetMyEventsResponse>> Handle(
@@ -23,8 +24,21 @@ public sealed class GetMyEventsQueryHandler(
             request.UserId,
             cancellationToken);
 
+        IReadOnlyList<Guid> registeredEventIds;
+        try
+        {
+            registeredEventIds = await registrationClient.GetEventIdsForUserAsync(
+                request.UserId,
+                cancellationToken);
+        }
+        catch
+        {
+            registeredEventIds = [];
+        }
+
         var eventIds = accessibleEventIds
             .Concat(createdEvents.Select(x => x.Id))
+            .Concat(registeredEventIds)
             .Distinct()
             .ToArray();
 

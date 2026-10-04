@@ -99,6 +99,7 @@ services:
       ConnectionStrings__EventCoreDatabase: "Host=postgres;Port=5432;Database=EventCoreDatabase;Username=postgres;Password=${POSTGRES_PASSWORD}"
 
       Services__Identity__BaseUrl: "http://eventflow-identity:8080/"
+      Services__Registration__BaseUrl: "http://eventflow-registration:8080/"
 
       Jwt__SecretKey: "${JWT_SECRET_KEY}"
 

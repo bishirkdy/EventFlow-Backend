@@ -47,7 +47,6 @@ public sealed class UsersController(
             cancellationToken);
 
         var result = roles
-            .Where(x => x.Role.Name is "Owner" or "Organizer" or "EventAdmin")
             .GroupBy(x => x.EventId)
             .Select(group => new UserEventRoleLookupResponse(
                 group.Key,

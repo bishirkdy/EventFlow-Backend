@@ -22,6 +22,10 @@ public interface IRegistrationRepository
         Guid? eventId = null,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<Guid>> GetEventIdsForUserAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default);
+
     Task<(IReadOnlyList<RegistrationEntity> Items, int TotalCount)> GetPagedForEventAsync(
         Guid eventId,
         RegistrationStatus? status,
