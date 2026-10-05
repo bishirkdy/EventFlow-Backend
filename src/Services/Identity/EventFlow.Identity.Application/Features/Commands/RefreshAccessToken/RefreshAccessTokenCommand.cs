@@ -3,4 +3,4 @@ using MediatR;
 
 namespace EventFlow.Identity.Application.Features.Commands.RefreshAccessToken;
 
-public sealed record RefreshAccessTokenCommand(string RefreshToken) : IRequest<LoginResponse>;
+public sealed record RefreshAccessTokenCommand(string? RefreshToken) : IRequest<LoginResponse>;

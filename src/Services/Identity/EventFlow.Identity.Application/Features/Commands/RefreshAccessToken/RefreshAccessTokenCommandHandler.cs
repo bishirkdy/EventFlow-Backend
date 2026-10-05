@@ -3,6 +3,7 @@ using EventFlow.Identity.Application.Abstractions.Services;
 using EventFlow.Identity.Application.DTOs.Authentication;
 using EventFlow.Security.Configuration;
 using EventFlow.Identity.Domain.Entities;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 using Microsoft.Extensions.Options;
 
@@ -20,20 +21,25 @@ public sealed class RefreshAccessTokenCommandHandler(
         RefreshAccessTokenCommand request,
         CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(request.RefreshToken))
+        {
+            throw new UnauthorizedException("Refresh token is required.");
+        }
+
         var current = await refreshTokens.GetByTokenAsync(
             request.RefreshToken,
             cancellationToken);
 
         if (current is null || !current.IsActive)
         {
-            throw new UnauthorizedAccessException("Invalid or inactive refresh token.");
+            throw new UnauthorizedException("Invalid or inactive refresh token.");
         }
 
         var user = await users.GetByIdAsync(current.UserId, cancellationToken);
 
         if (user is null || !user.IsActive)
         {
-            throw new UnauthorizedAccessException("The associated account is unavailable.");
+            throw new UnauthorizedException("The associated account is unavailable.");
         }
 
         current.Revoke();

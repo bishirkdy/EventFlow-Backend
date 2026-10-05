@@ -1,61 +1,71 @@
+using EventFlow.Identity.Application.Abstractions.Authorization;
 using EventFlow.Identity.Application.Abstractions.Repositories;
-using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Identity.Domain.Entities;
+using EventFlow.Security.Authentication;
+using EventFlow.Security.Authorization;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
-namespace EventFlow.Identity.Application.Features.Commands.AssignUserRole
+namespace EventFlow.Identity.Application.Features.Commands.AssignUserRole;
+
+public sealed class AssignUserRoleCommandHandler(
+    IUserRepository userRepository,
+    IRoleRepository roleRepository,
+    IUserEventRoleRepository userEventRoleRepository,
+    IPermissionService permissions,
+    ICurrentUserService currentUser)
+    : IRequestHandler<AssignUserRoleCommand, Guid>
 {
-    public class AssignUserRoleCommandHandler
-      : IRequestHandler<AssignUserRoleCommand, Guid>
+    public async Task<Guid> Handle(
+        AssignUserRoleCommand request,
+        CancellationToken cancellationToken)
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IRoleRepository _roleRepository;
-        private readonly IUserEventRoleRepository _userEventRoleRepository;
-
-        public AssignUserRoleCommandHandler(
-            IUserRepository userRepository,
-            IRoleRepository roleRepository,
-            IUserEventRoleRepository userEventRoleRepository)
+        if (!await permissions.HasPermissionAsync(
+                currentUser.UserId,
+                request.EventId,
+                PermissionConstants.Event.TeamManage,
+                cancellationToken))
         {
-            _userRepository = userRepository;
-            _roleRepository = roleRepository;
-            _userEventRoleRepository = userEventRoleRepository;
+            throw new ForbiddenException("You do not have permission to manage the event team.");
         }
 
-        public async Task<Guid> Handle(AssignUserRoleCommand request,CancellationToken cancellationToken)
+        var user = await userRepository.GetByIdAsync(
+            request.UserId,
+            cancellationToken);
+
+        if (user is null)
         {
-            //  Make sure the user exists.
-            var user = await _userRepository.GetByIdAsync(request.UserId,cancellationToken);
-
-            if (user is null)
-            {
-                throw new NotFoundException("User not found.");
-            }
-
-            //  Make sure the role exists.
-            var role = await _roleRepository.GetByIdAsync(request.RoleId,cancellationToken);
-
-            if (role is null)
-            {
-                throw new NotFoundException("Role not found.");
-            }
-
-            // Prevent duplicate role assignment.
-            var alreadyExists = await _userEventRoleRepository.ExistsAsync(request.UserId,request.EventId,request.RoleId,cancellationToken);
-
-            if (alreadyExists)
-            {
-                throw new ConflictException("This role is already assigned to the user for this event.");
-            }
-
-            // Create the user-event-role relationship.
-            var userEventRole = new UserEventRole(request.UserId,request.EventId,request.RoleId);
-
-            await _userEventRoleRepository.AddAsync(userEventRole,cancellationToken);
-
-            // Save the role assignment
-            await _userEventRoleRepository.SaveChangesAsync(cancellationToken);
-            return userEventRole.Id;
+            throw new NotFoundException("User not found.");
         }
+
+        var role = await roleRepository.GetByIdAsync(
+            request.RoleId,
+            cancellationToken);
+
+        if (role is null)
+        {
+            throw new NotFoundException("Role not found.");
+        }
+
+        var alreadyExists = await userEventRoleRepository.ExistsAsync(
+            request.UserId,
+            request.EventId,
+            request.RoleId,
+            cancellationToken);
+
+        if (alreadyExists)
+        {
+            throw new ConflictException("This role is already assigned to the user for this event.");
+        }
+
+        var userEventRole = new UserEventRole(
+            request.UserId,
+            request.EventId,
+            request.RoleId);
+
+        await userEventRoleRepository.AddAsync(userEventRole, cancellationToken);
+        await userEventRoleRepository.SaveChangesAsync(cancellationToken);
+
+        return userEventRole.Id;
     }
 }

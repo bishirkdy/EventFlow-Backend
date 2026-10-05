@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace EventFlow.Identity.Application.Features.Queries.GetTeamAnalytics;
 
-internal sealed class GetTeamAnalyticsQueryValidator
+public sealed class GetTeamAnalyticsQueryValidator
     : AbstractValidator<GetTeamAnalyticsQuery>
 {
     public GetTeamAnalyticsQueryValidator()
