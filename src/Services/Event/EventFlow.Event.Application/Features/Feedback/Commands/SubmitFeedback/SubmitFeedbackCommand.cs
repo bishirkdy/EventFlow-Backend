@@ -10,8 +10,3 @@ public sealed record SubmitFeedbackCommand(
     Guid? TargetId,
     int Rating,
     string? Comment) : IRequest<SubmitFeedbackResponse>;
-
-public sealed record SubmitFeedbackResponse(
-    Guid FeedbackId,
-    int Rating,
-    DateTime SubmittedAtUtc);
