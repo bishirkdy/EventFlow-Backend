@@ -91,4 +91,9 @@ public sealed class CertificateRepository(RegistrationDbContext db)
     {
         db.Certificates.Add(certificate);
     }
+
+    public void Update(Certificate certificate)
+    {
+        db.Certificates.Update(certificate);
+    }
 }

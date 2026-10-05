@@ -36,4 +36,6 @@ public interface ICertificateRepository
         CancellationToken cancellationToken = default);
 
     void Add(Certificate certificate);
+
+    void Update(Certificate certificate);
 }

@@ -45,6 +45,8 @@ public sealed class RevokeCertificateCommandHandler(
         certificate.Status = CertificateStatus.Revoked;
         certificate.RevokedAtUtc = DateTime.UtcNow;
 
+        certificates.Update(certificate);
+
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return certificate.ToDto();

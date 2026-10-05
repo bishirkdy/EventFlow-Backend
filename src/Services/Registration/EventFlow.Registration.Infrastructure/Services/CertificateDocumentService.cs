@@ -11,6 +11,9 @@ public sealed class CertificateDocumentService : ICertificateDocumentService
     static CertificateDocumentService()
     {
         QuestPDF.Settings.License = LicenseType.Community;
+        // QuestPDF 2026.9+ no longer resolves system font families implicitly;
+        // the certificate layout uses Arial, which comes from the OS fonts.
+        QuestPDF.Settings.UseSystemFonts = true;
     }
 
     public byte[] Generate(CertificateDocumentData data)
