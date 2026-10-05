@@ -1,30 +1,26 @@
-using EventFlow.Event.Application.Abstractions.Authorization;
-using EventFlow.Event.Application.Abstractions.Persistence;
+using EventFlow.Event.Application.Features.EventFeature.Queries.GetRegistrationAccess;
+using EventFlow.Event.Application.Features.EventFeature.Queries.GetRegistrationFeature;
 using EventFlow.Security.Authorization;
-using Microsoft.AspNetCore.Authorization;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using EventAuthorizationService = EventFlow.Event.Application.Abstractions.Authorization.IAuthorizationService;
+
 namespace EventFlow.Event.Api.Controllers;
 
 [ApiController]
 [InternalServiceOnly]
 [Route("api/v1/events/{eventId:guid}")]
-public sealed class EventAccessController(
-    IEventFeatureRepository eventFeatures,
-    IFeatureRepository features,
-    EventAuthorizationService permissions) : ControllerBase
+public sealed class EventAccessController(ISender sender) : ControllerBase
 {
     [HttpGet("features/registration")]
-    public async Task<IActionResult> RegistrationFeature(Guid eventId, CancellationToken cancellationToken)
+    public async Task<IActionResult> RegistrationFeature(
+        Guid eventId,
+        CancellationToken cancellationToken)
     {
-        var feature = await features.GetByCodeAsync("registration", cancellationToken);
-        if (feature is null)
-        {
-            return Ok(new { enabled = false });
-        }
+        var enabled = await sender.Send(
+            new GetRegistrationFeatureQuery(eventId),
+            cancellationToken);
 
-        var eventFeature = await eventFeatures.GetByEventAndFeatureAsync(eventId, feature.Id, cancellationToken);
-        return Ok(new { enabled = eventFeature?.IsEnabled == true });
+        return Ok(new { enabled });
     }
 
     [HttpGet("registration-access")]
@@ -33,10 +29,8 @@ public sealed class EventAccessController(
         [FromQuery] Guid userId,
         CancellationToken cancellationToken)
     {
-        var allowed = await permissions.HasPermissionAsync(
-            userId,
-            eventId,
-            "event.update",
+        var allowed = await sender.Send(
+            new GetRegistrationAccessQuery(eventId, userId),
             cancellationToken);
 
         return Ok(new { allowed });

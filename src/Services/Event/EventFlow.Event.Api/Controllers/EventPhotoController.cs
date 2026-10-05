@@ -1,20 +1,22 @@
 using EventFlow.Contracts.Common;
+using EventFlow.Event.Api.Requests.EventPhotos;
 using EventFlow.Event.Application.Abstractions.Storage;
-using EventFlow.Event.Application.Features.Commands.UploadEventPhoto;
-using EventFlow.Event.Application.Features.Commands.UpdateEventPhotoVisibility;
 using EventFlow.Event.Application.Features.Commands.DeleteEventPhoto;
+using EventFlow.Event.Application.Features.Commands.UpdateEventPhotoVisibility;
+using EventFlow.Event.Application.Features.Commands.UploadEventPhoto;
 using EventFlow.Event.Application.Features.Queries.GetEventPhotos;
 using EventFlow.Security.Authentication;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
 
 namespace EventFlow.Event.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/events/{eventId:guid}/photos")]
-public sealed class EventPhotoController(IMediator mediator, ICurrentUserService currentUser, IFileStorage fileStorage) : ControllerBase
+public sealed class EventPhotoController(
+    ISender sender,
+    ICurrentUserService currentUser) : ControllerBase
 {
     // POST /api/v1/events/{eventId}/photos - Upload photo (Photographer)
     [Authorize]
@@ -25,61 +27,21 @@ public sealed class EventPhotoController(IMediator mediator, ICurrentUserService
         IFormFile? image,
         CancellationToken cancellationToken)
     {
-        if (image is null || image.Length == 0)
-        {
-            return BadRequest(ApiResponse<object?>.Fail(
-                ["A photo file is required."],
-                "A photo file is required.",
-                HttpStatusCode.BadRequest));
-        }
-
-        StoredFile stored;
-
-        try
-        {
-            stored = await fileStorage.SaveAsync(
-                new UploadedFile(
-                    image.OpenReadStream(),
-                    image.FileName,
-                    image.ContentType,
-                    image.Length),
-                $"events/{eventId}/photos",
-                cancellationToken);
-        }
-        catch (InvalidOperationException exception)
-        {
-            return BadRequest(ApiResponse<object?>.Fail(
-                [exception.Message],
-                exception.Message,
-                HttpStatusCode.BadRequest));
-        }
-
-        try
-        {
-            var command = new UploadEventPhotoCommand(
+        var response = await sender.Send(
+            new UploadEventPhotoCommand(
                 eventId,
-                currentUser.UserId,
-                stored.Url,
-                stored.StorageKey);
+                image is null
+                    ? null
+                    : new UploadedFile(
+                        image.OpenReadStream(),
+                        image.FileName,
+                        image.ContentType,
+                        image.Length)),
+            cancellationToken);
 
-            var response = await mediator.Send(command, cancellationToken);
-
-            return Ok(ApiResponse<UploadEventPhotoResponse>.Success(response, "Photo uploaded successfully."));
-        }
-        catch
-        {
-            // Do not leave orphaned files in storage when the record fails.
-            try
-            {
-                await fileStorage.DeleteAsync(stored.StorageKey, cancellationToken);
-            }
-            catch
-            {
-                // Best effort cleanup only.
-            }
-
-            throw;
-        }
+        return Ok(ApiResponse<UploadEventPhotoResponse>.Success(
+            response,
+            "Photo uploaded successfully."));
     }
 
     // GET /api/v1/events/{eventId}/photos - List photos (Public for visible, Authenticated for all)
@@ -91,19 +53,13 @@ public sealed class EventPhotoController(IMediator mediator, ICurrentUserService
         [FromQuery] bool visibleOnly = true,
         CancellationToken cancellationToken = default)
     {
-        // If requesting non-visible photos, require authentication
-        if (!visibleOnly)
-        {
-            if (currentUser.UserId == Guid.Empty)
-            {
-                return Unauthorized();
-            }
-        }
+        var response = await sender.Send(
+            new GetEventPhotosQuery(eventId, page, pageSize, visibleOnly),
+            cancellationToken);
 
-        var query = new GetEventPhotosQuery(eventId, page, pageSize, visibleOnly);
-        var response = await mediator.Send(query, cancellationToken);
-
-        return Ok(ApiResponse<PaginatedResponse<GetEventPhotosResponse>>.Success(response, "Photos retrieved successfully."));
+        return Ok(ApiResponse<PaginatedResponse<GetEventPhotosResponse>>.Success(
+            response,
+            "Photos retrieved successfully."));
     }
 
     // PATCH /api/v1/events/{eventId}/photos/{photoId}/visibility - Approve/hide photo (Organizer)
@@ -115,10 +71,16 @@ public sealed class EventPhotoController(IMediator mediator, ICurrentUserService
         [FromBody] UpdateVisibilityRequest request,
         CancellationToken cancellationToken)
     {
-        var command = new UpdateEventPhotoVisibilityCommand(photoId, request.IsVisible, currentUser.UserId);
-        await mediator.Send(command, cancellationToken);
+        var command = new UpdateEventPhotoVisibilityCommand(
+            photoId,
+            request.IsVisible,
+            currentUser.UserId);
 
-        return Ok(ApiResponse<object?>.Success(null, request.IsVisible ? "Photo approved." : "Photo hidden."));
+        await sender.Send(command, cancellationToken);
+
+        return Ok(ApiResponse<object?>.Success(
+            null,
+            request.IsVisible ? "Photo approved." : "Photo hidden."));
     }
 
     // DELETE /api/v1/events/{eventId}/photos/{photoId} - Delete photo (Photographer or Organizer)
@@ -130,10 +92,9 @@ public sealed class EventPhotoController(IMediator mediator, ICurrentUserService
         CancellationToken cancellationToken)
     {
         var command = new DeleteEventPhotoCommand(photoId, currentUser.UserId);
-        await mediator.Send(command, cancellationToken);
+
+        await sender.Send(command, cancellationToken);
 
         return Ok(ApiResponse<object?>.Success(null, "Photo deleted successfully."));
     }
-
-    public sealed record UpdateVisibilityRequest(bool IsVisible);
 }

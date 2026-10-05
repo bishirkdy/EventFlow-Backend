@@ -1,21 +1,32 @@
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Application.Abstractions.Persistence;
+using EventFlow.Security.Authentication;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
 namespace EventFlow.Event.Application.Features.Queries.GetEventPhotos
 {
-    public class GetEventPhotosQueryHandler : IRequestHandler<GetEventPhotosQuery, PaginatedResponse<GetEventPhotosResponse>>
+    public class GetEventPhotosQueryHandler(
+        IEventPhotoRepository photoRepository,
+        ICurrentUserService currentUser)
+        : IRequestHandler<GetEventPhotosQuery, PaginatedResponse<GetEventPhotosResponse>>
     {
-        private readonly IEventPhotoRepository _photoRepository;
-
-        public GetEventPhotosQueryHandler(IEventPhotoRepository photoRepository)
+        public async Task<PaginatedResponse<GetEventPhotosResponse>> Handle(
+            GetEventPhotosQuery request,
+            CancellationToken cancellationToken)
         {
-            _photoRepository = photoRepository;
-        }
+            if (!request.VisibleOnly && currentUser.UserId == Guid.Empty)
+            {
+                throw new UnauthorizedException(
+                    "Authentication is required to view non-public photos.");
+            }
 
-        public async Task<PaginatedResponse<GetEventPhotosResponse>> Handle(GetEventPhotosQuery request, CancellationToken cancellationToken)
-        {
-            var paged = await _photoRepository.GetPagedByEventIdAsync(request.EventId, request.Page, request.PageSize, request.VisibleOnly, cancellationToken);
+            var paged = await photoRepository.GetPagedByEventIdAsync(
+                request.EventId,
+                request.Page,
+                request.PageSize,
+                request.VisibleOnly,
+                cancellationToken);
 
             var response = new PaginatedResponse<GetEventPhotosResponse>
             {
