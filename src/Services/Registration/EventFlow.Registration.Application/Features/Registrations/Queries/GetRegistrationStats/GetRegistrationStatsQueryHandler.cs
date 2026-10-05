@@ -1,7 +1,7 @@
-using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Contracts.Registrations;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Queries.GetRegistrationStats;
@@ -12,9 +12,9 @@ public sealed class GetRegistrationStatsQueryHandler(
     IEventRegistrationAccessService access)
     : IRequestHandler<
         GetRegistrationStatsQuery,
-        ApiResponse<RegistrationStatsDto>>
+        RegistrationStatsDto>
 {
-    public async Task<ApiResponse<RegistrationStatsDto>> Handle(
+    public async Task<RegistrationStatsDto> Handle(
         GetRegistrationStatsQuery query,
         CancellationToken cancellationToken)
     {
@@ -23,25 +23,23 @@ public sealed class GetRegistrationStatsQueryHandler(
                 user.UserId,
                 cancellationToken))
         {
-            return ApiResponse<RegistrationStatsDto>.Fail(
-                ["You do not have permission."]);
+            throw new ForbiddenException("You do not have permission.");
         }
 
         var stats = await registrations.GetStatisticsAsync(
             query.EventId,
             cancellationToken);
 
-        return ApiResponse<RegistrationStatsDto>.Success(
-            new RegistrationStatsDto
-            {
-                Total = stats.Total,
-                Pending = stats.Pending,
-                Approved = stats.Approved,
-                Rejected = stats.Rejected,
-                Cancelled = stats.Cancelled,
-                Waitlisted = stats.Waitlisted,
-                Participants = stats.Participants,
-                ActiveTickets = stats.ActiveTickets
-            });
+        return new RegistrationStatsDto
+        {
+            Total = stats.Total,
+            Pending = stats.Pending,
+            Approved = stats.Approved,
+            Rejected = stats.Rejected,
+            Cancelled = stats.Cancelled,
+            Waitlisted = stats.Waitlisted,
+            Participants = stats.Participants,
+            ActiveTickets = stats.ActiveTickets
+        };
     }
 }

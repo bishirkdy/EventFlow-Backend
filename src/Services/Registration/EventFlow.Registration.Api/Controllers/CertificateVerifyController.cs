@@ -1,3 +1,5 @@
+using EventFlow.Contracts.Common;
+using EventFlow.Registration.Application.Contracts.Certificates;
 using EventFlow.Registration.Application.Features.Certificates.Queries.VerifyCertificate;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -15,9 +17,11 @@ public sealed class CertificateVerifyController(ISender sender) : ControllerBase
         string certificateNumber,
         CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new VerifyCertificateQuery(certificateNumber), cancellationToken);
 
-        return result.IsSuccess ? Ok(result) : NotFound(result);
+        return Ok(ApiResponse<CertificateVerifyDto>.Success(
+            dto,
+            "Certificate verified."));
     }
 }

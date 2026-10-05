@@ -1,4 +1,5 @@
-using EventFlow.Contracts.Common;
+using EventFlow.SharedKernel.Exceptions;
+using FluentValidation.Results;
 using RegistrationEntity = EventFlow.Registration.Domain.Entities.Registration;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Commands.CreateRegistration;
@@ -11,24 +12,22 @@ public sealed class CreateRegistrationCommandHandler(
     IEventRegistrationAccessService access)
     : IRequestHandler<
         CreateRegistrationCommand,
-        ApiResponse<RegistrationDto>>
+        RegistrationDto>
 {
-    public async Task<ApiResponse<RegistrationDto>> Handle(
+    public async Task<RegistrationDto> Handle(
         CreateRegistrationCommand command,
         CancellationToken cancellationToken)
     {
         if (!user.IsAuthenticated)
         {
-            return ApiResponse<RegistrationDto>.Fail(
-                ["Authentication is required."]);
+            throw new UnauthorizedException("Authentication is required.");
         }
 
         if (!await access.IsRegistrationFeatureEnabledAsync(
                 command.EventId,
                 cancellationToken))
         {
-            return ApiResponse<RegistrationDto>.Fail(
-                ["Registration is not enabled for this event."]);
+            throw new ConflictException("Registration is not enabled for this event.");
         }
 
         var form = await forms.GetByEventIdAsync(command.EventId,includeFields: true,asNoTracking: true, cancellationToken: cancellationToken);
@@ -39,22 +38,19 @@ public sealed class CreateRegistrationCommandHandler(
         {
             if (!form.IsActive)
             {
-                return ApiResponse<RegistrationDto>.Fail(
-                    ["Registration is closed."]);
+                throw new ConflictException("Registration is closed.");
             }
 
             if (form.OpensAtUtc.HasValue &&
                 now < form.OpensAtUtc.Value)
             {
-                return ApiResponse<RegistrationDto>.Fail(
-                    ["Registration has not opened yet."]);
+                throw new ConflictException("Registration has not opened yet.");
             }
 
             if (form.ClosesAtUtc.HasValue &&
                 now > form.ClosesAtUtc.Value)
             {
-                return ApiResponse<RegistrationDto>.Fail(
-                    ["Registration is closed."]);
+                throw new ConflictException("Registration is closed.");
             }
 
             var answerErrors = RegistrationFormAnswerValidator.Validate(
@@ -63,7 +59,9 @@ public sealed class CreateRegistrationCommandHandler(
 
             if (answerErrors.Count > 0)
             {
-                return ApiResponse<RegistrationDto>.Fail(answerErrors);
+                throw new ValidationException(
+                    answerErrors.Select(
+                        message => new ValidationFailure(string.Empty, message)));
             }
         }
 
@@ -72,8 +70,8 @@ public sealed class CreateRegistrationCommandHandler(
                 user.UserId,
                 cancellationToken))
         {
-            return ApiResponse<RegistrationDto>.Fail(
-                ["You already have an active registration for this event."]);
+            throw new ConflictException(
+                "You already have an active registration for this event.");
         }
 
         var approvedCount = await registrations.CountByStatusAsync(
@@ -90,8 +88,7 @@ public sealed class CreateRegistrationCommandHandler(
         {
             if (!form.EnableWaitlist)
             {
-                return ApiResponse<RegistrationDto>.Fail(
-                    ["Event capacity has been reached."]);
+                throw new ConflictException("Event capacity has been reached.");
             }
 
             status = RegistrationStatus.Waitlisted;
@@ -155,10 +152,6 @@ public sealed class CreateRegistrationCommandHandler(
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return ApiResponse<RegistrationDto>.Success(
-            registration.ToDto(),
-            status == RegistrationStatus.Waitlisted
-                ? "Registration submitted and added to the waitlist."
-                : "Registration submitted successfully.");
+        return registration.ToDto();
     }
 }

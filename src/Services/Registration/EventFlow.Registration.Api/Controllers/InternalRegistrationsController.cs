@@ -1,3 +1,4 @@
+using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Features.Registrations.Queries.GetRegisteredEventIds;
 using EventFlow.Security.Authorization;
 using MediatR;
@@ -15,10 +16,12 @@ public sealed class InternalRegistrationsController(ISender sender) : Controller
         Guid userId,
         CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new GetRegisteredEventIdsQuery(userId),
             cancellationToken);
 
-        return Ok(result);
+        return Ok(ApiResponse<IReadOnlyList<Guid>>.Success(
+            dto,
+            "Registered event ids retrieved successfully."));
     }
 }

@@ -1,12 +1,12 @@
 using System.Globalization;
 using System.Security.Cryptography;
-using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Common.Certificates;
 using EventFlow.Registration.Application.Common.Mappings;
 using EventFlow.Registration.Application.Contracts.Certificates;
 using EventFlow.Registration.Domain.Entities;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
 namespace EventFlow.Registration.Application.Features.Certificates.Commands.GenerateCertificates;
@@ -22,9 +22,9 @@ public sealed class GenerateCertificatesCommandHandler(
     IUnitOfWork unitOfWork,
     EventFlow.Security.Authentication.ICurrentUserService user,
     IEventRegistrationAccessService access)
-    : IRequestHandler<GenerateCertificatesCommand, ApiResponse<CertificateGenerationResultDto>>
+    : IRequestHandler<GenerateCertificatesCommand, CertificateGenerationResultDto>
 {
-    public async Task<ApiResponse<CertificateGenerationResultDto>> Handle(
+    public async Task<CertificateGenerationResultDto> Handle(
         GenerateCertificatesCommand command,
         CancellationToken cancellationToken)
     {
@@ -33,8 +33,7 @@ public sealed class GenerateCertificatesCommandHandler(
                 user.UserId,
                 cancellationToken))
         {
-            return ApiResponse<CertificateGenerationResultDto>.Fail(
-                ["You do not have permission."]);
+            throw new ForbiddenException("You do not have permission.");
         }
 
         var settings = await settingsRepository.GetByEventIdAsync(
@@ -50,8 +49,7 @@ public sealed class GenerateCertificatesCommandHandler(
 
         if (eventInfo is null)
         {
-            return ApiResponse<CertificateGenerationResultDto>.Fail(
-                ["Event details could not be loaded."]);
+            throw new NotFoundException("Event details could not be loaded.");
         }
 
         var registrationRows = await registrations.GetWithParticipantsAsync(
@@ -168,11 +166,7 @@ public sealed class GenerateCertificatesCommandHandler(
             await unitOfWork.SaveChangesAsync(cancellationToken);
         }
 
-        var message = result.Failed > 0
-            ? $"Generated {result.Generated} certificate(s), {result.Skipped} skipped, {result.Failed} failed."
-            : $"Generated {result.Generated} certificate(s), {result.Skipped} skipped.";
-
-        return ApiResponse<CertificateGenerationResultDto>.Success(result, message);
+        return result;
     }
 
     private async Task<string> GenerateUniqueNumberAsync(

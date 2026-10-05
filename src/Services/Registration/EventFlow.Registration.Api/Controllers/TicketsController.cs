@@ -1,3 +1,5 @@
+using EventFlow.Contracts.Common;
+using EventFlow.Registration.Application.Contracts.Registrations;
 using EventFlow.Registration.Application.Features.Tickets.Commands.RevokeTicket;
 using EventFlow.Registration.Application.Features.Tickets.Queries.GetTicket;
 using EventFlow.Registration.Application.Features.Tickets.Queries.VerifyQr;
@@ -18,20 +20,19 @@ public sealed class TicketsController(IMediator mediator)
     [HttpGet("registration/{registrationId:guid}")]
     public async Task<IActionResult> Get(Guid eventId, Guid registrationId, CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(
+        var dto = await mediator.Send(
             new GetTicketQuery(eventId,registrationId), cancellationToken);
 
-        return result.IsSuccess
-            ? Ok(result)
-            : NotFound(result);
+        return Ok(ApiResponse<TicketDto>.Success(dto));
     }
 
     [InternalServiceOnly]
     [HttpGet("verify-internal")]
     public async Task<IActionResult> VerifyInternal(Guid eventId,string qrCode,CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(new VerifyQrInternalQuery(eventId,qrCode),cancellationToken);
-        return result.IsSuccess ? Ok(result) : BadRequest(result);
+        var dto = await mediator.Send(new VerifyQrInternalQuery(eventId,qrCode),cancellationToken);
+
+        return Ok(ApiResponse<TicketDto>.Success(dto, "Ticket is valid."));
     }
 
     [Authorize]
@@ -41,15 +42,13 @@ public sealed class TicketsController(IMediator mediator)
         string qrCode,
         CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(
+        var dto = await mediator.Send(
             new VerifyQrQuery(
                 eventId,
                 qrCode),
             cancellationToken);
 
-        return result.IsSuccess
-            ? Ok(result)
-            : BadRequest(result);
+        return Ok(ApiResponse<TicketDto>.Success(dto, "Ticket is valid."));
     }
 
     [Authorize]
@@ -59,14 +58,12 @@ public sealed class TicketsController(IMediator mediator)
         Guid ticketId,
         CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(
+        var dto = await mediator.Send(
             new RevokeTicketCommand(
                 eventId,
                 ticketId),
             cancellationToken);
 
-        return result.IsSuccess
-            ? Ok(result)
-            : BadRequest(result);
+        return Ok(ApiResponse<TicketDto>.Success(dto, "Ticket revoked."));
     }
 }

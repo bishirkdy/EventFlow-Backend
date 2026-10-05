@@ -1,5 +1,5 @@
 using System.Security.Cryptography;
-using EventFlow.Contracts.Common;
+using EventFlow.SharedKernel.Exceptions;
 
 
 namespace EventFlow.Registration.Application.Features.Registrations.Commands.PromoteWaitlistedRegistration;
@@ -12,9 +12,9 @@ public sealed class PromoteWaitlistedRegistrationCommandHandler(
     IEventRegistrationAccessService access)
     : IRequestHandler<
         PromoteWaitlistedRegistrationCommand,
-        ApiResponse<RegistrationDto>>
+        RegistrationDto>
 {
-    public async Task<ApiResponse<RegistrationDto>> Handle(
+    public async Task<RegistrationDto> Handle(
         PromoteWaitlistedRegistrationCommand command,
         CancellationToken cancellationToken)
     {
@@ -23,8 +23,7 @@ public sealed class PromoteWaitlistedRegistrationCommandHandler(
                 user.UserId,
                 cancellationToken))
         {
-            return ApiResponse<RegistrationDto>.Fail(
-                ["You do not have permission."]);
+            throw new ForbiddenException("You do not have permission.");
         }
 
         var registration = await registrations.GetByIdAsync(
@@ -36,14 +35,12 @@ public sealed class PromoteWaitlistedRegistrationCommandHandler(
 
         if (registration is null)
         {
-            return ApiResponse<RegistrationDto>.Fail(
-                ["Registration not found."]);
+            throw new NotFoundException("Registration not found.");
         }
 
         if (registration.Status != RegistrationStatus.Waitlisted)
         {
-            return ApiResponse<RegistrationDto>.Fail(
-                ["Registration is not waitlisted."]);
+            throw new ConflictException("Registration is not waitlisted.");
         }
 
         var form = await forms.GetByEventIdAsync(
@@ -58,8 +55,7 @@ public sealed class PromoteWaitlistedRegistrationCommandHandler(
                 RegistrationStatus.Approved,
                 cancellationToken) >= form.Capacity.Value)
         {
-            return ApiResponse<RegistrationDto>.Fail(
-                ["No available capacity."]);
+            throw new ConflictException("No available capacity.");
         }
 
         var now = DateTime.UtcNow;
@@ -89,8 +85,6 @@ public sealed class PromoteWaitlistedRegistrationCommandHandler(
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return ApiResponse<RegistrationDto>.Success(
-            registration.ToDto(),
-            "Waitlisted registration promoted.");
+        return registration.ToDto();
     }
 }

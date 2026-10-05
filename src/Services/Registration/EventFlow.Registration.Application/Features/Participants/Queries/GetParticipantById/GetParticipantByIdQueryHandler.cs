@@ -1,15 +1,14 @@
-using EventFlow.Contracts.Common;
-
+using EventFlow.SharedKernel.Exceptions;
 
 namespace EventFlow.Registration.Application.Features.Participants.Queries.GetParticipantById;
 
-public sealed class GetParticipantByIdQueryHandler(IParticipantRepository participants,EventFlow.Security.Authentication.ICurrentUserService user,IEventRegistrationAccessService access): IRequestHandler<GetParticipantByIdQuery, ApiResponse<ParticipantDto>>
+public sealed class GetParticipantByIdQueryHandler(IParticipantRepository participants,EventFlow.Security.Authentication.ICurrentUserService user,IEventRegistrationAccessService access): IRequestHandler<GetParticipantByIdQuery, ParticipantDto>
 {
-    public async Task<ApiResponse<ParticipantDto>> Handle(GetParticipantByIdQuery query, CancellationToken cancellationToken)
+    public async Task<ParticipantDto> Handle(GetParticipantByIdQuery query, CancellationToken cancellationToken)
     {
         if (!await access.CanManageRegistrationAsync(query.EventId,user.UserId, cancellationToken))
         {
-            return ApiResponse<ParticipantDto>.Fail(["You do not have permission."]);
+            throw new ForbiddenException("You do not have permission.");
         }
 
         var participant = await participants.GetByIdAsync(
@@ -18,8 +17,11 @@ public sealed class GetParticipantByIdQueryHandler(IParticipantRepository partic
             asNoTracking: true,
             cancellationToken: cancellationToken);
 
-        return participant is null
-            ? ApiResponse<ParticipantDto>.Fail(["Participant not found."])
-            : ApiResponse<ParticipantDto>.Success(participant.ToDto());
+        if (participant is null)
+        {
+            throw new NotFoundException("Participant not found.");
+        }
+
+        return participant.ToDto();
     }
 }

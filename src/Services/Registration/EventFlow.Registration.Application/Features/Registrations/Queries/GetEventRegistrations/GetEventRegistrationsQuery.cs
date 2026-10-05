@@ -11,4 +11,4 @@ public sealed record GetEventRegistrationsQuery(
     string? Search,
     int Page = 1,
     int PageSize = 20)
-    : IRequest<ApiResponse<PaginatedResponse<RegistrationDto>>>;
+    : IRequest<PaginatedResponse<RegistrationDto>>;

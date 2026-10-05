@@ -1,4 +1,5 @@
 
+using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Features.Registrations.Commands.ApproveRegistration;
 using EventFlow.Registration.Application.Features.Registrations.Commands.CancelRegistration;
 using EventFlow.Registration.Application.Features.Registrations.Commands.CreateRegistration;
@@ -26,10 +27,14 @@ public sealed class RegistrationsController(ISender sender) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(Guid eventId, CreateRegistrationRequest request, CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new CreateRegistrationCommand(eventId,request), cancellationToken);
 
-        return result.IsSuccess ? Ok(result) : BadRequest(result);
+        return Ok(ApiResponse<RegistrationDto>.Success(
+            dto,
+            dto.Status == RegistrationStatus.Waitlisted
+                ? "Registration submitted and added to the waitlist."
+                : "Registration submitted successfully."));
     }
 
     //for update registration by event
@@ -37,24 +42,22 @@ public sealed class RegistrationsController(ISender sender) : ControllerBase
     [HttpPut("{registrationId:guid}")]
     public async Task<IActionResult> Update(Guid eventId,Guid registrationId, UpdateRegistrationRequest request, CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new UpdateRegistrationCommand(eventId,registrationId,request), cancellationToken);
 
-        return result.IsSuccess
-            ? Ok(result)
-            : BadRequest(result);
+        return Ok(ApiResponse<RegistrationDto>.Success(
+            dto,
+            "Registration updated successfully."));
     }
 
     [Authorize]
     [HttpGet("{registrationId:guid}")]
     public async Task<IActionResult> Get(Guid eventId, Guid registrationId, CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new GetRegistrationByIdQuery(eventId,registrationId),cancellationToken);
 
-        return result.IsSuccess
-            ? Ok(result)
-            : NotFound(result);
+        return Ok(ApiResponse<RegistrationDto>.Success(dto));
     }
 
     [Authorize]
@@ -64,20 +67,20 @@ public sealed class RegistrationsController(ISender sender) : ControllerBase
         Guid registrationId,
         CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new GetRegistrationByIdQuery(eventId,registrationId,true),cancellationToken);
 
-        return result.IsSuccess? Ok(result): NotFound(result);
+        return Ok(ApiResponse<RegistrationDto>.Success(dto));
     }
 
     [Authorize]
     [HttpGet("me")]
     public async Task<IActionResult> Mine(Guid eventId, CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new GetMyRegistrationsQuery(eventId), cancellationToken);
 
-        return Ok(result);
+        return Ok(ApiResponse<IReadOnlyList<RegistrationDto>>.Success(dto));
     }
 
     [Authorize]
@@ -85,20 +88,20 @@ public sealed class RegistrationsController(ISender sender) : ControllerBase
     public async Task<IActionResult> List(
         Guid eventId,RegistrationStatus? status,string? search,int page = 1,int pageSize = 20,CancellationToken cancellationToken = default)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new GetEventRegistrationsQuery(eventId,status,search,page,pageSize),cancellationToken);
 
-        return Ok(result);
+        return Ok(ApiResponse<PaginatedResponse<RegistrationDto>>.Success(dto));
     }
 
     [Authorize]
     [HttpGet("stats")]
     public async Task<IActionResult> Stats(Guid eventId,CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new GetRegistrationStatsQuery(eventId), cancellationToken);
 
-        return Ok(result);
+        return Ok(ApiResponse<RegistrationStatsDto>.Success(dto));
     }
 
     [Authorize]
@@ -108,15 +111,15 @@ public sealed class RegistrationsController(ISender sender) : ControllerBase
         Guid registrationId,
         CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new ApproveRegistrationCommand(
                 eventId,
                 registrationId),
             cancellationToken);
 
-        return result.IsSuccess
-            ? Ok(result)
-            : BadRequest(result);
+        return Ok(ApiResponse<RegistrationDto>.Success(
+            dto,
+            "Registration approved and ticket issued."));
     }
 
     [Authorize]
@@ -127,16 +130,16 @@ public sealed class RegistrationsController(ISender sender) : ControllerBase
         RejectRegistrationRequest request,
         CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new RejectRegistrationCommand(
                 eventId,
                 registrationId,
                 request),
             cancellationToken);
 
-        return result.IsSuccess
-            ? Ok(result)
-            : BadRequest(result);
+        return Ok(ApiResponse<RegistrationDto>.Success(
+            dto,
+            "Registration rejected."));
     }
 
     [Authorize]
@@ -147,16 +150,16 @@ public sealed class RegistrationsController(ISender sender) : ControllerBase
         CancelRegistrationRequest request,
         CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new CancelRegistrationCommand(
                 eventId,
                 registrationId,
                 request),
             cancellationToken);
 
-        return result.IsSuccess
-            ? Ok(result)
-            : BadRequest(result);
+        return Ok(ApiResponse<RegistrationDto>.Success(
+            dto,
+            "Registration cancelled."));
     }
 
     [Authorize]
@@ -166,15 +169,15 @@ public sealed class RegistrationsController(ISender sender) : ControllerBase
         Guid registrationId,
         CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new WaitlistRegistrationCommand(
                 eventId,
                 registrationId),
             cancellationToken);
 
-        return result.IsSuccess
-            ? Ok(result)
-            : BadRequest(result);
+        return Ok(ApiResponse<RegistrationDto>.Success(
+            dto,
+            "Registration moved to waitlist."));
     }
 
     [Authorize]
@@ -184,14 +187,14 @@ public sealed class RegistrationsController(ISender sender) : ControllerBase
         Guid registrationId,
         CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new PromoteWaitlistedRegistrationCommand(
                 eventId,
                 registrationId),
             cancellationToken);
 
-        return result.IsSuccess
-            ? Ok(result)
-            : BadRequest(result);
+        return Ok(ApiResponse<RegistrationDto>.Success(
+            dto,
+            "Waitlisted registration promoted."));
     }
 }

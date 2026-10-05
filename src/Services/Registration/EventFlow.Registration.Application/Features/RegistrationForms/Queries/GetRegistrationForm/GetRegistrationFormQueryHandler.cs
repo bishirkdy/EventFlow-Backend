@@ -1,8 +1,8 @@
-using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Contracts.RegistrationForms;
 using EventFlow.Registration.Domain.Entities;
 using EventFlow.Registration.Domain.Enums;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
 namespace EventFlow.Registration.Application.Features.RegistrationForms.Queries.GetRegistrationForm;
@@ -13,9 +13,9 @@ public sealed class GetRegistrationFormQueryHandler(
     IUnitOfWork unitOfWork)
     : IRequestHandler<
         GetRegistrationFormQuery,
-        ApiResponse<RegistrationFormDto>>
+        RegistrationFormDto>
 {
-    public async Task<ApiResponse<RegistrationFormDto>> Handle(
+    public async Task<RegistrationFormDto> Handle(
         GetRegistrationFormQuery query,
         CancellationToken cancellationToken)
     {
@@ -39,8 +39,7 @@ public sealed class GetRegistrationFormQueryHandler(
 
             if (form is null)
             {
-                return ApiResponse<RegistrationFormDto>.Fail(
-                    ["Registration form not found."]);
+                throw new NotFoundException("Registration form not found.");
             }
         }
 
@@ -85,7 +84,7 @@ public sealed class GetRegistrationFormQueryHandler(
                 .ToList()
         };
 
-        return ApiResponse<RegistrationFormDto>.Success(response);
+        return response;
     }
 
     private async Task CreateDefaultFormAsync(

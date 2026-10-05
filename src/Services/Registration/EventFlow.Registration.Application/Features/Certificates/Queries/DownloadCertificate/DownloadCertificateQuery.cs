@@ -1,4 +1,3 @@
-using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Contracts.Certificates;
 using MediatR;
 
@@ -7,4 +6,4 @@ namespace EventFlow.Registration.Application.Features.Certificates.Queries.Downl
 public sealed record DownloadCertificateQuery(
     Guid EventId,
     Guid CertificateId
-) : IRequest<ApiResponse<CertificateDownloadDto>>;
+) : IRequest<CertificateDownloadDto>;

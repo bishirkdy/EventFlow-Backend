@@ -1,3 +1,4 @@
+using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Features.Registrations.Queries.GetRegistrationAnalytics;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -16,10 +17,12 @@ public sealed class RegistrationAnalyticsController(ISender sender) : Controller
         [FromQuery] int days = 30,
         CancellationToken cancellationToken = default)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new GetRegistrationAnalyticsQuery(eventId, days),
             cancellationToken);
 
-        return result.IsSuccess ? Ok(result) : BadRequest(result);
+        return Ok(ApiResponse<GetRegistrationAnalyticsResponse>.Success(
+            dto,
+            "Registration analytics computed."));
     }
 }

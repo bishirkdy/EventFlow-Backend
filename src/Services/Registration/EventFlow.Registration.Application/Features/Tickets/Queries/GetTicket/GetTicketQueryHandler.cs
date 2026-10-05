@@ -1,10 +1,14 @@
-using EventFlow.Contracts.Common;
+using EventFlow.Registration.Application.Abstractions.Persistence;
+using EventFlow.Registration.Application.Common.Mappings;
+using EventFlow.Registration.Application.Contracts.Registrations;
+using EventFlow.SharedKernel.Exceptions;
+using MediatR;
 
 namespace EventFlow.Registration.Application.Features.Tickets.Queries.GetTicket;
 
-public sealed class GetTicketQueryHandler(ITicketRepository tickets,EventFlow.Security.Authentication.ICurrentUserService user) : IRequestHandler<GetTicketQuery, ApiResponse<TicketDto>>
+public sealed class GetTicketQueryHandler(ITicketRepository tickets,EventFlow.Security.Authentication.ICurrentUserService user) : IRequestHandler<GetTicketQuery, TicketDto>
 {
-    public async Task<ApiResponse<TicketDto>> Handle(GetTicketQuery query, CancellationToken cancellationToken)
+    public async Task<TicketDto> Handle(GetTicketQuery query, CancellationToken cancellationToken)
     {
         var ticket = await tickets.GetForRegistrationAsync(
             query.EventId,
@@ -12,8 +16,11 @@ public sealed class GetTicketQueryHandler(ITicketRepository tickets,EventFlow.Se
             user.UserId,
             cancellationToken);
 
-        return ticket is null
-            ? ApiResponse<TicketDto>.Fail(["Ticket not found."])
-            : ApiResponse<TicketDto>.Success(ticket.ToDto());
+        if (ticket is null)
+        {
+            throw new NotFoundException("Ticket not found.");
+        }
+
+        return ticket.ToDto();
     }
 }

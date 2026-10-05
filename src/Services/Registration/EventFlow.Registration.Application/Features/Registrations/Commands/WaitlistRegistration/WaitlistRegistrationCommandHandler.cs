@@ -1,9 +1,9 @@
-using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Common.Mappings;
 using EventFlow.Registration.Application.Contracts.Registrations;
 using EventFlow.Registration.Domain.Enums;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Commands.WaitlistRegistration;
@@ -15,9 +15,9 @@ public sealed class WaitlistRegistrationCommandHandler(
     IEventRegistrationAccessService access)
     : IRequestHandler<
         WaitlistRegistrationCommand,
-        ApiResponse<RegistrationDto>>
+        RegistrationDto>
 {
-    public async Task<ApiResponse<RegistrationDto>> Handle(
+    public async Task<RegistrationDto> Handle(
         WaitlistRegistrationCommand command,
         CancellationToken cancellationToken)
     {
@@ -26,8 +26,7 @@ public sealed class WaitlistRegistrationCommandHandler(
                 user.UserId,
                 cancellationToken))
         {
-            return ApiResponse<RegistrationDto>.Fail(
-                ["You do not have permission."]);
+            throw new ForbiddenException("You do not have permission.");
         }
 
         var registration = await registrations.GetByIdAsync(
@@ -39,23 +38,19 @@ public sealed class WaitlistRegistrationCommandHandler(
 
         if (registration is null)
         {
-            return ApiResponse<RegistrationDto>.Fail(
-                ["Registration not found."]);
+            throw new NotFoundException("Registration not found.");
         }
 
         if (registration.Status is
             RegistrationStatus.Approved or
             RegistrationStatus.Cancelled)
         {
-            return ApiResponse<RegistrationDto>.Fail(
-                ["Registration cannot be waitlisted."]);
+            throw new ConflictException("Registration cannot be waitlisted.");
         }
 
         if (registration.Status == RegistrationStatus.Waitlisted)
         {
-            return ApiResponse<RegistrationDto>.Success(
-                registration.ToDto(),
-                "Already waitlisted.");
+            return registration.ToDto();
         }
 
         registration.Status = RegistrationStatus.Waitlisted;
@@ -72,8 +67,6 @@ public sealed class WaitlistRegistrationCommandHandler(
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return ApiResponse<RegistrationDto>.Success(
-            registration.ToDto(),
-            "Registration moved to waitlist.");
+        return registration.ToDto();
     }
 }

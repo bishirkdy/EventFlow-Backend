@@ -1,7 +1,7 @@
-using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Contracts.Certificates;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
 namespace EventFlow.Registration.Application.Features.Certificates.Queries.DownloadCertificate;
@@ -11,9 +11,9 @@ public sealed class DownloadCertificateQueryHandler(
     ICertificateFileStore fileStore,
     EventFlow.Security.Authentication.ICurrentUserService user,
     IEventRegistrationAccessService access)
-    : IRequestHandler<DownloadCertificateQuery, ApiResponse<CertificateDownloadDto>>
+    : IRequestHandler<DownloadCertificateQuery, CertificateDownloadDto>
 {
-    public async Task<ApiResponse<CertificateDownloadDto>> Handle(
+    public async Task<CertificateDownloadDto> Handle(
         DownloadCertificateQuery query,
         CancellationToken cancellationToken)
     {
@@ -24,8 +24,7 @@ public sealed class DownloadCertificateQueryHandler(
 
         if (certificate is null)
         {
-            return ApiResponse<CertificateDownloadDto>.Fail(
-                ["Certificate not found."]);
+            throw new NotFoundException("Certificate not found.");
         }
 
         var isOwner = certificate.UserId == user.UserId;
@@ -36,8 +35,7 @@ public sealed class DownloadCertificateQueryHandler(
                 user.UserId,
                 cancellationToken))
         {
-            return ApiResponse<CertificateDownloadDto>.Fail(
-                ["You do not have permission."]);
+            throw new ForbiddenException("You do not have permission.");
         }
 
         await using var content = await fileStore.OpenReadAsync(
@@ -47,21 +45,18 @@ public sealed class DownloadCertificateQueryHandler(
 
         if (content is null)
         {
-            return ApiResponse<CertificateDownloadDto>.Fail(
-                ["Certificate file could not be found."]);
+            throw new NotFoundException("Certificate file could not be found.");
         }
 
         using var buffer = new MemoryStream();
         await content.CopyToAsync(buffer, cancellationToken);
 
-        return ApiResponse<CertificateDownloadDto>.Success(
-            new CertificateDownloadDto
-            {
-                CertificateNumber = certificate.CertificateNumber,
-                FileName = $"{certificate.CertificateNumber}.pdf",
-                ContentType = "application/pdf",
-                Content = buffer.ToArray()
-            },
-            "Certificate downloaded.");
+        return new CertificateDownloadDto
+        {
+            CertificateNumber = certificate.CertificateNumber,
+            FileName = $"{certificate.CertificateNumber}.pdf",
+            ContentType = "application/pdf",
+            Content = buffer.ToArray()
+        };
     }
 }

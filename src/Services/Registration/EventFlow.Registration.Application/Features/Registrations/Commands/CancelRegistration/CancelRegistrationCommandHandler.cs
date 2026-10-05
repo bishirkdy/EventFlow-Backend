@@ -1,9 +1,9 @@
-using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Common.Mappings;
 using EventFlow.Registration.Application.Contracts.Registrations;
 using EventFlow.Registration.Domain.Enums;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Commands.CancelRegistration;
@@ -13,9 +13,9 @@ public sealed class CancelRegistrationCommandHandler(
     IUnitOfWork unitOfWork,
     IWaitlistPromotionService promotions,
     EventFlow.Security.Authentication.ICurrentUserService user)
-    : IRequestHandler<CancelRegistrationCommand, ApiResponse<RegistrationDto>>
+    : IRequestHandler<CancelRegistrationCommand, RegistrationDto>
 {
-    public async Task<ApiResponse<RegistrationDto>> Handle(
+    public async Task<RegistrationDto> Handle(
         CancelRegistrationCommand command,
         CancellationToken cancellationToken)
     {
@@ -29,15 +29,12 @@ public sealed class CancelRegistrationCommandHandler(
 
         if (registration is null)
         {
-            return ApiResponse<RegistrationDto>.Fail(
-                ["Registration not found."]);
+            throw new NotFoundException("Registration not found.");
         }
 
         if (registration.Status == RegistrationStatus.Cancelled)
         {
-            return ApiResponse<RegistrationDto>.Success(
-                registration.ToDto(),
-                "Already cancelled.");
+            return registration.ToDto();
         }
 
         var previousStatus = registration.Status;
@@ -68,8 +65,6 @@ public sealed class CancelRegistrationCommandHandler(
                 cancellationToken);
         }
 
-        return ApiResponse<RegistrationDto>.Success(
-            registration.ToDto(),
-            "Registration cancelled.");
+        return registration.ToDto();
     }
 }

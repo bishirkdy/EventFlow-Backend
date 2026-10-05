@@ -1,3 +1,4 @@
+using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Contracts.Certificates;
 using EventFlow.Registration.Application.Features.Certificates.Commands.GenerateCertificates;
 using EventFlow.Registration.Application.Features.Certificates.Commands.RevokeCertificate;
@@ -23,10 +24,12 @@ public sealed class CertificatesController(ISender sender) : ControllerBase
         Guid eventId,
         CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new GetCertificateSettingsQuery(eventId), cancellationToken);
 
-        return result.IsSuccess ? Ok(result) : BadRequest(result);
+        return Ok(ApiResponse<CertificateSettingsDto>.Success(
+            dto,
+            "Certificate settings retrieved."));
     }
 
     [Authorize]
@@ -36,10 +39,12 @@ public sealed class CertificatesController(ISender sender) : ControllerBase
         UpsertCertificateSettingsRequest request,
         CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new UpsertCertificateSettingsCommand(eventId, request), cancellationToken);
 
-        return result.IsSuccess ? Ok(result) : BadRequest(result);
+        return Ok(ApiResponse<CertificateSettingsDto>.Success(
+            dto,
+            "Certificate settings saved."));
     }
 
     [Authorize]
@@ -48,10 +53,12 @@ public sealed class CertificatesController(ISender sender) : ControllerBase
         Guid eventId,
         CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new GetCertificateEligibilityQuery(eventId), cancellationToken);
 
-        return result.IsSuccess ? Ok(result) : BadRequest(result);
+        return Ok(ApiResponse<CertificateEligibilityDto>.Success(
+            dto,
+            "Eligibility computed."));
     }
 
     [Authorize]
@@ -61,10 +68,16 @@ public sealed class CertificatesController(ISender sender) : ControllerBase
         GenerateCertificatesRequest request,
         CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new GenerateCertificatesCommand(eventId, request), cancellationToken);
 
-        return result.IsSuccess ? Ok(result) : BadRequest(result);
+        var message = dto.Failed > 0
+            ? $"Generated {dto.Generated} certificate(s), {dto.Skipped} skipped, {dto.Failed} failed."
+            : $"Generated {dto.Generated} certificate(s), {dto.Skipped} skipped.";
+
+        return Ok(ApiResponse<CertificateGenerationResultDto>.Success(
+            dto,
+            message));
     }
 
     [Authorize]
@@ -73,10 +86,12 @@ public sealed class CertificatesController(ISender sender) : ControllerBase
         Guid eventId,
         CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new ListCertificatesQuery(eventId), cancellationToken);
 
-        return result.IsSuccess ? Ok(result) : BadRequest(result);
+        return Ok(ApiResponse<List<CertificateDto>>.Success(
+            dto,
+            "Certificates loaded."));
     }
 
     [Authorize]
@@ -85,10 +100,14 @@ public sealed class CertificatesController(ISender sender) : ControllerBase
         Guid eventId,
         CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new GetMyCertificatesQuery(eventId), cancellationToken);
 
-        return result.IsSuccess ? Ok(result) : BadRequest(result);
+        return Ok(ApiResponse<List<CertificateDto>>.Success(
+            dto,
+            dto.Count == 0
+                ? "No certificate has been issued for you yet."
+                : "Certificate found."));
     }
 
     [Authorize]
@@ -98,10 +117,12 @@ public sealed class CertificatesController(ISender sender) : ControllerBase
         Guid certificateId,
         CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new RevokeCertificateCommand(eventId, certificateId), cancellationToken);
 
-        return result.IsSuccess ? Ok(result) : BadRequest(result);
+        return Ok(ApiResponse<CertificateDto>.Success(
+            dto,
+            "Certificate revoked."));
     }
 
     [Authorize]
@@ -111,14 +132,9 @@ public sealed class CertificatesController(ISender sender) : ControllerBase
         Guid certificateId,
         CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new DownloadCertificateQuery(eventId, certificateId), cancellationToken);
 
-        if (!result.IsSuccess || result.Data is null)
-        {
-            return BadRequest(result);
-        }
-
-        return File(result.Data.Content, result.Data.ContentType, result.Data.FileName);
+        return File(dto.Content, dto.ContentType, dto.FileName);
     }
 }

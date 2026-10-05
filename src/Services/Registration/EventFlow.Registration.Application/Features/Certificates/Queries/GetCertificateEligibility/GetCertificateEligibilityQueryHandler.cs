@@ -1,8 +1,8 @@
-using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Common.Certificates;
 using EventFlow.Registration.Application.Contracts.Certificates;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
 namespace EventFlow.Registration.Application.Features.Certificates.Queries.GetCertificateEligibility;
@@ -14,9 +14,9 @@ public sealed class GetCertificateEligibilityQueryHandler(
     ICertificateSourceDataService sourceData,
     EventFlow.Security.Authentication.ICurrentUserService user,
     IEventRegistrationAccessService access)
-    : IRequestHandler<GetCertificateEligibilityQuery, ApiResponse<CertificateEligibilityDto>>
+    : IRequestHandler<GetCertificateEligibilityQuery, CertificateEligibilityDto>
 {
-    public async Task<ApiResponse<CertificateEligibilityDto>> Handle(
+    public async Task<CertificateEligibilityDto> Handle(
         GetCertificateEligibilityQuery query,
         CancellationToken cancellationToken)
     {
@@ -25,8 +25,7 @@ public sealed class GetCertificateEligibilityQueryHandler(
                 user.UserId,
                 cancellationToken))
         {
-            return ApiResponse<CertificateEligibilityDto>.Fail(
-                ["You do not have permission."]);
+            throw new ForbiddenException("You do not have permission.");
         }
 
         var settings = await settingsRepository.GetByEventIdAsync(
@@ -105,8 +104,6 @@ public sealed class GetCertificateEligibilityQueryHandler(
             dto.Items.Add(item);
         }
 
-        return ApiResponse<CertificateEligibilityDto>.Success(
-            dto,
-            "Eligibility computed.");
+        return dto;
     }
 }

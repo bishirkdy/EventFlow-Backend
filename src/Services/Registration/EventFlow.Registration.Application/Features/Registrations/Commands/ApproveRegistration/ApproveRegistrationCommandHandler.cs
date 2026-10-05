@@ -1,11 +1,11 @@
 using System.Security.Cryptography;
-using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Common.Mappings;
 using EventFlow.Registration.Application.Contracts.Registrations;
 using EventFlow.Registration.Domain.Entities;
 using EventFlow.Registration.Domain.Enums;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Commands.ApproveRegistration;
@@ -16,9 +16,9 @@ public sealed class ApproveRegistrationCommandHandler(
     IUnitOfWork unitOfWork,
     EventFlow.Security.Authentication.ICurrentUserService user,
     IEventRegistrationAccessService access)
-    : IRequestHandler<ApproveRegistrationCommand, ApiResponse<RegistrationDto>>
+    : IRequestHandler<ApproveRegistrationCommand, RegistrationDto>
 {
-    public async Task<ApiResponse<RegistrationDto>> Handle(
+    public async Task<RegistrationDto> Handle(
         ApproveRegistrationCommand command,
         CancellationToken cancellationToken)
     {
@@ -27,8 +27,7 @@ public sealed class ApproveRegistrationCommandHandler(
                 user.UserId,
                 cancellationToken))
         {
-            return ApiResponse<RegistrationDto>.Fail(
-                ["You do not have permission."]);
+            throw new ForbiddenException("You do not have permission.");
         }
 
         var registration = await registrations.GetByIdAsync(
@@ -40,23 +39,19 @@ public sealed class ApproveRegistrationCommandHandler(
 
         if (registration is null)
         {
-            return ApiResponse<RegistrationDto>.Fail(
-                ["Registration not found."]);
+            throw new NotFoundException("Registration not found.");
         }
 
         if (registration.Status is
             RegistrationStatus.Cancelled or
             RegistrationStatus.Rejected)
         {
-            return ApiResponse<RegistrationDto>.Fail(
-                ["Registration cannot be approved."]);
+            throw new ConflictException("Registration cannot be approved.");
         }
 
         if (registration.Status == RegistrationStatus.Approved)
         {
-            return ApiResponse<RegistrationDto>.Success(
-                registration.ToDto(),
-                "Already approved.");
+            return registration.ToDto();
         }
 
         var form = await forms.GetByEventIdAsync(
@@ -71,8 +66,7 @@ public sealed class ApproveRegistrationCommandHandler(
                 RegistrationStatus.Approved,
                 cancellationToken) >= form.Capacity.Value)
         {
-            return ApiResponse<RegistrationDto>.Fail(
-                ["Event capacity has been reached."]);
+            throw new ConflictException("Event capacity has been reached.");
         }
 
         var now = DateTime.UtcNow;
@@ -103,8 +97,6 @@ public sealed class ApproveRegistrationCommandHandler(
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return ApiResponse<RegistrationDto>.Success(
-            registration.ToDto(),
-            "Registration approved and ticket issued.");
+        return registration.ToDto();
     }
 }

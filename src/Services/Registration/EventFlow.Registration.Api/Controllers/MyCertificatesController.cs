@@ -1,3 +1,5 @@
+using EventFlow.Contracts.Common;
+using EventFlow.Registration.Application.Contracts.Certificates;
 using EventFlow.Registration.Application.Features.Certificates.Queries.GetMyCertificatesAcrossEvents;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -13,10 +15,14 @@ public sealed class MyCertificatesController(ISender sender) : ControllerBase
     [HttpGet("my")]
     public async Task<IActionResult> GetMine(CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new GetMyCertificatesAcrossEventsQuery(),
             cancellationToken);
 
-        return Ok(result);
+        return Ok(ApiResponse<List<CertificateDto>>.Success(
+            dto,
+            dto.Count == 0
+                ? "No certificates have been issued for you yet."
+                : "Certificates found."));
     }
 }

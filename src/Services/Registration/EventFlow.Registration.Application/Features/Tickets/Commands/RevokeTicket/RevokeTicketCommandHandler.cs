@@ -1,8 +1,8 @@
-using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Common.Mappings;
 using EventFlow.Registration.Application.Contracts.Registrations;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
 namespace EventFlow.Registration.Application.Features.Tickets.Commands.RevokeTicket;
@@ -12,9 +12,9 @@ public sealed class RevokeTicketCommandHandler(
     IUnitOfWork unitOfWork,
     EventFlow.Security.Authentication.ICurrentUserService user,
     IEventRegistrationAccessService access)
-    : IRequestHandler<RevokeTicketCommand, ApiResponse<TicketDto>>
+    : IRequestHandler<RevokeTicketCommand, TicketDto>
 {
-    public async Task<ApiResponse<TicketDto>> Handle(
+    public async Task<TicketDto> Handle(
         RevokeTicketCommand command,
         CancellationToken cancellationToken)
     {
@@ -23,8 +23,7 @@ public sealed class RevokeTicketCommandHandler(
                 user.UserId,
                 cancellationToken))
         {
-            return ApiResponse<TicketDto>.Fail(
-                ["You do not have permission."]);
+            throw new ForbiddenException("You do not have permission.");
         }
 
         var ticket = await tickets.GetByIdAsync(
@@ -34,8 +33,7 @@ public sealed class RevokeTicketCommandHandler(
 
         if (ticket is null)
         {
-            return ApiResponse<TicketDto>.Fail(
-                ["Ticket not found."]);
+            throw new NotFoundException("Ticket not found.");
         }
 
         ticket.IsActive = false;
@@ -43,8 +41,6 @@ public sealed class RevokeTicketCommandHandler(
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return ApiResponse<TicketDto>.Success(
-            ticket.ToDto(),
-            "Ticket revoked.");
+        return ticket.ToDto();
     }
 }

@@ -1,8 +1,8 @@
-using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Features.Registrations.Queries.GetRegistrationAnalytics;
 using EventFlow.Registration.Domain.Enums;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
 namespace EventFlow.Registration.Application.Features.Certificates.Queries.GetCertificateAnalytics;
@@ -14,9 +14,9 @@ public sealed class GetCertificateAnalyticsQueryHandler(
     IEventRegistrationAccessService access)
     : IRequestHandler<
         GetCertificateAnalyticsQuery,
-        ApiResponse<GetCertificateAnalyticsResponse>>
+        GetCertificateAnalyticsResponse>
 {
-    public async Task<ApiResponse<GetCertificateAnalyticsResponse>> Handle(
+    public async Task<GetCertificateAnalyticsResponse> Handle(
         GetCertificateAnalyticsQuery query,
         CancellationToken cancellationToken)
     {
@@ -25,8 +25,7 @@ public sealed class GetCertificateAnalyticsQueryHandler(
                 user.UserId,
                 cancellationToken))
         {
-            return ApiResponse<GetCertificateAnalyticsResponse>.Fail(
-                ["You do not have permission."]);
+            throw new ForbiddenException("You do not have permission.");
         }
 
         var certificateRows = await certificates.GetByEventIdAsync(
@@ -68,38 +67,36 @@ public sealed class GetCertificateAnalyticsQueryHandler(
             })
             .ToList();
 
-        return ApiResponse<GetCertificateAnalyticsResponse>.Success(
-            new GetCertificateAnalyticsResponse
-            {
-                EventId = query.EventId,
+        return new GetCertificateAnalyticsResponse
+        {
+            EventId = query.EventId,
 
-                TotalIssued = certificateRows.Count,
-                Active = certificateRows.Count - revoked,
-                Revoked = revoked,
-                UniqueRecipients = certificateRows
-                    .Select(x => x.UserId)
-                    .Distinct()
-                    .Count(),
+            TotalIssued = certificateRows.Count,
+            Active = certificateRows.Count - revoked,
+            Revoked = revoked,
+            UniqueRecipients = certificateRows
+                .Select(x => x.UserId)
+                .Distinct()
+                .Count(),
 
-                ApprovedRegistrations = stats.Approved,
-                IssuanceRatePercent = stats.Approved == 0
-                    ? 0
-                    : Math.Round(certificateRows.Count * 100d / stats.Approved, 1),
+            ApprovedRegistrations = stats.Approved,
+            IssuanceRatePercent = stats.Approved == 0
+                ? 0
+                : Math.Round(certificateRows.Count * 100d / stats.Approved, 1),
 
-                IssuedToday = issuedDates.Count(x => x == today),
-                IssuedLast7Days = issuedDates.Count(
-                    x => x <= today && x >= today.AddDays(-6)),
+            IssuedToday = issuedDates.Count(x => x == today),
+            IssuedLast7Days = issuedDates.Count(
+                x => x <= today && x >= today.AddDays(-6)),
 
-                FirstIssuedAtUtc = certificateRows.Count == 0
-                    ? null
-                    : certificateRows.Min(x => x.IssuedAtUtc),
+            FirstIssuedAtUtc = certificateRows.Count == 0
+                ? null
+                : certificateRows.Min(x => x.IssuedAtUtc),
 
-                LastIssuedAtUtc = certificateRows.Count == 0
-                    ? null
-                    : certificateRows.Max(x => x.IssuedAtUtc),
+            LastIssuedAtUtc = certificateRows.Count == 0
+                ? null
+                : certificateRows.Max(x => x.IssuedAtUtc),
 
-                IssuedByDay = trend
-            },
-            "Certificate analytics computed.");
+            IssuedByDay = trend
+        };
     }
 }

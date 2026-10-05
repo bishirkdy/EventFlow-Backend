@@ -1,3 +1,4 @@
+using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Features.Certificates.Queries.GetCertificateAnalytics;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -13,10 +14,12 @@ public sealed class CertificateAnalyticsController(ISender sender) : ControllerB
     [HttpGet]
     public async Task<IActionResult> Get(Guid eventId, CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
+        var dto = await sender.Send(
             new GetCertificateAnalyticsQuery(eventId),
             cancellationToken);
 
-        return result.IsSuccess ? Ok(result) : BadRequest(result);
+        return Ok(ApiResponse<GetCertificateAnalyticsResponse>.Success(
+            dto,
+            "Certificate analytics computed."));
     }
 }

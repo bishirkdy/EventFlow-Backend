@@ -1,8 +1,8 @@
-using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Common.Mappings;
 using EventFlow.Registration.Application.Contracts.Registrations;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Queries.GetRegistrationById;
@@ -11,9 +11,9 @@ public sealed class GetRegistrationByIdQueryHandler(
     IRegistrationRepository registrations,
     EventFlow.Security.Authentication.ICurrentUserService user,
     IEventRegistrationAccessService access)
-    : IRequestHandler<GetRegistrationByIdQuery, ApiResponse<RegistrationDto>>
+    : IRequestHandler<GetRegistrationByIdQuery, RegistrationDto>
 {
-    public async Task<ApiResponse<RegistrationDto>> Handle(
+    public async Task<RegistrationDto> Handle(
         GetRegistrationByIdQuery query,
         CancellationToken cancellationToken)
     {
@@ -23,8 +23,7 @@ public sealed class GetRegistrationByIdQueryHandler(
                 user.UserId,
                 cancellationToken))
         {
-            return ApiResponse<RegistrationDto>.Fail(
-                ["You do not have permission."]);
+            throw new ForbiddenException("You do not have permission.");
         }
 
         var registration = await registrations.GetByIdAsync(
@@ -36,8 +35,11 @@ public sealed class GetRegistrationByIdQueryHandler(
             asNoTracking: true,
             cancellationToken: cancellationToken);
 
-        return registration is null
-            ? ApiResponse<RegistrationDto>.Fail(["Registration not found."])
-            : ApiResponse<RegistrationDto>.Success(registration.ToDto());
+        if (registration is null)
+        {
+            throw new NotFoundException("Registration not found.");
+        }
+
+        return registration.ToDto();
     }
 }

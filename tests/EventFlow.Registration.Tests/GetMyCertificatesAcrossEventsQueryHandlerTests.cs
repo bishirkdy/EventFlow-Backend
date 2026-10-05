@@ -63,11 +63,10 @@ public sealed class GetMyCertificatesAcrossEventsQueryHandlerTests
             new GetMyCertificatesAcrossEventsQuery(),
             CancellationToken.None);
 
-        Assert.True(result.IsSuccess);
-        Assert.Equal(2, result.Data!.Count);
-        Assert.DoesNotContain(result.Data, x => x.EventName == "Someone Else Event");
-        Assert.Contains(result.Data, x => x.EventName == "First Event");
-        Assert.Contains(result.Data, x => x.EventName == "Second Event");
+        Assert.Equal(2, result.Count);
+        Assert.DoesNotContain(result, x => x.EventName == "Someone Else Event");
+        Assert.Contains(result, x => x.EventName == "First Event");
+        Assert.Contains(result, x => x.EventName == "Second Event");
     }
 
     [Fact]
@@ -79,8 +78,7 @@ public sealed class GetMyCertificatesAcrossEventsQueryHandlerTests
             new GetMyCertificatesAcrossEventsQuery(),
             CancellationToken.None);
 
-        Assert.True(result.IsSuccess);
-        Assert.Empty(result.Data!);
+        Assert.Empty(result);
     }
 
     private sealed class FakeCurrentUserService(Guid userId) : ICurrentUserService

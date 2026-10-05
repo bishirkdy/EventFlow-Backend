@@ -1,7 +1,8 @@
-using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
+using EventFlow.Registration.Application.Contracts.Certificates;
 using EventFlow.Registration.Domain.Entities;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
 namespace EventFlow.Registration.Application.Features.Certificates.Commands.UpsertCertificateSettings;
@@ -11,9 +12,9 @@ public sealed class UpsertCertificateSettingsCommandHandler(
     IUnitOfWork unitOfWork,
     EventFlow.Security.Authentication.ICurrentUserService user,
     IEventRegistrationAccessService access)
-    : IRequestHandler<UpsertCertificateSettingsCommand, ApiResponse<CertificateSettingsDto>>
+    : IRequestHandler<UpsertCertificateSettingsCommand, CertificateSettingsDto>
 {
-    public async Task<ApiResponse<CertificateSettingsDto>> Handle(
+    public async Task<CertificateSettingsDto> Handle(
         UpsertCertificateSettingsCommand command,
         CancellationToken cancellationToken)
     {
@@ -22,23 +23,10 @@ public sealed class UpsertCertificateSettingsCommandHandler(
                 user.UserId,
                 cancellationToken))
         {
-            return ApiResponse<CertificateSettingsDto>.Fail(
-                ["You do not have permission."]);
+            throw new ForbiddenException("You do not have permission.");
         }
 
         var request = command.Request;
-
-        if (string.IsNullOrWhiteSpace(request.Title))
-        {
-            return ApiResponse<CertificateSettingsDto>.Fail(
-                ["Certificate title is required."]);
-        }
-
-        if (request.MinAttendancePercent is < 0 or > 100)
-        {
-            return ApiResponse<CertificateSettingsDto>.Fail(
-                ["Minimum attendance must be between 0 and 100."]);
-        }
 
         var entity = await settings.GetByEventIdAsync(
             command.EventId,
@@ -71,9 +59,7 @@ public sealed class UpsertCertificateSettingsCommandHandler(
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return ApiResponse<CertificateSettingsDto>.Success(
-            ToDto(entity),
-            "Certificate settings saved.");
+        return ToDto(entity);
     }
 
     private static string? NullIfWhiteSpace(string? value) =>

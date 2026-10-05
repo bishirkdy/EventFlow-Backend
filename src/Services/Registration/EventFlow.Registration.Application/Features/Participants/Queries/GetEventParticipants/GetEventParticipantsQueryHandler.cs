@@ -1,5 +1,5 @@
 using EventFlow.Contracts.Common;
-
+using EventFlow.SharedKernel.Exceptions;
 
 namespace EventFlow.Registration.Application.Features.Participants.Queries.GetEventParticipants;
 
@@ -9,13 +9,13 @@ public sealed class GetEventParticipantsQueryHandler(
     IEventRegistrationAccessService access)
     : IRequestHandler<
         GetEventParticipantsQuery,
-        ApiResponse<PaginatedResponse<ParticipantDto>>>
+        PaginatedResponse<ParticipantDto>>
 {
-    public async Task<ApiResponse<PaginatedResponse<ParticipantDto>>> Handle(GetEventParticipantsQuery query, CancellationToken cancellationToken)
+    public async Task<PaginatedResponse<ParticipantDto>> Handle(GetEventParticipantsQuery query, CancellationToken cancellationToken)
     {
         if (!await access.CanManageRegistrationAsync(query.EventId, user.UserId, cancellationToken))
         {
-            return ApiResponse<PaginatedResponse<ParticipantDto>>.Fail(["You do not have permission."]);
+            throw new ForbiddenException("You do not have permission.");
         }
 
         var page = Math.Max(1, query.Page);
@@ -30,13 +30,12 @@ public sealed class GetEventParticipantsQueryHandler(
                 pageSize,
                 cancellationToken);
 
-        return ApiResponse<PaginatedResponse<ParticipantDto>>.Success(
-            new PaginatedResponse<ParticipantDto>
-            {
-                Items = items.Select(x => x.ToDto()).ToList(),
-                TotalCount = totalCount,
-                PageNumber = page,
-                PageSize = pageSize
-            });
+        return new PaginatedResponse<ParticipantDto>
+        {
+            Items = items.Select(x => x.ToDto()).ToList(),
+            TotalCount = totalCount,
+            PageNumber = page,
+            PageSize = pageSize
+        };
     }
 }

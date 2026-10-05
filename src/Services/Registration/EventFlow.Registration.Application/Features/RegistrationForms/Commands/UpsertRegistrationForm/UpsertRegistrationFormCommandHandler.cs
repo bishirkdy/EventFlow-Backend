@@ -1,8 +1,8 @@
-using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Contracts.RegistrationForms;
 using EventFlow.Registration.Domain.Entities;
 using EventFlow.Registration.Domain.Enums;
+using EventFlow.SharedKernel.Exceptions;
 
 namespace EventFlow.Registration.Application.Features.RegistrationForms.Commands.UpsertRegistrationForm;
 
@@ -14,9 +14,9 @@ public sealed class UpsertRegistrationFormCommandHandler(
     IEventRegistrationAccessService access)
     : IRequestHandler<
         UpsertRegistrationFormCommand,
-        ApiResponse<RegistrationFormDto>>
+        RegistrationFormDto>
 {
-    public async Task<ApiResponse<RegistrationFormDto>> Handle(
+    public async Task<RegistrationFormDto> Handle(
         UpsertRegistrationFormCommand command,
         CancellationToken cancellationToken)
     {
@@ -25,17 +25,10 @@ public sealed class UpsertRegistrationFormCommandHandler(
                 user.UserId,
                 cancellationToken))
         {
-            return ApiResponse<RegistrationFormDto>.Fail(
-                ["You do not have permission."]);
+            throw new ForbiddenException("You do not have permission.");
         }
 
         var request = command.Request;
-        var validationError = ValidateRequest(request);
-
-        if (validationError is not null)
-        {
-            return ApiResponse<RegistrationFormDto>.Fail([validationError]);
-        }
 
         var now = DateTime.UtcNow;
         var form = await forms.GetByEventIdAsync(
@@ -88,8 +81,8 @@ public sealed class UpsertRegistrationFormCommandHandler(
 
         if (invalidIds.Length > 0)
         {
-            return ApiResponse<RegistrationFormDto>.Fail(
-                ["One or more registration fields do not belong to this form."]);
+            throw new ConflictException(
+                "One or more registration fields do not belong to this form.");
         }
 
         var removedIds = existingFields.Keys
@@ -109,8 +102,8 @@ public sealed class UpsertRegistrationFormCommandHandler(
                     .Select(x => x.Value.Label)
                     .ToArray();
 
-                return ApiResponse<RegistrationFormDto>.Fail(
-                    [$"These fields already have registration answers and cannot be deleted: {string.Join(", ", usedLabels)}."]);
+                throw new ConflictException(
+                    $"These fields already have registration answers and cannot be deleted: {string.Join(", ", usedLabels)}.");
             }
         }
 
@@ -144,114 +137,7 @@ public sealed class UpsertRegistrationFormCommandHandler(
             RegistrationStatus.Waitlisted,
             cancellationToken);
 
-        return ApiResponse<RegistrationFormDto>.Success(
-            ToDto(form, approvedCount, waitlistCount),
-            "Registration form saved.");
-    }
-
-    private static string? ValidateRequest(UpsertRegistrationFormRequest request)
-    {
-        if (request.CapacityMode == CapacityMode.Limited &&
-            (!request.Capacity.HasValue || request.Capacity.Value < 1))
-        {
-            return "A positive capacity is required when capacity mode is limited.";
-        }
-
-        if (request.CapacityMode == CapacityMode.Unlimited && request.EnableWaitlist)
-        {
-            return "Waitlist can only be enabled when capacity is limited.";
-        }
-
-        if (request.OpensAtUtc.HasValue &&
-            request.ClosesAtUtc.HasValue &&
-            request.OpensAtUtc.Value >= request.ClosesAtUtc.Value)
-        {
-            return "Registration opening time must be before the closing time.";
-        }
-
-        var keys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var field in request.Fields)
-        {
-            if (!keys.Add(field.FieldKey.Trim()))
-            {
-                return $"The field key '{field.FieldKey.Trim()}' is duplicated.";
-            }
-
-            if (!Enum.IsDefined(field.FieldType))
-            {
-                return $"Field '{field.Label}' has an invalid field type.";
-            }
-
-            var jsonError = ValidateFieldJson(field);
-            if (jsonError is not null)
-            {
-                return jsonError;
-            }
-        }
-
-        return null;
-    }
-
-    private static string? ValidateFieldJson(RegistrationFormFieldRequest field)
-    {
-        var isChoice = field.FieldType is
-            RegistrationFieldType.Select or
-            RegistrationFieldType.Radio;
-
-        if (isChoice)
-        {
-            if (string.IsNullOrWhiteSpace(field.OptionsJson))
-            {
-                return $"Field '{field.Label}' requires options.";
-            }
-
-            try
-            {
-                using var document = System.Text.Json.JsonDocument.Parse(field.OptionsJson);
-
-                if (document.RootElement.ValueKind != System.Text.Json.JsonValueKind.Array)
-                {
-                    return $"Options for '{field.Label}' must be a JSON array.";
-                }
-
-                var options = document.RootElement.EnumerateArray().ToArray();
-
-                if (options.Length == 0 || options.Any(x => x.ValueKind != System.Text.Json.JsonValueKind.String || string.IsNullOrWhiteSpace(x.GetString())))
-                {
-                    return $"Options for '{field.Label}' must contain at least one non-empty string.";
-                }
-            }
-            catch (System.Text.Json.JsonException)
-            {
-                return $"Options for '{field.Label}' contain invalid JSON.";
-            }
-        }
-        else if (!string.IsNullOrWhiteSpace(field.OptionsJson))
-        {
-            return $"Field '{field.Label}' does not support options.";
-        }
-
-        if (string.IsNullOrWhiteSpace(field.ValidationJson))
-        {
-            return null;
-        }
-
-        try
-        {
-            using var document = System.Text.Json.JsonDocument.Parse(field.ValidationJson);
-
-            if (document.RootElement.ValueKind != System.Text.Json.JsonValueKind.Object)
-            {
-                return $"Validation rules for '{field.Label}' must be a JSON object.";
-            }
-        }
-        catch (System.Text.Json.JsonException)
-        {
-            return $"Validation rules for '{field.Label}' contain invalid JSON.";
-        }
-
-        return null;
+        return ToDto(form, approvedCount, waitlistCount);
     }
 
     private static string? NormalizeJson(string? value) =>

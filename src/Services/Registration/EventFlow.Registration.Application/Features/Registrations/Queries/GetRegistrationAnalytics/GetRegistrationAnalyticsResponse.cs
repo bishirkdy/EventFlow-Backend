@@ -44,11 +44,3 @@ public sealed class GetRegistrationAnalyticsResponse
 
     public IReadOnlyList<RejectionReasonResponse> TopRejectionReasons { get; set; } = [];
 }
-
-public sealed record RegistrationTrendPointResponse(
-    string Date,
-    int Total,
-    int Approved,
-    int Pending);
-
-public sealed record RejectionReasonResponse(string Reason, int Count);

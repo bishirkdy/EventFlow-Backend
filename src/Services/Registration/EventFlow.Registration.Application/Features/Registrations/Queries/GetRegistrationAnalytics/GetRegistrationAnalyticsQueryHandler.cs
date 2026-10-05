@@ -1,6 +1,6 @@
-using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 using RegistrationEntity = EventFlow.Registration.Domain.Entities.Registration;
 using RegistrationStatusEnum = EventFlow.Registration.Domain.Enums.RegistrationStatus;
@@ -13,9 +13,9 @@ public sealed class GetRegistrationAnalyticsQueryHandler(
     IEventRegistrationAccessService access)
     : IRequestHandler<
         GetRegistrationAnalyticsQuery,
-        ApiResponse<GetRegistrationAnalyticsResponse>>
+        GetRegistrationAnalyticsResponse>
 {
-    public async Task<ApiResponse<GetRegistrationAnalyticsResponse>> Handle(
+    public async Task<GetRegistrationAnalyticsResponse> Handle(
         GetRegistrationAnalyticsQuery query,
         CancellationToken cancellationToken)
     {
@@ -24,8 +24,7 @@ public sealed class GetRegistrationAnalyticsQueryHandler(
                 user.UserId,
                 cancellationToken))
         {
-            return ApiResponse<GetRegistrationAnalyticsResponse>.Fail(
-                ["You do not have permission."]);
+            throw new ForbiddenException("You do not have permission.");
         }
 
         var stats = await registrations.GetStatisticsAsync(
@@ -104,57 +103,55 @@ public sealed class GetRegistrationAnalyticsQueryHandler(
 
         var trendDates = rows.Select(x => x.RegisteredAtUtc.Date).ToList();
 
-        return ApiResponse<GetRegistrationAnalyticsResponse>.Success(
-            new GetRegistrationAnalyticsResponse
-            {
-                EventId = query.EventId,
+        return new GetRegistrationAnalyticsResponse
+        {
+            EventId = query.EventId,
 
-                Total = stats.Total,
-                Pending = stats.Pending,
-                Approved = stats.Approved,
-                Rejected = stats.Rejected,
-                Cancelled = stats.Cancelled,
-                Waitlisted = stats.Waitlisted,
-                Participants = stats.Participants,
-                ActiveTickets = stats.ActiveTickets,
+            Total = stats.Total,
+            Pending = stats.Pending,
+            Approved = stats.Approved,
+            Rejected = stats.Rejected,
+            Cancelled = stats.Cancelled,
+            Waitlisted = stats.Waitlisted,
+            Participants = stats.Participants,
+            ActiveTickets = stats.ActiveTickets,
 
-                ApprovalRatePercent = stats.Total == 0
-                    ? 0
-                    : Math.Round(stats.Approved * 100d / stats.Total, 1),
+            ApprovalRatePercent = stats.Total == 0
+                ? 0
+                : Math.Round(stats.Approved * 100d / stats.Total, 1),
 
-                RejectionRatePercent = stats.Total == 0
-                    ? 0
-                    : Math.Round(stats.Rejected * 100d / stats.Total, 1),
+            RejectionRatePercent = stats.Total == 0
+                ? 0
+                : Math.Round(stats.Rejected * 100d / stats.Total, 1),
 
-                WaitlistRatePercent = stats.Total == 0
-                    ? 0
-                    : Math.Round(stats.Waitlisted * 100d / stats.Total, 1),
+            WaitlistRatePercent = stats.Total == 0
+                ? 0
+                : Math.Round(stats.Waitlisted * 100d / stats.Total, 1),
 
-                AvgApprovalHours = approvalDurations.Count == 0
-                    ? 0
-                    : Math.Round(approvalDurations.Average(), 1),
+            AvgApprovalHours = approvalDurations.Count == 0
+                ? 0
+                : Math.Round(approvalDurations.Average(), 1),
 
-                AvgRejectionHours = rejectionDurations.Count == 0
-                    ? 0
-                    : Math.Round(rejectionDurations.Average(), 1),
+            AvgRejectionHours = rejectionDurations.Count == 0
+                ? 0
+                : Math.Round(rejectionDurations.Average(), 1),
 
-                RegisteredToday = trendDates.Count(x => x == today),
+            RegisteredToday = trendDates.Count(x => x == today),
 
-                RegisteredLast7Days = trendDates.Count(
-                    x => x <= today && x >= today.AddDays(-6)),
+            RegisteredLast7Days = trendDates.Count(
+                x => x <= today && x >= today.AddDays(-6)),
 
-                FirstRegistrationAtUtc = trendDates.Count == 0
-                    ? null
-                    : rows.Min(x => x.RegisteredAtUtc),
+            FirstRegistrationAtUtc = trendDates.Count == 0
+                ? null
+                : rows.Min(x => x.RegisteredAtUtc),
 
-                LastRegistrationAtUtc = trendDates.Count == 0
-                    ? null
-                    : rows.Max(x => x.RegisteredAtUtc),
+            LastRegistrationAtUtc = trendDates.Count == 0
+                ? null
+                : rows.Max(x => x.RegisteredAtUtc),
 
-                PeakDay = peak,
-                Trend = trend,
-                TopRejectionReasons = topRejectionReasons
-            },
-            "Registration analytics computed.");
+            PeakDay = peak,
+            Trend = trend,
+            TopRejectionReasons = topRejectionReasons
+        };
     }
 }

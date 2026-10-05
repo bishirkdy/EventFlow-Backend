@@ -1,4 +1,3 @@
-using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Common.Mappings;
@@ -12,9 +11,9 @@ public sealed class GetMyRegistrationsQueryHandler(
     EventFlow.Security.Authentication.ICurrentUserService user)
     : IRequestHandler<
         GetMyRegistrationsQuery,
-        ApiResponse<IReadOnlyList<RegistrationDto>>>
+        IReadOnlyList<RegistrationDto>>
 {
-    public async Task<ApiResponse<IReadOnlyList<RegistrationDto>>> Handle(
+    public async Task<IReadOnlyList<RegistrationDto>> Handle(
         GetMyRegistrationsQuery query,
         CancellationToken cancellationToken)
     {
@@ -23,7 +22,6 @@ public sealed class GetMyRegistrationsQueryHandler(
             query.EventId,
             cancellationToken);
 
-        return ApiResponse<IReadOnlyList<RegistrationDto>>.Success(
-            items.Select(x => x.ToDto()).ToList());
+        return items.Select(x => x.ToDto()).ToList();
     }
 }

@@ -1,4 +1,3 @@
-using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Common.Mappings;
 using EventFlow.Registration.Application.Contracts.Certificates;
@@ -9,9 +8,9 @@ namespace EventFlow.Registration.Application.Features.Certificates.Queries.GetMy
 public sealed class GetMyCertificatesQueryHandler(
     ICertificateRepository certificates,
     EventFlow.Security.Authentication.ICurrentUserService user)
-    : IRequestHandler<GetMyCertificatesQuery, ApiResponse<List<CertificateDto>>>
+    : IRequestHandler<GetMyCertificatesQuery, List<CertificateDto>>
 {
-    public async Task<ApiResponse<List<CertificateDto>>> Handle(
+    public async Task<List<CertificateDto>> Handle(
         GetMyCertificatesQuery query,
         CancellationToken cancellationToken)
     {
@@ -22,13 +21,9 @@ public sealed class GetMyCertificatesQueryHandler(
 
         if (certificate is null)
         {
-            return ApiResponse<List<CertificateDto>>.Success(
-                [],
-                "No certificate has been issued for you yet.");
+            return [];
         }
 
-        return ApiResponse<List<CertificateDto>>.Success(
-            [certificate.ToDto()],
-            "Certificate found.");
+        return [certificate.ToDto()];
     }
 }

@@ -1,9 +1,9 @@
-using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Common.Mappings;
 using EventFlow.Registration.Application.Contracts.Certificates;
 using EventFlow.Registration.Domain.Enums;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
 namespace EventFlow.Registration.Application.Features.Certificates.Commands.RevokeCertificate;
@@ -13,9 +13,9 @@ public sealed class RevokeCertificateCommandHandler(
     IUnitOfWork unitOfWork,
     EventFlow.Security.Authentication.ICurrentUserService user,
     IEventRegistrationAccessService access)
-    : IRequestHandler<RevokeCertificateCommand, ApiResponse<CertificateDto>>
+    : IRequestHandler<RevokeCertificateCommand, CertificateDto>
 {
-    public async Task<ApiResponse<CertificateDto>> Handle(
+    public async Task<CertificateDto> Handle(
         RevokeCertificateCommand command,
         CancellationToken cancellationToken)
     {
@@ -24,8 +24,7 @@ public sealed class RevokeCertificateCommandHandler(
                 user.UserId,
                 cancellationToken))
         {
-            return ApiResponse<CertificateDto>.Fail(
-                ["You do not have permission."]);
+            throw new ForbiddenException("You do not have permission.");
         }
 
         var certificate = await certificates.GetByIdAsync(
@@ -35,14 +34,12 @@ public sealed class RevokeCertificateCommandHandler(
 
         if (certificate is null)
         {
-            return ApiResponse<CertificateDto>.Fail(["Certificate not found."]);
+            throw new NotFoundException("Certificate not found.");
         }
 
         if (certificate.Status == CertificateStatus.Revoked)
         {
-            return ApiResponse<CertificateDto>.Success(
-                certificate.ToDto(),
-                "Certificate is already revoked.");
+            return certificate.ToDto();
         }
 
         certificate.Status = CertificateStatus.Revoked;
@@ -50,8 +47,6 @@ public sealed class RevokeCertificateCommandHandler(
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return ApiResponse<CertificateDto>.Success(
-            certificate.ToDto(),
-            "Certificate revoked.");
+        return certificate.ToDto();
     }
 }

@@ -1,4 +1,3 @@
-using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Contracts.Certificates;
 using MediatR;
 
@@ -7,4 +6,4 @@ namespace EventFlow.Registration.Application.Features.Certificates.Commands.Revo
 public sealed record RevokeCertificateCommand(
     Guid EventId,
     Guid CertificateId
-) : IRequest<ApiResponse<CertificateDto>>;
+) : IRequest<CertificateDto>;

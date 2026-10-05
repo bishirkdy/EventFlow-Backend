@@ -1,4 +1,3 @@
-using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using MediatR;
 
@@ -8,9 +7,9 @@ public sealed class GetRegisteredEventIdsQueryHandler(
     IRegistrationRepository registrations)
     : IRequestHandler<
         GetRegisteredEventIdsQuery,
-        ApiResponse<IReadOnlyList<Guid>>>
+        IReadOnlyList<Guid>>
 {
-    public async Task<ApiResponse<IReadOnlyList<Guid>>> Handle(
+    public async Task<IReadOnlyList<Guid>> Handle(
         GetRegisteredEventIdsQuery query,
         CancellationToken cancellationToken)
     {
@@ -18,8 +17,6 @@ public sealed class GetRegisteredEventIdsQueryHandler(
             query.UserId,
             cancellationToken);
 
-        return ApiResponse<IReadOnlyList<Guid>>.Success(
-            eventIds,
-            "Registered event ids retrieved successfully.");
+        return eventIds;
     }
 }

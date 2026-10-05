@@ -4,6 +4,7 @@ using EventFlow.Registration.Domain.Enums;
 using EventFlow.Registration.Infrastructure.Persistence;
 using EventFlow.Registration.Infrastructure.Persistence.Repositories;
 using EventFlow.Security.Authentication;
+using EventFlow.SharedKernel.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
@@ -111,7 +112,7 @@ public sealed class CancelRegistrationCommandHandlerTests
                 }),
             CancellationToken.None);
 
-        Assert.True(result.IsSuccess);
+        Assert.Equal(RegistrationStatus.Cancelled, result.Status);
 
         var stored = await _db.Registrations
             .Include(x => x.Ticket)
@@ -147,7 +148,7 @@ public sealed class CancelRegistrationCommandHandlerTests
                 }),
             CancellationToken.None);
 
-        Assert.True(result.IsSuccess);
+        Assert.Equal(RegistrationStatus.Cancelled, result.Status);
 
         var stored = await _db.Registrations.ToListAsync(CancellationToken.None);
 
@@ -162,17 +163,16 @@ public sealed class CancelRegistrationCommandHandlerTests
         var other = CreateRegistration(Guid.NewGuid(), RegistrationStatus.Approved, null);
         await _db.SaveChangesAsync(CancellationToken.None);
 
-        var result = await CreateHandler().Handle(
-            new CancelRegistrationCommand(
-                _eventId,
-                other.Id,
-                new EventFlow.Registration.Application.Contracts.Registrations.CancelRegistrationRequest
-                {
-                    Reason = null
-                }),
-            CancellationToken.None);
-
-        Assert.False(result.IsSuccess);
+        await Assert.ThrowsAsync<NotFoundException>(
+            () => CreateHandler().Handle(
+                new CancelRegistrationCommand(
+                    _eventId,
+                    other.Id,
+                    new EventFlow.Registration.Application.Contracts.Registrations.CancelRegistrationRequest
+                    {
+                        Reason = null
+                    }),
+                CancellationToken.None));
 
         var stored = await _db.Registrations.SingleAsync(
             x => x.Id == other.Id,

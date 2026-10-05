@@ -1,9 +1,9 @@
-using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Common.Mappings;
 using EventFlow.Registration.Application.Contracts.Registrations;
 using EventFlow.Registration.Domain.Enums;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Commands.RejectRegistration;
@@ -14,9 +14,9 @@ public sealed class RejectRegistrationCommandHandler(
     IWaitlistPromotionService promotions,
     EventFlow.Security.Authentication.ICurrentUserService user,
     IEventRegistrationAccessService access)
-    : IRequestHandler<RejectRegistrationCommand, ApiResponse<RegistrationDto>>
+    : IRequestHandler<RejectRegistrationCommand, RegistrationDto>
 {
-    public async Task<ApiResponse<RegistrationDto>> Handle(
+    public async Task<RegistrationDto> Handle(
         RejectRegistrationCommand command,
         CancellationToken cancellationToken)
     {
@@ -25,8 +25,7 @@ public sealed class RejectRegistrationCommandHandler(
                 user.UserId,
                 cancellationToken))
         {
-            return ApiResponse<RegistrationDto>.Fail(
-                ["You do not have permission."]);
+            throw new ForbiddenException("You do not have permission.");
         }
 
         var registration = await registrations.GetByIdAsync(
@@ -38,14 +37,13 @@ public sealed class RejectRegistrationCommandHandler(
 
         if (registration is null)
         {
-            return ApiResponse<RegistrationDto>.Fail(
-                ["Registration not found."]);
+            throw new NotFoundException("Registration not found.");
         }
 
         if (registration.Status == RegistrationStatus.Cancelled)
         {
-            return ApiResponse<RegistrationDto>.Fail(
-                ["Cancelled registration cannot be rejected."]);
+            throw new ConflictException(
+                "Cancelled registration cannot be rejected.");
         }
 
         var previousStatus = registration.Status;
@@ -72,8 +70,6 @@ public sealed class RejectRegistrationCommandHandler(
                 cancellationToken);
         }
 
-        return ApiResponse<RegistrationDto>.Success(
-            registration.ToDto(),
-            "Registration rejected.");
+        return registration.ToDto();
     }
 }

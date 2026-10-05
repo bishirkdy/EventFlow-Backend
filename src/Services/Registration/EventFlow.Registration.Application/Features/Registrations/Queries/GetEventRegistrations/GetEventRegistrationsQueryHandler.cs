@@ -3,6 +3,7 @@ using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Common.Mappings;
 using EventFlow.Registration.Application.Contracts.Registrations;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Queries.GetEventRegistrations;
@@ -13,9 +14,9 @@ public sealed class GetEventRegistrationsQueryHandler(
     IEventRegistrationAccessService access)
     : IRequestHandler<
         GetEventRegistrationsQuery,
-        ApiResponse<PaginatedResponse<RegistrationDto>>>
+        PaginatedResponse<RegistrationDto>>
 {
-    public async Task<ApiResponse<PaginatedResponse<RegistrationDto>>> Handle(
+    public async Task<PaginatedResponse<RegistrationDto>> Handle(
         GetEventRegistrationsQuery query,
         CancellationToken cancellationToken)
     {
@@ -24,8 +25,7 @@ public sealed class GetEventRegistrationsQueryHandler(
                 user.UserId,
                 cancellationToken))
         {
-            return ApiResponse<PaginatedResponse<RegistrationDto>>.Fail(
-                ["You do not have permission."]);
+            throw new ForbiddenException("You do not have permission.");
         }
 
         var page = Math.Max(1, query.Page);
@@ -40,13 +40,12 @@ public sealed class GetEventRegistrationsQueryHandler(
                 pageSize,
                 cancellationToken);
 
-        return ApiResponse<PaginatedResponse<RegistrationDto>>.Success(
-            new PaginatedResponse<RegistrationDto>
-            {
-                Items = items.Select(x => x.ToDto()).ToList(),
-                TotalCount = totalCount,
-                PageNumber = page,
-                PageSize = pageSize
-            });
+        return new PaginatedResponse<RegistrationDto>
+        {
+            Items = items.Select(x => x.ToDto()).ToList(),
+            TotalCount = totalCount,
+            PageNumber = page,
+            PageSize = pageSize
+        };
     }
 }

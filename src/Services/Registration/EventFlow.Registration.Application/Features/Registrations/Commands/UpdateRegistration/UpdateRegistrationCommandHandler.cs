@@ -1,4 +1,3 @@
-using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Common.Mappings;
@@ -6,6 +5,8 @@ using EventFlow.Registration.Application.Contracts.Registrations;
 using EventFlow.Registration.Domain.Entities;
 using EventFlow.Registration.Domain.Enums;
 using EventFlow.Registration.Application.Features.Registrations;
+using EventFlow.SharedKernel.Exceptions;
+using FluentValidation.Results;
 using MediatR;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Commands.UpdateRegistration;
@@ -15,9 +16,9 @@ public sealed class UpdateRegistrationCommandHandler(
     IUnitOfWork unitOfWork,
     IRegistrationFormRepository forms,
     EventFlow.Security.Authentication.ICurrentUserService user)
-    : IRequestHandler<UpdateRegistrationCommand, ApiResponse<RegistrationDto>>
+    : IRequestHandler<UpdateRegistrationCommand, RegistrationDto>
 {
-    public async Task<ApiResponse<RegistrationDto>> Handle(
+    public async Task<RegistrationDto> Handle(
         UpdateRegistrationCommand command,
         CancellationToken cancellationToken)
     {
@@ -31,8 +32,7 @@ public sealed class UpdateRegistrationCommandHandler(
 
         if (registration is null)
         {
-            return ApiResponse<RegistrationDto>.Fail(
-                ["Registration not found."]);
+            throw new NotFoundException("Registration not found.");
         }
 
         var form = await forms.GetByEventIdAsync(
@@ -47,21 +47,21 @@ public sealed class UpdateRegistrationCommandHandler(
 
         if (answerErrors.Count > 0)
         {
-            return ApiResponse<RegistrationDto>.Fail(answerErrors);
+            throw new ValidationException(
+                answerErrors.Select(
+                    message => new ValidationFailure(string.Empty, message)));
         }
 
         if (registration.Status is
             RegistrationStatus.Cancelled or
             RegistrationStatus.Rejected)
         {
-            return ApiResponse<RegistrationDto>.Fail(
-                ["Registration cannot be edited."]);
+            throw new ConflictException("Registration cannot be edited.");
         }
 
         if (registration.Participant is null)
         {
-            return ApiResponse<RegistrationDto>.Fail(
-                ["Participant not found."]);
+            throw new NotFoundException("Participant not found.");
         }
 
         var now = DateTime.UtcNow;
@@ -97,8 +97,6 @@ public sealed class UpdateRegistrationCommandHandler(
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return ApiResponse<RegistrationDto>.Success(
-            registration.ToDto(),
-            "Registration updated successfully.");
+        return registration.ToDto();
     }
 }

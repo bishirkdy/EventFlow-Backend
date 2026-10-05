@@ -11,10 +11,3 @@ public interface ICertificateSourceDataService
         Guid participantUserId,
         CancellationToken cancellationToken = default);
 }
-
-public sealed record CertificateEventInfo(
-    Guid Id,
-    string Name,
-    DateTime StartDate,
-    DateTime EndDate,
-    string TimeZone);

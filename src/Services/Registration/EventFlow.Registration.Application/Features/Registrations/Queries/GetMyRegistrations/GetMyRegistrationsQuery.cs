@@ -1,4 +1,3 @@
-using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Contracts.Registrations;
 using MediatR;
 
@@ -6,4 +5,4 @@ namespace EventFlow.Registration.Application.Features.Registrations.Queries.GetM
 
 public sealed record GetMyRegistrationsQuery(
     Guid? EventId = null)
-    : IRequest<ApiResponse<IReadOnlyList<RegistrationDto>>>;
+    : IRequest<IReadOnlyList<RegistrationDto>>;
