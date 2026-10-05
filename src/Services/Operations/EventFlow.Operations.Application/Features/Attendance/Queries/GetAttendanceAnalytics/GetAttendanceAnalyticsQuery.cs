@@ -1,4 +1,3 @@
-using EventFlow.Contracts.Common;
 using MediatR;
 
 namespace EventFlow.Operations.Application.Features.Attendance.Queries.GetAttendanceAnalytics;
@@ -6,4 +5,4 @@ namespace EventFlow.Operations.Application.Features.Attendance.Queries.GetAttend
 public sealed record GetAttendanceAnalyticsQuery(
     Guid EventId,
     int Days = 30)
-    : IRequest<ApiResponse<GetAttendanceAnalyticsResponse>>;
+    : IRequest<GetAttendanceAnalyticsResponse>;

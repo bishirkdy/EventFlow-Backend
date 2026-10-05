@@ -1,4 +1,111 @@
-using EventFlow.Operations.Application.Contracts;using EventFlow.Operations.Application.Features.Attendance;using EventFlow.Security.Authentication;using Microsoft.AspNetCore.Authorization;using Microsoft.AspNetCore.Mvc;
+using EventFlow.Contracts.Common;
+using EventFlow.Operations.Application.Contracts;
+using EventFlow.Operations.Application.Features.Attendance.Commands.CheckInManual;
+using EventFlow.Operations.Application.Features.Attendance.Commands.CheckInQr;
+using EventFlow.Operations.Application.Features.Attendance.Commands.CheckOut;
+using EventFlow.Operations.Application.Features.Attendance.Queries.GetAttendanceDashboard;
+using EventFlow.Operations.Application.Features.Attendance.Queries.GetParticipantAttendanceHistory;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
 namespace EventFlow.Operations.Api.Controllers;
-[Authorize,ApiController,Route("api/v1/operations/events/{eventId:guid}/attendance")]
-public sealed class AttendanceController(AttendanceService s,ICurrentUserService u,IHttpContextAccessor c):ControllerBase{[HttpPost("check-in/qr")]public async Task<IActionResult>Qr(Guid eventId,CheckInRequest q,CancellationToken ct){var r=await s.CheckInQrAsync(eventId,u.UserId,q,c.HttpContext?.Request.Headers.Authorization.ToString(),ct);return r.IsSuccess?Ok(r):BadRequest(r);}[HttpPost("check-in/manual")]public async Task<IActionResult>Manual(Guid eventId,ManualCheckInRequest q,CancellationToken ct){var r=await s.ManualCheckInAsync(eventId,u.UserId,q,ct);return r.IsSuccess?Ok(r):BadRequest(r);}[HttpPost("{attendanceId:guid}/check-out")]public async Task<IActionResult>Out(Guid eventId,Guid attendanceId,CancellationToken ct){var r=await s.CheckOutAsync(eventId,attendanceId,u.UserId,ct);return r.IsSuccess?Ok(r):BadRequest(r);}[HttpGet("dashboard")]public async Task<IActionResult>Dash(Guid eventId,CancellationToken ct){var r=await s.DashboardAsync(eventId,u.UserId,ct);return r.IsSuccess?Ok(r):Forbid();}[HttpGet("history/{participantUserId:guid}")]public async Task<IActionResult>History(Guid eventId,Guid participantUserId,CancellationToken ct){var r=await s.ParticipantHistoryAsync(eventId,participantUserId,u.UserId,ct);return r.IsSuccess?Ok(r):Forbid();}}
+
+[Authorize]
+[ApiController]
+[Route("api/v1/operations/events/{eventId:guid}/attendance")]
+public sealed class AttendanceController(ISender sender) : ControllerBase
+{
+    [HttpPost("check-in/qr")]
+    [ProducesResponseType(typeof(ApiResponse<AttendanceDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<AttendanceDto>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> Qr(
+        Guid eventId,
+        CheckInRequest request,
+        [FromHeader(Name = "Authorization")] string? bearerToken,
+        CancellationToken cancellationToken = default)
+    {
+        var dto = await sender.Send(
+            new CheckInQrCommand(
+                eventId,
+                request.QrCode,
+                request.SectionId,
+                request.SessionId,
+                request.Method,
+                bearerToken),
+            cancellationToken);
+
+        return Ok(ApiResponse<AttendanceDto>.Success(
+            dto,
+            "Participant checked in successfully."));
+    }
+
+    [HttpPost("check-in/manual")]
+    [ProducesResponseType(typeof(ApiResponse<AttendanceDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> Manual(
+        Guid eventId,
+        ManualCheckInRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var dto = await sender.Send(
+            new CheckInManualCommand(
+                eventId,
+                request.RegistrationId,
+                request.SectionId,
+                request.SessionId),
+            cancellationToken);
+
+        return Ok(ApiResponse<AttendanceDto>.Success(
+            dto,
+            "Participant checked in manually."));
+    }
+
+    [HttpPost("{attendanceId:guid}/check-out")]
+    [ProducesResponseType(typeof(ApiResponse<AttendanceDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> Out(
+        Guid eventId,
+        Guid attendanceId,
+        CancellationToken cancellationToken = default)
+    {
+        var dto = await sender.Send(
+            new CheckOutCommand(eventId, attendanceId),
+            cancellationToken);
+
+        return Ok(ApiResponse<AttendanceDto>.Success(
+            dto,
+            "Participant checked out successfully."));
+    }
+
+    [HttpGet("dashboard")]
+    [ProducesResponseType(typeof(ApiResponse<AttendanceDashboardDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> Dash(
+        Guid eventId,
+        CancellationToken cancellationToken = default)
+    {
+        var dto = await sender.Send(
+            new GetAttendanceDashboardQuery(eventId),
+            cancellationToken);
+
+        return Ok(ApiResponse<AttendanceDashboardDto>.Success(dto));
+    }
+
+    [HttpGet("history/{participantUserId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<AttendanceHistoryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> History(
+        Guid eventId,
+        Guid participantUserId,
+        CancellationToken cancellationToken = default)
+    {
+        var dto = await sender.Send(
+            new GetParticipantAttendanceHistoryQuery(eventId, participantUserId),
+            cancellationToken);
+
+        return Ok(ApiResponse<AttendanceHistoryDto>.Success(dto));
+    }
+}

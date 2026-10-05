@@ -1,6 +1,6 @@
-using EventFlow.Contracts.Common;
 using EventFlow.Operations.Application.Abstractions;
 using EventFlow.Operations.Domain.Enums;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,9 +12,9 @@ public sealed class GetAttendanceAnalyticsQueryHandler(
     EventFlow.Security.Authentication.ICurrentUserService user)
     : IRequestHandler<
         GetAttendanceAnalyticsQuery,
-        ApiResponse<GetAttendanceAnalyticsResponse>>
+        GetAttendanceAnalyticsResponse>
 {
-    public async Task<ApiResponse<GetAttendanceAnalyticsResponse>> Handle(
+    public async Task<GetAttendanceAnalyticsResponse> Handle(
         GetAttendanceAnalyticsQuery query,
         CancellationToken cancellationToken)
     {
@@ -24,8 +24,8 @@ public sealed class GetAttendanceAnalyticsQueryHandler(
                 "event.view",
                 cancellationToken))
         {
-            return ApiResponse<GetAttendanceAnalyticsResponse>.Fail(
-                ["You do not have permission to view attendance analytics."]);
+            throw new ForbiddenException(
+                "You do not have permission to view attendance analytics.");
         }
 
         var records = await db.AttendanceRecords
@@ -51,9 +51,7 @@ public sealed class GetAttendanceAnalyticsQueryHandler(
                     .ToList()
             };
 
-            return ApiResponse<GetAttendanceAnalyticsResponse>.Success(
-                empty,
-                "Attendance analytics computed.");
+            return empty;
         }
 
         var now = DateTime.UtcNow;
@@ -100,50 +98,48 @@ public sealed class GetAttendanceAnalyticsQueryHandler(
             .Distinct()
             .Count();
 
-        return ApiResponse<GetAttendanceAnalyticsResponse>.Success(
-            new GetAttendanceAnalyticsResponse
-            {
-                EventId = query.EventId,
+        return new GetAttendanceAnalyticsResponse
+        {
+            EventId = query.EventId,
 
-                TotalCheckIns = records.Count,
-                DistinctParticipants = distinctParticipants,
-                CheckedOut = checkedOutRecords.Count,
-                CurrentlyInside = records.Count - checkedOutRecords.Count,
+            TotalCheckIns = records.Count,
+            DistinctParticipants = distinctParticipants,
+            CheckedOut = checkedOutRecords.Count,
+            CurrentlyInside = records.Count - checkedOutRecords.Count,
 
-                CheckOutRatePercent = records.Count == 0
-                    ? 0
-                    : Math.Round(checkedOutRecords.Count * 100d / records.Count, 1),
+            CheckOutRatePercent = records.Count == 0
+                ? 0
+                : Math.Round(checkedOutRecords.Count * 100d / records.Count, 1),
 
-                SessionsCovered = records
-                    .Count(x => x.SessionId.HasValue),
-                SectionsCovered = records
-                    .Count(x => x.SectionId.HasValue),
-                ActiveStaff = records
-                    .Select(x => x.StaffUserId)
-                    .Distinct()
-                    .Count(),
+            SessionsCovered = records
+                .Count(x => x.SessionId.HasValue),
+            SectionsCovered = records
+                .Count(x => x.SectionId.HasValue),
+            ActiveStaff = records
+                .Select(x => x.StaffUserId)
+                .Distinct()
+                .Count(),
 
-                QrCheckIns = records.Count(x => x.Method == AttendanceMethod.Qr),
-                ManualCheckIns = records.Count(x => x.Method == AttendanceMethod.Manual),
+            QrCheckIns = records.Count(x => x.Method == AttendanceMethod.Qr),
+            ManualCheckIns = records.Count(x => x.Method == AttendanceMethod.Manual),
 
-                PeakHour = peakHourCount > 0
-                    ? Array.IndexOf(hourCounts, peakHourCount)
-                    : null,
-                PeakHourCheckIns = peakHourCount,
+            PeakHour = peakHourCount > 0
+                ? Array.IndexOf(hourCounts, peakHourCount)
+                : null,
+            PeakHourCheckIns = peakHourCount,
 
-                CheckInsByHour = hourCounts
-                    .Select((count, hour) => new HourBucketResponse(hour, count))
-                    .ToList(),
+            CheckInsByHour = hourCounts
+                .Select((count, hour) => new HourBucketResponse(hour, count))
+                .ToList(),
 
-                CheckInsByDay = checkInsByDay,
+            CheckInsByDay = checkInsByDay,
 
-                AvgDwellMinutes = dwellMinutes.Count == 0
-                    ? 0
-                    : Math.Round(dwellMinutes.Average(), 1),
+            AvgDwellMinutes = dwellMinutes.Count == 0
+                ? 0
+                : Math.Round(dwellMinutes.Average(), 1),
 
-                FirstCheckInAtUtc = records.Min(x => x.CheckedInAtUtc),
-                LastCheckInAtUtc = records.Max(x => x.CheckedInAtUtc)
-            },
-            "Attendance analytics computed.");
+            FirstCheckInAtUtc = records.Min(x => x.CheckedInAtUtc),
+            LastCheckInAtUtc = records.Max(x => x.CheckedInAtUtc)
+        };
     }
 }

@@ -38,7 +38,3 @@ public sealed class GetAttendanceAnalyticsResponse
 
     public DateTime? LastCheckInAtUtc { get; init; }
 }
-
-public sealed record HourBucketResponse(int Hour, int Count);
-
-public sealed record AttendanceDayCountResponse(string Date, int Count);

@@ -23,8 +23,8 @@ public sealed class AttendanceAnalyticsController(ISender sender) : ControllerBa
             new GetAttendanceAnalyticsQuery(eventId, days),
             cancellationToken);
 
-        return result.IsSuccess
-            ? Ok(result)
-            : StatusCode(StatusCodes.Status403Forbidden, result);
+        return Ok(ApiResponse<GetAttendanceAnalyticsResponse>.Success(
+            result,
+            "Attendance analytics computed."));
     }
 }

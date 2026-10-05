@@ -1,7 +1,4 @@
 using EventFlow.Operations.Application.Behaviors;
-using EventFlow.Operations.Application.Features.Attendance;
-using EventFlow.Operations.Application.Features.AttendanceStaff;
-using EventFlow.Operations.Application.Features.Notifications;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -23,10 +20,6 @@ public static class DependencyInjection
 
         services.AddValidatorsFromAssembly(
             typeof(DependencyInjection).Assembly);
-
-        services.AddScoped<AttendanceService>();
-        services.AddScoped<AttendanceStaffService>();
-        services.AddScoped<NotificationService>();
 
         return services;
     }
