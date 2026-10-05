@@ -1,6 +1,7 @@
 using EventFlow.Contracts.Common;
-using EventFlow.Identity.Application.Abstractions.Repositories;
 using EventFlow.Identity.Application.DTOs.Users;
+using EventFlow.Identity.Application.Features.Queries.GetUserByEmail;
+using EventFlow.Identity.Application.Features.Queries.GetUserEventRolesLookup;
 using EventFlow.Identity.Application.Features.Queries.GetUserSummary;
 using EventFlow.Security.Authorization;
 using MediatR;
@@ -10,10 +11,7 @@ namespace EventFlow.Identity.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/users")]
-public sealed class UsersController(
-    ISender sender,
-    IUserRepository users,
-    IUserEventRoleRepository userEventRoles) : ControllerBase
+public sealed class UsersController(ISender sender) : ControllerBase
 {
     // Internal service lookup keeps UserId out of the organizer's staff-management UI.
     [InternalServiceOnly]
@@ -22,17 +20,12 @@ public sealed class UsersController(
         [FromQuery] string email,
         CancellationToken cancellationToken)
     {
-        var user = await users.GetByEmailAsync(email.Trim(), cancellationToken);
-        if (user is null)
-            return NotFound();
+        var user = await sender.Send(
+            new GetUserByEmailQuery(email),
+            cancellationToken);
 
         return Ok(ApiResponse<UserSummaryResponse>.Success(
-            new UserSummaryResponse(
-                user.Id,
-                user.UserName,
-                user.FirstName,
-                user.LastName,
-                $"{user.FirstName} {user.LastName}".Trim()),
+            user,
             "User retrieved successfully."));
     }
 
@@ -42,19 +35,12 @@ public sealed class UsersController(
         Guid userId,
         CancellationToken cancellationToken)
     {
-        var roles = await userEventRoles.GetByUserAsync(
-            userId,
+        var roles = await sender.Send(
+            new GetUserEventRolesLookupQuery(userId),
             cancellationToken);
 
-        var result = roles
-            .GroupBy(x => x.EventId)
-            .Select(group => new UserEventRoleLookupResponse(
-                group.Key,
-                group.Select(x => x.Role.Name).Distinct().ToArray()))
-            .ToList();
-
         return Ok(ApiResponse<IReadOnlyList<UserEventRoleLookupResponse>>.Success(
-            result,
+            roles,
             "User event roles retrieved successfully."));
     }
 
@@ -68,15 +54,8 @@ public sealed class UsersController(
             new GetUserSummaryQuery(userId),
             cancellationToken);
 
-        if (result is null)
-            return NotFound();
-
         return Ok(ApiResponse<UserSummaryResponse>.Success(
             result,
             "User retrieved successfully."));
     }
 }
-
-public sealed record UserEventRoleLookupResponse(
-    Guid EventId,
-    IReadOnlyList<string> RoleNames);
