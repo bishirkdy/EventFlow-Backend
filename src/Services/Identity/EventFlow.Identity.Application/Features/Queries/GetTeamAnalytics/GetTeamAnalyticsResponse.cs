@@ -8,5 +8,3 @@ public sealed record GetTeamAnalyticsResponse(
     int AssignedLast7Days,
     DateTime? LastAssignedAtUtc,
     IReadOnlyList<TeamRoleCountResponse> RoleBreakdown);
-
-public sealed record TeamRoleCountResponse(Guid RoleId, string RoleName, int Count);

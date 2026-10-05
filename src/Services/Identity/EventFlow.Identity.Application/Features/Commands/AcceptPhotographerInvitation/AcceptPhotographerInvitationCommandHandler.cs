@@ -1,6 +1,7 @@
 using EventFlow.Identity.Application.Abstractions.Repositories;
 using EventFlow.Identity.Application.Abstractions.Services;
 using EventFlow.Identity.Domain.Entities;
+using EventFlow.Identity.Domain.Enums;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
