@@ -2,9 +2,9 @@ using FluentValidation;
 
 namespace EventFlow.Event.Application.Features.NavigationItem.Commands.ReorderNavigationItems
 {
-    public sealed class ReorderNavigationItemsValidator : AbstractValidator<ReorderNavigationItemsCommand>
+    public sealed class ReorderNavigationItemsCommandValidator : AbstractValidator<ReorderNavigationItemsCommand>
     {
-        public ReorderNavigationItemsValidator()
+        public ReorderNavigationItemsCommandValidator()
         {
             RuleFor(x => x.EventId)
                 .NotEmpty()

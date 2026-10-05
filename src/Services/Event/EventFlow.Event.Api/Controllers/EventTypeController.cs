@@ -1,5 +1,4 @@
 ﻿using EventFlow.Contracts.Common;
-using EventFlow.Event.Application.EventTypes.Queries.GetActiveEventTypes;
 using EventFlow.Event.Application.Features.EventType.Queries.GetActiveEventTypes;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

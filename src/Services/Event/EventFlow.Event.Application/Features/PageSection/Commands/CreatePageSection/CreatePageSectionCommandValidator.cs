@@ -2,9 +2,9 @@ using FluentValidation;
 
 namespace EventFlow.Event.Application.Features.PageSection.Commands.CreatePageSection
 {
-    public sealed class CreatePageSectionValidator : AbstractValidator<CreatePageSectionCommand>
+    public sealed class CreatePageSectionCommandValidator : AbstractValidator<CreatePageSectionCommand>
     {
-        public CreatePageSectionValidator()
+        public CreatePageSectionCommandValidator()
         {
             RuleFor(x => x.PageId)
                 .NotEmpty()

@@ -6,7 +6,7 @@ using MediatR;
 
 namespace EventFlow.Event.Application.Features.PageSection.Commands.ReorderPageSections
 {
-    public sealed class ReorderPageSectionsHandler(IPageSectionRepository pageSectionRepository,IUnitOfWork unitOfWork)
+    public sealed class ReorderPageSectionsCommandHandler(IPageSectionRepository pageSectionRepository,IUnitOfWork unitOfWork)
         : IRequestHandler<ReorderPageSectionsCommand>
     {
         public async Task Handle(ReorderPageSectionsCommand request, CancellationToken cancellationToken)

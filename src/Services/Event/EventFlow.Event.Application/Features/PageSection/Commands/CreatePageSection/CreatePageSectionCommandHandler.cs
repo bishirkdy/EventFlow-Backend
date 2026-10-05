@@ -3,7 +3,7 @@ using MediatR;
 
 namespace EventFlow.Event.Application.Features.PageSection.Commands.CreatePageSection
 {
-    public sealed class CreatePageSectionHandler(
+    public sealed class CreatePageSectionCommandHandler(
         IPageSectionRepository pageSectionRepository,
         IUnitOfWork unitOfWork)
         : IRequestHandler<CreatePageSectionCommand, Guid>

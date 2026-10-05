@@ -5,7 +5,7 @@ using MediatR;
 
 namespace EventFlow.Event.Application.Features.NavigationItem.Commands.NavigationItemVisibility
 {
-    public sealed class SetNavigationItemVisibilityHandler(INavigationItemRepository navigationItemRepository,IUnitOfWork unitOfWork)
+    public sealed class SetNavigationItemVisibilityCommandHandler(INavigationItemRepository navigationItemRepository,IUnitOfWork unitOfWork)
         : IRequestHandler<SetNavigationItemVisibilityCommand>
     {
         public async Task Handle(SetNavigationItemVisibilityCommand request,CancellationToken cancellationToken)

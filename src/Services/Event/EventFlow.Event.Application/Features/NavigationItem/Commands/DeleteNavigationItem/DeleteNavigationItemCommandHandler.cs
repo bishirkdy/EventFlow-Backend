@@ -4,7 +4,7 @@ using MediatR;
 
 namespace EventFlow.Event.Application.Features.NavigationItem.Commands.DeleteNavigationItem
 {
-    public sealed class DeleteNavigationItemHandler(
+    public sealed class DeleteNavigationItemCommandHandler(
         INavigationItemRepository navigationItemRepository,
         IUnitOfWork unitOfWork)
         : IRequestHandler<DeleteNavigationItemCommand>

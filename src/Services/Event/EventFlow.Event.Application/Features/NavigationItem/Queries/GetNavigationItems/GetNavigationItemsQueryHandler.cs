@@ -5,7 +5,7 @@ using MediatR;
 
 namespace EventFlow.Event.Application.Features.NavigationItem.Queries.GetNavigationItems
 {
-    public sealed class GetNavigationItemsHandler(INavigationItemRepository navigationItemRepository,IMapper mapper)
+    public sealed class GetNavigationItemsQueryHandler(INavigationItemRepository navigationItemRepository,IMapper mapper)
         : IRequestHandler<GetNavigationItemsQuery, IReadOnlyList<GetNavigationItemsResponse>>
     {
         public async Task<IReadOnlyList<GetNavigationItemsResponse>> Handle(GetNavigationItemsQuery request, CancellationToken cancellationToken)

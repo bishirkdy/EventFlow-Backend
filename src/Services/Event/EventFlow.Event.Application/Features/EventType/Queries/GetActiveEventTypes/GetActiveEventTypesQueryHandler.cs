@@ -1,8 +1,7 @@
 ﻿using EventFlow.Event.Application.Abstractions.Persistence;
-using EventFlow.Event.Application.Features.EventType.Queries.GetActiveEventTypes;
 using MediatR;
 
-namespace EventFlow.Event.Application.EventTypes.Queries.GetActiveEventTypes;
+namespace EventFlow.Event.Application.Features.EventType.Queries.GetActiveEventTypes;
 
 public sealed class GetActiveEventTypesQueryHandler(IEventTypeRepository eventTypeRepository)
     : IRequestHandler<GetActiveEventTypesQuery, IReadOnlyList<GetEventTypeResponse>>

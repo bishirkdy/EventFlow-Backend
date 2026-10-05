@@ -5,7 +5,7 @@ using MediatR;
 
 namespace EventFlow.Event.Application.Features.PageSection.Commands.DeletePageSection
 {
-    public sealed class DeletePageSectionHandler(IPageSectionRepository pageSectionRepository, IUnitOfWork unitOfWork)
+    public sealed class DeletePageSectionCommandHandler(IPageSectionRepository pageSectionRepository, IUnitOfWork unitOfWork)
         : IRequestHandler<DeletePageSectionCommand, string?>
     {
         public async Task<string?> Handle(DeletePageSectionCommand request, CancellationToken cancellationToken)

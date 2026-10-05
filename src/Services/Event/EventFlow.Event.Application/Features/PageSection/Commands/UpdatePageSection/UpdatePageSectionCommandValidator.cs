@@ -2,9 +2,9 @@ using FluentValidation;
 
 namespace EventFlow.Event.Application.Features.PageSection.Commands.UpdatePageSection
 {
-    public sealed class UpdatePageSectionValidator : AbstractValidator<UpdatePageSectionCommand>
+    public sealed class UpdatePageSectionCommandValidator : AbstractValidator<UpdatePageSectionCommand>
     {
-        public UpdatePageSectionValidator()
+        public UpdatePageSectionCommandValidator()
         {
             RuleFor(x => x.PageId)
                 .NotEmpty()

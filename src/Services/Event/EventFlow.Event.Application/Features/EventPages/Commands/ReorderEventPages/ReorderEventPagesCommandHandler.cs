@@ -4,7 +4,7 @@ using MediatR;
 
 namespace EventFlow.Event.Application.Features.EventPages.Commands.ReorderEventPages
 {
-    public sealed class ReorderEventPagesHandler(
+    public sealed class ReorderEventPagesCommandHandler(
         IEventPageRepository eventPageRepository,
         IUnitOfWork unitOfWork)
         : IRequestHandler<ReorderEventPagesCommand>

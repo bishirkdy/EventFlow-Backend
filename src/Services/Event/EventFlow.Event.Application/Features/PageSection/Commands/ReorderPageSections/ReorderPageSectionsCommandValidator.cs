@@ -4,9 +4,9 @@ using FluentValidation;
 
 namespace EventFlow.Event.Application.Features.PageSection.Commands.ReorderPageSections
 {
-    public sealed class ReorderPageSectionsValidator: AbstractValidator<ReorderPageSectionsCommand>
+    public sealed class ReorderPageSectionsCommandValidator: AbstractValidator<ReorderPageSectionsCommand>
     {
-        public ReorderPageSectionsValidator()
+        public ReorderPageSectionsCommandValidator()
         {
             RuleFor(x => x.PageId)
                 .NotEmpty()

@@ -4,9 +4,9 @@ using FluentValidation;
 
 namespace EventFlow.Event.Application.Features.PageSection.Commands.DeletePageSection
 {
-    public sealed class DeletePageSectionValidator: AbstractValidator<DeletePageSectionCommand>
+    public sealed class DeletePageSectionCommandValidator: AbstractValidator<DeletePageSectionCommand>
     {
-        public DeletePageSectionValidator()
+        public DeletePageSectionCommandValidator()
         {
             RuleFor(x => x.PageId)
                 .NotEmpty()

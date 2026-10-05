@@ -2,9 +2,9 @@ using FluentValidation;
 
 namespace EventFlow.Event.Application.Features.NavigationItem.Commands.DeleteNavigationItem
 {
-    public sealed class DeleteNavigationItemValidator : AbstractValidator<DeleteNavigationItemCommand>
+    public sealed class DeleteNavigationItemCommandValidator : AbstractValidator<DeleteNavigationItemCommand>
     {
-        public DeleteNavigationItemValidator()
+        public DeleteNavigationItemCommandValidator()
         {
             RuleFor(x => x.EventId)
                 .NotEmpty()

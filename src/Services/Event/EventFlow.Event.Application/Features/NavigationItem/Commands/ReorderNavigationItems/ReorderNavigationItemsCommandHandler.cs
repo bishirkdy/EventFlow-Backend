@@ -4,7 +4,7 @@ using MediatR;
 
 namespace EventFlow.Event.Application.Features.NavigationItem.Commands.ReorderNavigationItems
 {
-    public sealed class ReorderNavigationItemsHandler(
+    public sealed class ReorderNavigationItemsCommandHandler(
         INavigationItemRepository navigationItemRepository,
         IUnitOfWork unitOfWork)
         : IRequestHandler<ReorderNavigationItemsCommand>

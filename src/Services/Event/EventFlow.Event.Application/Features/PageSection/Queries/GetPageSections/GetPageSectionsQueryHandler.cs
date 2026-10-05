@@ -4,7 +4,7 @@ using MediatR;
 
 namespace EventFlow.Event.Application.Features.PageSection.Queries.GetPageSections;
 
-public sealed class GetPageSectionsHandler(
+public sealed class GetPageSectionsQueryHandler(
     IPageSectionRepository pageSectionRepository,
     IMapper mapper)
     : IRequestHandler<GetPageSectionsQuery, IReadOnlyList<GetPageSectionsResponse>>

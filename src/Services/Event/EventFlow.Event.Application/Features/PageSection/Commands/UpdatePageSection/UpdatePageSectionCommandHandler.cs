@@ -5,7 +5,7 @@
 
     namespace EventFlow.Event.Application.Features.PageSection.Commands.UpdatePageSection
     {
-        public sealed class UpdatePageSectionHandler(IPageSectionRepository pageSectionRepository,
+        public sealed class UpdatePageSectionCommandHandler(IPageSectionRepository pageSectionRepository,
             IUnitOfWork unitOfWork) : IRequestHandler<UpdatePageSectionCommand , string?>
         {
             public async Task<string?> Handle(UpdatePageSectionCommand request,CancellationToken cancellationToken)

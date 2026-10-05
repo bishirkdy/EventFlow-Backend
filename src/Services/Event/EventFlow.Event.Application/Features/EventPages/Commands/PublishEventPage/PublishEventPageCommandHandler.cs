@@ -5,7 +5,7 @@ using MediatR;
 
 namespace EventFlow.Event.Application.Features.EventPages.Commands.PublishEventPage
 {
-    public sealed class PublishEventPageHandler(IEventPageRepository eventPageRepository,IUnitOfWork unitOfWork) : IRequestHandler<PublishEventPageCommand>
+    public sealed class PublishEventPageCommandHandler(IEventPageRepository eventPageRepository,IUnitOfWork unitOfWork) : IRequestHandler<PublishEventPageCommand>
     {
         public async Task Handle(PublishEventPageCommand request,CancellationToken cancellationToken)
         {

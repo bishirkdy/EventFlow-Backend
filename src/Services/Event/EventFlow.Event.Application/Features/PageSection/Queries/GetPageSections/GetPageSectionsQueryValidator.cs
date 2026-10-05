@@ -4,9 +4,9 @@ using FluentValidation;
 
 namespace EventFlow.Event.Application.Features.PageSection.Queries.GetPageSections
 {
-    public sealed class GetPageSectionsValidator: AbstractValidator<GetPageSectionsQuery>
+    public sealed class GetPageSectionsQueryValidator: AbstractValidator<GetPageSectionsQuery>
     {
-        public GetPageSectionsValidator()
+        public GetPageSectionsQueryValidator()
         {
             RuleFor(x => x.PageId)
                 .NotEmpty()

@@ -4,7 +4,7 @@ using MediatR;
 
 namespace EventFlow.Event.Application.Features.NavigationItem.Commands.UpdateNavigationItem
 {
-    public sealed class UpdateNavigationItemHandler(
+    public sealed class UpdateNavigationItemCommandHandler(
         INavigationItemRepository navigationItemRepository,
         IEventPageRepository eventPageRepository,
         IUnitOfWork unitOfWork)

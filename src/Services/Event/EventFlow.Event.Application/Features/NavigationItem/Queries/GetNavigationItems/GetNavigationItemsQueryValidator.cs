@@ -2,9 +2,9 @@ using FluentValidation;
 
 namespace EventFlow.Event.Application.Features.NavigationItem.Queries.GetNavigationItems
 {
-    public sealed class GetNavigationItemsValidator : AbstractValidator<GetNavigationItemsQuery>
+    public sealed class GetNavigationItemsQueryValidator : AbstractValidator<GetNavigationItemsQuery>
     {
-        public GetNavigationItemsValidator()
+        public GetNavigationItemsQueryValidator()
         {
             RuleFor(x => x.EventId)
                 .NotEmpty()

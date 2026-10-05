@@ -2,9 +2,9 @@ using FluentValidation;
 
 namespace EventFlow.Event.Application.Features.NavigationItem.Commands.CreateNavigationItem
 {
-    public sealed class CreateNavigationItemValidator : AbstractValidator<CreateNavigationItemCommand>
+    public sealed class CreateNavigationItemCommandValidator : AbstractValidator<CreateNavigationItemCommand>
     {
-        public CreateNavigationItemValidator()
+        public CreateNavigationItemCommandValidator()
         {
             RuleFor(x => x.EventId)
                 .NotEmpty()

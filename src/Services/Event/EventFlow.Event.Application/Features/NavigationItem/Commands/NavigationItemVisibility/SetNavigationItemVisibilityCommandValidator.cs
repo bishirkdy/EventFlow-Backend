@@ -3,9 +3,9 @@ using FluentValidation;
 
 namespace EventFlow.Event.Application.Features.NavigationItem.Commands.NavigationItemVisibility
 {
-    public sealed class SetNavigationItemVisibilityValidator: AbstractValidator<SetNavigationItemVisibilityCommand>
+    public sealed class SetNavigationItemVisibilityCommandValidator: AbstractValidator<SetNavigationItemVisibilityCommand>
     {
-        public SetNavigationItemVisibilityValidator()
+        public SetNavigationItemVisibilityCommandValidator()
         {
             RuleFor(x => x.EventId)
                 .NotEmpty()

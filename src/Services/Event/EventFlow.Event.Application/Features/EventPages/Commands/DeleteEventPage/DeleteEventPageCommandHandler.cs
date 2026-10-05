@@ -6,7 +6,7 @@ using MediatR;
 
 namespace EventFlow.Event.Application.Features.EventPages.Commands.DeleteEventPage
 {
-    public sealed class DeleteEventPageHandler(IEventPageRepository eventPageRepository,IUnitOfWork unitOfWork)
+    public sealed class DeleteEventPageCommandHandler(IEventPageRepository eventPageRepository,IUnitOfWork unitOfWork)
         : IRequestHandler<DeleteEventPageCommand>
     {
         public async Task Handle(DeleteEventPageCommand request, CancellationToken cancellationToken)

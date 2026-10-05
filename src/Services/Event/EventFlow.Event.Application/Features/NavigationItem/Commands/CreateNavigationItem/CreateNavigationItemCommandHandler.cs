@@ -4,7 +4,7 @@ using MediatR;
 
 namespace EventFlow.Event.Application.Features.NavigationItem.Commands.CreateNavigationItem
 {
-    public sealed class CreateNavigationItemHandler(
+    public sealed class CreateNavigationItemCommandHandler(
         INavigationItemRepository navigationItemRepository,
         IEventPageRepository eventPageRepository,
         IUnitOfWork unitOfWork)

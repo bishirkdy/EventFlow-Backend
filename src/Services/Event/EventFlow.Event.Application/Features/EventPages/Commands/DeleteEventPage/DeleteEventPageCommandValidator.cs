@@ -4,9 +4,9 @@ using FluentValidation;
 
 namespace EventFlow.Event.Application.Features.EventPages.Commands.DeleteEventPage
 {
-    public sealed class DeleteEventPageValidator: AbstractValidator<DeleteEventPageCommand>
+    public sealed class DeleteEventPageCommandValidator: AbstractValidator<DeleteEventPageCommand>
     {
-        public DeleteEventPageValidator()
+        public DeleteEventPageCommandValidator()
         {
             RuleFor(x => x.EventId)
                 .NotEmpty()
