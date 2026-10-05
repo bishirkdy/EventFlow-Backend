@@ -1,16 +1,6 @@
-using EventFlow.Identity.Domain.Entities;
 using MediatR;
 
-namespace EventFlow.Identity.Application.Features.Queries.GetPhotographerInvitation
-{
-    public sealed record GetPhotographerInvitationQuery(string Token) : IRequest<GetPhotographerInvitationResponse?>;
+namespace EventFlow.Identity.Application.Features.Queries.GetPhotographerInvitation;
 
-    public sealed record GetPhotographerInvitationResponse(
-        Guid InvitationId,
-        Guid EventId,
-        string EventName,
-        string Email,
-        string RoleName,
-        DateTime ExpiresAt,
-        InvitationStatus Status);
-}
+public sealed record GetPhotographerInvitationQuery(string Token)
+    : IRequest<GetPhotographerInvitationResponse>;

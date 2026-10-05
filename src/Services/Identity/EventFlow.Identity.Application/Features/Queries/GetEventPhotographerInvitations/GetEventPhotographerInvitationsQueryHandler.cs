@@ -1,22 +1,37 @@
+using EventFlow.Identity.Application.Abstractions.Authorization;
 using EventFlow.Identity.Application.Abstractions.Repositories;
+using EventFlow.Security.Authentication;
+using EventFlow.Security.Authorization;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
-namespace EventFlow.Identity.Application.Features.Queries.GetEventPhotographerInvitations
-{
-    public class GetEventPhotographerInvitationsQueryHandler : IRequestHandler<GetEventPhotographerInvitationsQuery, IReadOnlyList<GetEventPhotographerInvitationsResponse>>
-    {
-        private readonly IPhotographerInvitationRepository _invitationRepository;
+namespace EventFlow.Identity.Application.Features.Queries.GetEventPhotographerInvitations;
 
-        public GetEventPhotographerInvitationsQueryHandler(IPhotographerInvitationRepository invitationRepository)
+public sealed class GetEventPhotographerInvitationsQueryHandler(
+    IPhotographerInvitationRepository invitationRepository,
+    IPermissionService permissions,
+    ICurrentUserService currentUser)
+    : IRequestHandler<GetEventPhotographerInvitationsQuery, IReadOnlyList<GetEventPhotographerInvitationsResponse>>
+{
+    public async Task<IReadOnlyList<GetEventPhotographerInvitationsResponse>> Handle(
+        GetEventPhotographerInvitationsQuery request,
+        CancellationToken cancellationToken)
+    {
+        if (!await permissions.HasPermissionAsync(
+                currentUser.UserId,
+                request.EventId,
+                PermissionConstants.Event.TeamManage,
+                cancellationToken))
         {
-            _invitationRepository = invitationRepository;
+            throw new ForbiddenException("You do not have permission to manage the event team.");
         }
 
-        public async Task<IReadOnlyList<GetEventPhotographerInvitationsResponse>> Handle(GetEventPhotographerInvitationsQuery request, CancellationToken cancellationToken)
-        {
-            var invitations = await _invitationRepository.GetByEventIdAsync(request.EventId, cancellationToken);
+        var invitations = await invitationRepository.GetByEventIdAsync(
+            request.EventId,
+            cancellationToken);
 
-            return invitations.Select(i => new GetEventPhotographerInvitationsResponse(
+        return invitations
+            .Select(i => new GetEventPhotographerInvitationsResponse(
                 i.Id,
                 i.Email,
                 i.Role?.Name ?? string.Empty,
@@ -24,7 +39,7 @@ namespace EventFlow.Identity.Application.Features.Queries.GetEventPhotographerIn
                 i.CreatedAt,
                 i.ExpiresAt,
                 i.AcceptedAt,
-                i.AcceptedByUserId)).ToList();
-        }
+                i.AcceptedByUserId))
+            .ToList();
     }
 }
