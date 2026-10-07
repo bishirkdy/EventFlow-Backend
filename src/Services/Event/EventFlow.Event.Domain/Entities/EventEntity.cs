@@ -61,21 +61,17 @@ namespace EventFlow.Event.Domain.Entities
 
             if (image.EventId != Id)
             {
-                throw new InvalidOperationException(
-                    "Image does not belong to this event.");
+                throw new InvalidOperationException("Image does not belong to this event.");
             }
 
             Images.Add(image);
         }
 
-        private static void ValidateDates(
-            DateTime startDate,
-            DateTime endDate)
+        private static void ValidateDates(DateTime startDate, DateTime endDate)
         {
             if (endDate <= startDate)
             {
-                throw new ArgumentException(
-                    "Event end date must be greater than start date.");
+                throw new ArgumentException("Event end date must be greater than start date.");
             }
         }
 
@@ -114,9 +110,5 @@ namespace EventFlow.Event.Domain.Entities
             Status = EventStatus.Cancelled;
             UpdatedAt = DateTime.UtcNow;
         }
-
-
-
-
     }
 }

@@ -1,17 +1,9 @@
-using EventFlow.Registration.Application.Abstractions.Persistence;
-using EventFlow.Registration.Application.Abstractions.Services;
-using EventFlow.Registration.Application.Common.Mappings;
-using EventFlow.Registration.Application.Contracts.Registrations;
-using MediatR;
-
 namespace EventFlow.Registration.Application.Features.Registrations.Queries.GetMyRegistrations;
 
 public sealed class GetMyRegistrationsQueryHandler(
     IRegistrationRepository registrations,
     EventFlow.Security.Authentication.ICurrentUserService user)
-    : IRequestHandler<
-        GetMyRegistrationsQuery,
-        IReadOnlyList<RegistrationDto>>
+    : IRequestHandler<GetMyRegistrationsQuery, IReadOnlyList<RegistrationDto>>
 {
     public async Task<IReadOnlyList<RegistrationDto>> Handle(
         GetMyRegistrationsQuery query,

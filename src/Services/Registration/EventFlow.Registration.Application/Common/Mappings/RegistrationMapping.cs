@@ -50,6 +50,5 @@ public static class RegistrationMapping
         IssuedAtUtc = x.IssuedAtUtc,
         RevokedAtUtc = x.RevokedAtUtc,
         IsActive = x.IsActive
-    }
-    ;
+    };
 }

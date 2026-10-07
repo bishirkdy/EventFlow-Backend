@@ -29,9 +29,7 @@ namespace EventFlow.Event.Domain.Entities
             IsVisible = true;
         }
 
-        public void Update(
-            string label,
-            Guid pageId)
+        public void Update(string label, Guid pageId)
         {
             Label = label;
             PageId = pageId;

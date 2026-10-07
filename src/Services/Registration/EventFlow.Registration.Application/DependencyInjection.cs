@@ -1,6 +1,5 @@
 ﻿
 using EventFlow.Registration.Application.Behaviors;
-using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Services;
 using Microsoft.Extensions.DependencyInjection;
 

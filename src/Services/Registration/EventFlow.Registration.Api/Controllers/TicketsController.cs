@@ -1,5 +1,4 @@
 using EventFlow.Contracts.Common;
-using EventFlow.Registration.Application.Contracts.Registrations;
 using EventFlow.Registration.Application.Features.Tickets.Commands.RevokeTicket;
 using EventFlow.Registration.Application.Features.Tickets.Queries.GetTicket;
 using EventFlow.Registration.Application.Features.Tickets.Queries.VerifyQr;
@@ -13,15 +12,13 @@ namespace EventFlow.Registration.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/events/{eventId:guid}/tickets")]
-public sealed class TicketsController(IMediator mediator)
-    : ControllerBase
+public sealed class TicketsController(IMediator mediator): ControllerBase
 {
     [Authorize]
     [HttpGet("registration/{registrationId:guid}")]
     public async Task<IActionResult> Get(Guid eventId, Guid registrationId, CancellationToken cancellationToken)
     {
-        var dto = await mediator.Send(
-            new GetTicketQuery(eventId,registrationId), cancellationToken);
+        var dto = await mediator.Send(new GetTicketQuery(eventId,registrationId), cancellationToken);
 
         return Ok(ApiResponse<TicketDto>.Success(dto));
     }

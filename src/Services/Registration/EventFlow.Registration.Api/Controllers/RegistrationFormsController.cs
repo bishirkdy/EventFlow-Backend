@@ -16,8 +16,7 @@ public sealed class RegistrationFormsController(ISender sender)
     [HttpGet]
     public async Task<IActionResult> Get(Guid eventId, CancellationToken cancellationToken)
     {
-        var dto = await sender.Send(
-            new GetRegistrationFormQuery(eventId), cancellationToken);
+        var dto = await sender.Send(new GetRegistrationFormQuery(eventId), cancellationToken);
 
         return Ok(ApiResponse<RegistrationFormDto>.Success(dto));
     }
@@ -27,9 +26,6 @@ public sealed class RegistrationFormsController(ISender sender)
     public async Task<IActionResult> Put(Guid eventId, UpsertRegistrationFormRequest request, CancellationToken cancellationToken)
     {
         var dto = await sender.Send(new UpsertRegistrationFormCommand(eventId,request), cancellationToken);
-
-        return Ok(ApiResponse<RegistrationFormDto>.Success(
-            dto,
-            "Registration form saved."));
+        return Ok(ApiResponse<RegistrationFormDto>.Success(dto, "Registration form saved."));
     }
 }

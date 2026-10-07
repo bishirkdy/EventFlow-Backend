@@ -1,12 +1,12 @@
 using EventFlow.Contracts.Common;
 using EventFlow.SharedKernel.Exceptions;
+using EventFlow.Security.Authentication;
 
 namespace EventFlow.Registration.Application.Features.Participants.Queries.GetEventParticipants;
 
 public sealed class GetEventParticipantsQueryHandler(
     IParticipantRepository participants,
-    EventFlow.Security.Authentication.ICurrentUserService user,
-    IEventRegistrationAccessService access)
+    ICurrentUserService user, IEventRegistrationAccessService access)
     : IRequestHandler<
         GetEventParticipantsQuery,
         PaginatedResponse<ParticipantDto>>

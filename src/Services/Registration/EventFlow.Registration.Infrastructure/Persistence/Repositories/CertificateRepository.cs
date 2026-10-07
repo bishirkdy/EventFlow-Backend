@@ -6,9 +6,7 @@ namespace EventFlow.Registration.Infrastructure.Persistence.Repositories;
 public sealed class CertificateRepository(RegistrationDbContext db)
     : ICertificateRepository
 {
-    public async Task<IReadOnlyList<Certificate>> GetByEventIdAsync(
-        Guid eventId,
-        CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<Certificate>> GetByEventIdAsync(Guid eventId, CancellationToken cancellationToken = default)
     {
         return await db.Certificates
             .AsNoTracking()
@@ -17,9 +15,7 @@ public sealed class CertificateRepository(RegistrationDbContext db)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Certificate>> GetForUserAsync(
-        Guid userId,
-        CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<Certificate>> GetForUserAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         return await db.Certificates
             .AsNoTracking()
@@ -28,10 +24,7 @@ public sealed class CertificateRepository(RegistrationDbContext db)
             .ToListAsync(cancellationToken);
     }
 
-    public Task<Certificate?> GetByIdAsync(
-        Guid eventId,
-        Guid certificateId,
-        CancellationToken cancellationToken = default)
+    public Task<Certificate?> GetByIdAsync(Guid eventId,Guid certificateId,CancellationToken cancellationToken = default)
     {
         return db.Certificates
             .AsNoTracking()
@@ -40,9 +33,7 @@ public sealed class CertificateRepository(RegistrationDbContext db)
                 cancellationToken);
     }
 
-    public Task<Certificate?> GetByNumberAsync(
-        string certificateNumber,
-        CancellationToken cancellationToken = default)
+    public Task<Certificate?> GetByNumberAsync(string certificateNumber, CancellationToken cancellationToken = default)
     {
         return db.Certificates
             .AsNoTracking()
@@ -51,10 +42,7 @@ public sealed class CertificateRepository(RegistrationDbContext db)
                 cancellationToken);
     }
 
-    public Task<Certificate?> GetByRegistrationAsync(
-        Guid eventId,
-        Guid registrationId,
-        CancellationToken cancellationToken = default)
+    public Task<Certificate?> GetByRegistrationAsync(Guid eventId, Guid registrationId, CancellationToken cancellationToken = default)
     {
         return db.Certificates
             .AsNoTracking()
@@ -63,21 +51,12 @@ public sealed class CertificateRepository(RegistrationDbContext db)
                 cancellationToken);
     }
 
-    public Task<Certificate?> GetByUserAsync(
-        Guid eventId,
-        Guid userId,
-        CancellationToken cancellationToken = default)
+    public Task<Certificate?> GetByUserAsync(Guid eventId, Guid userId, CancellationToken cancellationToken = default)
     {
-        return db.Certificates
-            .AsNoTracking()
-            .SingleOrDefaultAsync(
-                x => x.EventId == eventId && x.UserId == userId,
-                cancellationToken);
+        return db.Certificates.AsNoTracking().SingleOrDefaultAsync(x => x.EventId == eventId && x.UserId == userId, cancellationToken);
     }
 
-    public async Task<HashSet<Guid>> GetIssuedRegistrationIdsAsync(
-        Guid eventId,
-        CancellationToken cancellationToken = default)
+    public async Task<HashSet<Guid>> GetIssuedRegistrationIdsAsync(Guid eventId, CancellationToken cancellationToken = default)
     {
         var ids = await db.Certificates
             .Where(x => x.EventId == eventId)

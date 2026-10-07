@@ -5,13 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace EventFlow.Event.Api.Middleware;
 
-public sealed class EventPermissionMiddleware(
-    RequestDelegate next,
-    EventAuthorizationService permissionService)
+public sealed class EventPermissionMiddleware(RequestDelegate next, EventAuthorizationService permissionService)
 {
-    public async Task InvokeAsync(
-        HttpContext context,
-        ICurrentUserService currentUserService)
+    public async Task InvokeAsync(HttpContext context, ICurrentUserService currentUserService)
     {
         if (context.GetEndpoint()?.Metadata.GetMetadata<IAllowAnonymous>() is not null ||
             context.User.Identity?.IsAuthenticated != true)

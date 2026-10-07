@@ -7,7 +7,6 @@ namespace EventFlow.Event.Domain.Entities
     {
         public Guid EventId { get; private set; }
         public Guid SectionId { get; private set; }
-
         public string Title { get; private set; } = string.Empty;
         public string? Description { get; private set; }
         public string SessionType { get; private set; } = string.Empty;

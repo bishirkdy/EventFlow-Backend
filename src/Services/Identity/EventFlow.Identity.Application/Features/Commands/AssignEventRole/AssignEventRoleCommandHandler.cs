@@ -11,36 +11,25 @@ public sealed class AssignEventRoleCommandHandler(
     IUserEventRoleRepository userEventRoleRepository)
     : IRequestHandler<AssignEventRoleCommand, Guid>
 {
-    public async Task<Guid> Handle(
-        AssignEventRoleCommand request,
-        CancellationToken cancellationToken)
+    public async Task<Guid> Handle(AssignEventRoleCommand request,CancellationToken cancellationToken)
     {
-        var user = await userRepository.GetByIdAsync(
-            request.UserId,
-            cancellationToken);
+        var user = await userRepository.GetByIdAsync(request.UserId,cancellationToken);
 
         if (user is null)
         {
             throw new NotFoundException("User not found.");
         }
 
-        var role = await roleRepository.GetByNameAsync(
-            request.RoleName,
-            cancellationToken);
+        var role = await roleRepository.GetByNameAsync(request.RoleName,cancellationToken);
 
         if (role is null)
         {
-            throw new NotFoundException(
-                $"Role '{request.RoleName}' not found.");
+            throw new NotFoundException($"Role '{request.RoleName}' not found.");
         }
 
-        var existingRoles = await userEventRoleRepository.GetByUserAndEventAsync(
-            request.UserId,
-            request.EventId,
-            cancellationToken);
+        var existingRoles = await userEventRoleRepository.GetByUserAndEventAsync(request.UserId,request.EventId,cancellationToken);
 
-        var existing = existingRoles.FirstOrDefault(
-            x => x.RoleId == role.Id);
+        var existing = existingRoles.FirstOrDefault(x => x.RoleId == role.Id);
 
         if (existing is not null)
         {
@@ -52,10 +41,7 @@ public sealed class AssignEventRoleCommandHandler(
             request.EventId,
             role.Id);
 
-        await userEventRoleRepository.AddAsync(
-            userEventRole,
-            cancellationToken);
-
+        await userEventRoleRepository.AddAsync(userEventRole,cancellationToken);
         await userEventRoleRepository.SaveChangesAsync(cancellationToken);
 
         return userEventRole.Id;

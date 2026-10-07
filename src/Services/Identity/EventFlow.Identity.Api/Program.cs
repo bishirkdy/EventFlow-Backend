@@ -2,6 +2,7 @@ using EventFlow.Api.Extensions;
 using EventFlow.Identity.Api.Extensions;
 using Microsoft.AspNetCore.RateLimiting;
 using EventFlow.Security.Authentication;
+using EventFlow.Identity.Infrastructure.Persistence;
 
 namespace EventFlow.Identity.Api;
 
@@ -33,19 +34,12 @@ public class Program
         var app = builder.Build();
 
         app.UseEventFlowApiDefaults();
-
         app.UseRateLimiter();
-
         app.UseHttpsRedirection();
-
         app.UseAuthentication();
-
         app.UseAuthorization();
-
         app.MapControllers();
-
-        app.ApplyMigrations<EventFlow.Identity.Infrastructure.Persistence.IdentityDbContext>();
-
+        app.ApplyMigrations<IdentityDbContext>();
         app.Run();
     }
 }

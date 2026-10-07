@@ -1,4 +1,3 @@
-using FluentValidation;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Queries.GetMyRegistrations;
 

@@ -5,10 +5,7 @@ using RegistrationEntity = EventFlow.Registration.Domain.Entities.Registration;
 
 namespace EventFlow.Registration.Application.Services;
 
-public sealed class WaitlistPromotionService(
-    IRegistrationRepository registrations,
-    IRegistrationFormRepository forms,
-    IUnitOfWork unitOfWork)
+public sealed class WaitlistPromotionService(IRegistrationRepository registrations,IRegistrationFormRepository forms,IUnitOfWork unitOfWork)
     : IWaitlistPromotionService
 {
     public async Task<int> PromoteWaitlistedUntilCapacityAsync(
@@ -61,15 +58,13 @@ public sealed class WaitlistPromotionService(
         registration.WaitlistedAtUtc = null;
         registration.WaitlistPosition = null;
 
-        if (registration.Participant is not null &&
-            registration.Ticket is null)
+        if (registration.Participant is not null && registration.Ticket is null)
         {
             registration.Ticket = new Ticket
             {
                 RegistrationId = registration.Id,
                 ParticipantId = registration.Participant.Id,
-                TicketNumber =
-                    $"TKT-{now:yyyyMMdd}-{Random.Shared.Next(100000, 999999)}",
+                TicketNumber = $"TKT-{now:yyyyMMdd}-{Random.Shared.Next(100000, 999999)}",
                 QrCodeValue =
                     Convert.ToBase64String(
                             RandomNumberGenerator.GetBytes(32))

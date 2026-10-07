@@ -12,22 +12,15 @@ namespace EventFlow.Event.Api.Controllers;
 public sealed class EventAccessController(ISender sender) : ControllerBase
 {
     [HttpGet("features/registration")]
-    public async Task<IActionResult> RegistrationFeature(
-        Guid eventId,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> RegistrationFeature(Guid eventId, CancellationToken cancellationToken)
     {
-        var enabled = await sender.Send(
-            new GetRegistrationFeatureQuery(eventId),
-            cancellationToken);
+        var enabled = await sender.Send(new GetRegistrationFeatureQuery(eventId), cancellationToken);
 
         return Ok(new { enabled });
     }
 
     [HttpGet("registration-access")]
-    public async Task<IActionResult> RegistrationAccess(
-        Guid eventId,
-        [FromQuery] Guid userId,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> RegistrationAccess(Guid eventId,[FromQuery] Guid userId,CancellationToken cancellationToken)
     {
         var allowed = await sender.Send(
             new GetRegistrationAccessQuery(eventId, userId),

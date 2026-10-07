@@ -27,12 +27,10 @@ public sealed class RegistrationsController(ISender sender) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(Guid eventId, CreateRegistrationRequest request, CancellationToken cancellationToken)
     {
-        var dto = await sender.Send(
-            new CreateRegistrationCommand(eventId,request), cancellationToken);
+        var dto = await sender.Send(new CreateRegistrationCommand(eventId,request), cancellationToken);
 
         return Ok(ApiResponse<RegistrationDto>.Success(
-            dto,
-            dto.Status == RegistrationStatus.Waitlisted
+            dto,dto.Status == RegistrationStatus.Waitlisted
                 ? "Registration submitted and added to the waitlist."
                 : "Registration submitted successfully."));
     }
@@ -62,10 +60,7 @@ public sealed class RegistrationsController(ISender sender) : ControllerBase
 
     [Authorize]
     [HttpGet("{registrationId:guid}/manage")]
-    public async Task<IActionResult> Manage(
-        Guid eventId,
-        Guid registrationId,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> Manage(Guid eventId,Guid registrationId,CancellationToken cancellationToken)
     {
         var dto = await sender.Send(
             new GetRegistrationByIdQuery(eventId,registrationId,true),cancellationToken);

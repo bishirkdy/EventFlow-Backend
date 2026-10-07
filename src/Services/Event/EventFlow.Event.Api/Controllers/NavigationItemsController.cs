@@ -21,9 +21,7 @@ namespace EventFlow.Event.Api.Controllers
     {
         // Create navigation item
         [HttpPost("{eventId:guid}")]
-        public async Task<IActionResult> CreateNavigationItem(
-            Guid eventId,
-            CreateNavigationItemRequest request,
+        public async Task<IActionResult> CreateNavigationItem(Guid eventId,CreateNavigationItemRequest request,
             CancellationToken cancellationToken)
         {
             var command = new CreateNavigationItemCommand(
@@ -45,13 +43,9 @@ namespace EventFlow.Event.Api.Controllers
         // Get navigation items
         [AllowAnonymous]
         [HttpGet("{eventId:guid}")]
-        public async Task<IActionResult> GetNavigationItems(
-            Guid eventId,
-            CancellationToken cancellationToken)
+        public async Task<IActionResult> GetNavigationItems(Guid eventId,CancellationToken cancellationToken)
         {
-            var items = await sender.Send(
-                new GetNavigationItemsQuery(eventId),
-                cancellationToken);
+            var items = await sender.Send(new GetNavigationItemsQuery(eventId), cancellationToken);
 
             return Ok(
                 new ApiResponse<IReadOnlyList<GetNavigationItemsResponse>>
@@ -111,14 +105,9 @@ namespace EventFlow.Event.Api.Controllers
 
         // Reorder navigation items
         [HttpPut("{eventId:guid}/reorder")]
-        public async Task<IActionResult> ReorderNavigationItems(
-            Guid eventId,
-            [FromBody] IReadOnlyList<Guid> itemIds,
-            CancellationToken cancellationToken)
+        public async Task<IActionResult> ReorderNavigationItems(Guid eventId,[FromBody] IReadOnlyList<Guid> itemIds, CancellationToken cancellationToken)
         {
-            var command = new ReorderNavigationItemsCommand(
-                eventId,
-                itemIds);
+            var command = new ReorderNavigationItemsCommand(eventId,itemIds);
 
             await sender.Send(command, cancellationToken);
 
@@ -150,9 +139,7 @@ namespace EventFlow.Event.Api.Controllers
             {
                 IsSuccess = true,
                 StatusCode = StatusCodes.Status200OK,
-                Message = isVisible
-                    ? "Navigation item shown successfully."
-                    : "Navigation item hidden successfully.",
+                Message = isVisible? "Navigation item shown successfully." : "Navigation item hidden successfully.",
                 Data = null
             });
         }
@@ -160,13 +147,9 @@ namespace EventFlow.Event.Api.Controllers
         // Get navigation item by page id
         [AllowAnonymous]
         [HttpGet("page/{pageId:guid}")]
-        public async Task<IActionResult> GetNavigationItemByPage(
-            Guid pageId,
-            CancellationToken cancellationToken)
+        public async Task<IActionResult> GetNavigationItemByPage(Guid pageId, CancellationToken cancellationToken)
         {
-            var item = await sender.Send(
-                new GetNavigationItemByPageQuery(pageId),
-                cancellationToken);
+            var item = await sender.Send(new GetNavigationItemByPageQuery(pageId), cancellationToken);
 
             return Ok(new ApiResponse<GetNavigationItemByPageResponse?>
             {

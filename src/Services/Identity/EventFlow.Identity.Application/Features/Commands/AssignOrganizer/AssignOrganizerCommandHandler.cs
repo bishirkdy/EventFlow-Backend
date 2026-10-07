@@ -16,21 +16,14 @@ public sealed class AssignOrganizerCommandHandler(
     ICurrentUserService currentUser)
     : IRequestHandler<AssignOrganizerCommand, Guid>
 {
-    public async Task<Guid> Handle(
-        AssignOrganizerCommand request,
-        CancellationToken cancellationToken)
+    public async Task<Guid> Handle(AssignOrganizerCommand request, CancellationToken cancellationToken)
     {
-        if (!await permissions.HasPermissionAsync(
-                currentUser.UserId,
-                request.EventId,
-                PermissionConstants.Event.TeamManage,
-                cancellationToken))
+        if (!await permissions.HasPermissionAsync(currentUser.UserId,request.EventId,PermissionConstants.Event.TeamManage, cancellationToken))
         {
             throw new ForbiddenException("You do not have permission to manage the event team.");
         }
 
         var email = request.Email.Trim();
-
         var user = await userRepository.GetByEmailAsync(email, cancellationToken);
 
         if (user is null)
@@ -38,9 +31,7 @@ public sealed class AssignOrganizerCommandHandler(
             throw new NotFoundException("No user was found with that email address.");
         }
 
-        var organizerRole = await roleRepository.GetByNameAsync(
-            RoleConstants.Organizer,
-            cancellationToken);
+        var organizerRole = await roleRepository.GetByNameAsync(RoleConstants.Organizer, cancellationToken);
 
         if (organizerRole is null)
         {
@@ -49,14 +40,10 @@ public sealed class AssignOrganizerCommandHandler(
 
         if (user.Id == currentUser.UserId)
         {
-            throw new ConflictException("The event owner cannot be assigned as a separate organizer.");
+            throw new ConflictException("The event owner cannot be assigned as a separate organizer");
         }
 
-        var alreadyAssigned = await userEventRoleRepository.ExistsAsync(
-            user.Id,
-            request.EventId,
-            organizerRole.Id,
-            cancellationToken);
+        var alreadyAssigned = await userEventRoleRepository.ExistsAsync(user.Id,request.EventId,organizerRole.Id,cancellationToken);
 
         if (alreadyAssigned)
         {

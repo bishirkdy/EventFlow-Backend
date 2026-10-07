@@ -1,10 +1,8 @@
 using EventFlow.Registration.Application.Abstractions.Services;
 namespace EventFlow.Registration.Api.Services;
 
-public sealed class EventRegistrationAccessService(
-    IHttpClientFactory factory,
-    IConfiguration cfg
-) : IEventRegistrationAccessService
+//Its job is to ask the Event Service whether registration is enabled and whether a user is allowed to manage registration for an event.
+public sealed class EventRegistrationAccessService(IHttpClientFactory factory,IConfiguration cfg) : IEventRegistrationAccessService
 {
     public async Task<bool> IsRegistrationFeatureEnabledAsync(Guid eventId, CancellationToken ct = default)
     {

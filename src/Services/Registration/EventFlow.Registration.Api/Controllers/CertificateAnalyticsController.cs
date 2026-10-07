@@ -14,12 +14,8 @@ public sealed class CertificateAnalyticsController(ISender sender) : ControllerB
     [HttpGet]
     public async Task<IActionResult> Get(Guid eventId, CancellationToken cancellationToken)
     {
-        var dto = await sender.Send(
-            new GetCertificateAnalyticsQuery(eventId),
-            cancellationToken);
+        var dto = await sender.Send(new GetCertificateAnalyticsQuery(eventId), cancellationToken);
 
-        return Ok(ApiResponse<GetCertificateAnalyticsResponse>.Success(
-            dto,
-            "Certificate analytics computed."));
+        return Ok(ApiResponse<GetCertificateAnalyticsResponse>.Success(dto, "Certificate analytics computed."));
     }
 }

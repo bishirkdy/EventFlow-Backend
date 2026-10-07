@@ -19,7 +19,7 @@ public sealed class CloudinaryStorage : ICloudinaryStorage
             throw new InvalidOperationException(
                 "Cloudinary configuration is missing. Configure Cloudinary:CloudName, Cloudinary:ApiKey and Cloudinary:ApiSecret.");
         }
-
+        //create an account object with the cloudinary settings
         var account = new Account(
             settings.CloudName,
             settings.ApiKey,
@@ -28,6 +28,7 @@ public sealed class CloudinaryStorage : ICloudinaryStorage
         _cloudinary = new CloudinaryDotNet.Cloudinary(account);
     }
 
+    // Uploads a file to Cloudinary and returns the stored file information
     public async Task<CloudinaryStoredFile> UploadAsync(Stream content,string fileName,string contentType,string folder,CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(content);
@@ -43,6 +44,7 @@ public sealed class CloudinaryStorage : ICloudinaryStorage
         var safeFileName = Path.GetFileName(fileName);
         var publicId = $"{Guid.NewGuid():N}";
 
+        // Create the upload parameters for Cloudinary
         var uploadParams = new ImageUploadParams
         {
             File = new FileDescription(safeFileName, content),
@@ -76,6 +78,7 @@ public sealed class CloudinaryStorage : ICloudinaryStorage
             length);
     }
 
+    // Deletes a file from Cloudinary using its public ID
     public async Task DeleteAsync(string publicId, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(publicId))

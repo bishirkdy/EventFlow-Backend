@@ -14,9 +14,7 @@ public sealed class AuthorizationService(HttpClient httpClient, IConfiguration c
             throw new InvalidOperationException("InternalService:Key is not configured.");
         }
 
-        using var request = new HttpRequestMessage(
-            HttpMethod.Post,
-            "api/authorization/v1/check-permission")
+        using var request = new HttpRequestMessage(HttpMethod.Post, "api/authorization/v1/check-permission")
         {
             Content = JsonContent.Create(new
             {

@@ -1,4 +1,3 @@
-using EventFlow.Identity.Application.DTOs;
 using EventFlow.Identity.Application.DTOs.Authentication;
 using MediatR;
 

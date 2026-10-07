@@ -18,12 +18,9 @@ public sealed class AttendanceStaffController(ISender sender) : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<AttendanceStaffDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> List(
-        Guid eventId,
-        CancellationToken cancellationToken = default)
+        Guid eventId, CancellationToken cancellationToken = default)
     {
-        var result = await sender.Send(
-            new GetAttendanceStaffQuery(eventId),
-            cancellationToken);
+        var result = await sender.Send(new GetAttendanceStaffQuery(eventId), cancellationToken);
 
         return Ok(ApiResponse<IReadOnlyList<AttendanceStaffDto>>.Success(result));
     }
@@ -32,39 +29,25 @@ public sealed class AttendanceStaffController(ISender sender) : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<AttendanceStaffDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<AttendanceStaffDto>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> Assign(
-        Guid eventId,
-        AssignAttendanceStaffRequest request,
-        CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Assign(Guid eventId, AssignAttendanceStaffRequest request, CancellationToken cancellationToken = default)
     {
         var dto = await sender.Send(
-            new AssignAttendanceStaffCommand(
-                eventId,
-                request.Email,
-                request.ScopeType,
-                request.ScopeId),
-            cancellationToken);
+            new AssignAttendanceStaffCommand(eventId,request.Email,request.ScopeType,request.ScopeId),cancellationToken);
 
         return Ok(ApiResponse<AttendanceStaffDto>.Success(
-            dto,
-            "Attendance staff assigned successfully."));
+            dto,"Attendance staff assigned successfully."));
     }
 
     [HttpDelete("{assignmentId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<object?>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> Revoke(
-        Guid eventId,
-        Guid assignmentId,
+    public async Task<IActionResult> Revoke(Guid eventId, Guid assignmentId,
         CancellationToken cancellationToken = default)
     {
         await sender.Send(
-            new RevokeAttendanceStaffCommand(eventId, assignmentId),
-            cancellationToken);
+            new RevokeAttendanceStaffCommand(eventId, assignmentId), cancellationToken);
 
-        return Ok(ApiResponse<object?>.Success(
-            null,
-            "Attendance staff assignment revoked."));
+        return Ok(ApiResponse<object?>.Success(null, "Attendance staff assignment revoked."));
     }
 }

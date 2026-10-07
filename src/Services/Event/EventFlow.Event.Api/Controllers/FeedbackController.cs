@@ -14,11 +14,9 @@ namespace EventFlow.Event.Api.Controllers;
 [Authorize]
 public sealed class FeedbackController(ISender sender, ICurrentUserService currentUser) : ControllerBase
 {
-    // POST /api/v1/events/{eventId}/feedback - Submit participant feedback
+    //  Submit participant feedback
     [HttpPost]
-    public async Task<IActionResult> Submit(
-        Guid eventId,
-        SubmitFeedbackRequest request,
+    public async Task<IActionResult> Submit(Guid eventId, SubmitFeedbackRequest request,
         CancellationToken cancellationToken)
     {
         var command = new SubmitFeedbackCommand(
@@ -32,21 +30,16 @@ public sealed class FeedbackController(ISender sender, ICurrentUserService curre
         var response = await sender.Send(command, cancellationToken);
 
         return Ok(ApiResponse<SubmitFeedbackResponse>.Success(
-            response,
-            "Thank you for your feedback."));
+            response, "Thank you for your feedback."));
     }
 
-    // GET /api/v1/events/{eventId}/feedback/results - Organizer feedback results
+    // Organizer feedback results
     [HttpGet("results")]
-    public async Task<IActionResult> Results(
-        Guid eventId,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> Results(Guid eventId, CancellationToken cancellationToken)
     {
         var query = new GetFeedbackResultsQuery(eventId, currentUser.UserId);
         var response = await sender.Send(query, cancellationToken);
 
-        return Ok(ApiResponse<GetFeedbackResultsResponse>.Success(
-            response,
-            "Feedback results retrieved successfully."));
+        return Ok(ApiResponse<GetFeedbackResultsResponse>.Success(response, "Feedback results retrieved successfully."));
     }
 }

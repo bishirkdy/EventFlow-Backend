@@ -19,16 +19,11 @@ public sealed class KafkaProducer : IKafkaProducer
         _producer = new ProducerBuilder<string, string>(config).Build();
     }
 
-    public async Task PublishAsync<T>(
-        string topic,
-        T message,
-        CancellationToken cancellationToken = default)
-        where T : IntegrationEvent
+    public async Task PublishAsync<T>(string topic,T message, CancellationToken cancellationToken = default) where T : IntegrationEvent
     {
         var json = JsonSerializer.Serialize(message);
 
-        await _producer.ProduceAsync(
-            topic,
+        await _producer.ProduceAsync(topic,
             new Message<string, string>
             {
                 Key = message.EventContextId.ToString(),

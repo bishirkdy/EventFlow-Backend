@@ -1,6 +1,7 @@
 using EventFlow.Contracts.Common;
 using EventFlow.Identity.Application;
 using EventFlow.Identity.Infrastructure;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EventFlow.Identity.Api.Extensions
 {
@@ -8,7 +9,7 @@ namespace EventFlow.Identity.Api.Extensions
     {
         public static IServiceCollection AddIdentityServices(this IServiceCollection services,IConfiguration configuration)
         {
-            services.Configure<Microsoft.AspNetCore.Mvc.ApiBehaviorOptions>(options =>
+            services.Configure<ApiBehaviorOptions>(options =>
             {
                 options.InvalidModelStateResponseFactory = context =>
                 {
@@ -25,7 +26,7 @@ namespace EventFlow.Identity.Api.Extensions
                         "One or more validation errors occurred.",
                         System.Net.HttpStatusCode.BadRequest);
 
-                    return new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(response);
+                    return new BadRequestObjectResult(response);
                 };
             });
             services

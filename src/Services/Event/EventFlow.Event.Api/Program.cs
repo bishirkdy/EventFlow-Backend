@@ -4,6 +4,7 @@ using EventFlow.Event.Api.Middleware;
 using EventFlow.Event.Application;
 using EventFlow.Event.Infrastructure;
 using EventFlow.Messaging;
+using EventFlow.Event.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,7 +38,7 @@ app.UseMiddleware<EventPermissionMiddleware>();
 
 app.MapControllers();
 
-app.ApplyMigrations<EventFlow.Event.Infrastructure.Persistence.EventCoreDbContext>();
+app.ApplyMigrations<EventCoreDbContext>();
 
 app.Run();
 

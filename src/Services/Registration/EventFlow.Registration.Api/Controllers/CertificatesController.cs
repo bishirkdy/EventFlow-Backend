@@ -20,12 +20,9 @@ public sealed class CertificatesController(ISender sender) : ControllerBase
 {
     [Authorize]
     [HttpGet("settings")]
-    public async Task<IActionResult> GetSettings(
-        Guid eventId,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> GetSettings(Guid eventId, CancellationToken cancellationToken)
     {
-        var dto = await sender.Send(
-            new GetCertificateSettingsQuery(eventId), cancellationToken);
+        var dto = await sender.Send(new GetCertificateSettingsQuery(eventId), cancellationToken);
 
         return Ok(ApiResponse<CertificateSettingsDto>.Success(
             dto,
@@ -42,31 +39,22 @@ public sealed class CertificatesController(ISender sender) : ControllerBase
         var dto = await sender.Send(
             new UpsertCertificateSettingsCommand(eventId, request), cancellationToken);
 
-        return Ok(ApiResponse<CertificateSettingsDto>.Success(
-            dto,
-            "Certificate settings saved."));
+        return Ok(ApiResponse<CertificateSettingsDto>.Success(dto, "Certificate settings saved."));
     }
 
     [Authorize]
     [HttpGet("eligibility")]
-    public async Task<IActionResult> GetEligibility(
-        Guid eventId,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> GetEligibility(Guid eventId, CancellationToken cancellationToken)
     {
         var dto = await sender.Send(
             new GetCertificateEligibilityQuery(eventId), cancellationToken);
 
-        return Ok(ApiResponse<CertificateEligibilityDto>.Success(
-            dto,
-            "Eligibility computed."));
+        return Ok(ApiResponse<CertificateEligibilityDto>.Success(dto,"Eligibility computed."));
     }
 
     [Authorize]
     [HttpPost("generate")]
-    public async Task<IActionResult> Generate(
-        Guid eventId,
-        GenerateCertificatesRequest request,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> Generate(Guid eventId, GenerateCertificatesRequest request, CancellationToken cancellationToken)
     {
         var dto = await sender.Send(
             new GenerateCertificatesCommand(eventId, request), cancellationToken);
@@ -82,32 +70,21 @@ public sealed class CertificatesController(ISender sender) : ControllerBase
 
     [Authorize]
     [HttpGet]
-    public async Task<IActionResult> List(
-        Guid eventId,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> List(Guid eventId,CancellationToken cancellationToken)
     {
-        var dto = await sender.Send(
-            new ListCertificatesQuery(eventId), cancellationToken);
+        var dto = await sender.Send(new ListCertificatesQuery(eventId), cancellationToken);
 
-        return Ok(ApiResponse<List<CertificateDto>>.Success(
-            dto,
-            "Certificates loaded."));
+        return Ok(ApiResponse<List<CertificateDto>>.Success(dto, "Certificates loaded."));
     }
 
     [Authorize]
     [HttpGet("my")]
-    public async Task<IActionResult> GetMine(
-        Guid eventId,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> GetMine(Guid eventId, CancellationToken cancellationToken)
     {
-        var dto = await sender.Send(
-            new GetMyCertificatesQuery(eventId), cancellationToken);
+        var dto = await sender.Send(new GetMyCertificatesQuery(eventId), cancellationToken);
 
-        return Ok(ApiResponse<List<CertificateDto>>.Success(
-            dto,
-            dto.Count == 0
-                ? "No certificate has been issued for you yet."
-                : "Certificate found."));
+        return Ok(ApiResponse<List<CertificateDto>>.Success(dto, dto.Count == 0
+                ? "No certificate has been issued for you yet.": "Certificate found."));
     }
 
     [Authorize]
@@ -127,10 +104,7 @@ public sealed class CertificatesController(ISender sender) : ControllerBase
 
     [Authorize]
     [HttpGet("{certificateId:guid}/download")]
-    public async Task<IActionResult> Download(
-        Guid eventId,
-        Guid certificateId,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> Download(Guid eventId, Guid certificateId,CancellationToken cancellationToken)
     {
         var dto = await sender.Send(
             new DownloadCertificateQuery(eventId, certificateId), cancellationToken);

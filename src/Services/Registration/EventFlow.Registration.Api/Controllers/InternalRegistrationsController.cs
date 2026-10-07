@@ -12,16 +12,10 @@ public sealed class InternalRegistrationsController(ISender sender) : Controller
 {
     [InternalServiceOnly]
     [HttpGet("users/{userId:guid}/event-ids")]
-    public async Task<IActionResult> GetRegisteredEventIds(
-        Guid userId,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> GetRegisteredEventIds(Guid userId,CancellationToken cancellationToken)
     {
-        var dto = await sender.Send(
-            new GetRegisteredEventIdsQuery(userId),
-            cancellationToken);
+        var dto = await sender.Send(new GetRegisteredEventIdsQuery(userId), cancellationToken);
 
-        return Ok(ApiResponse<IReadOnlyList<Guid>>.Success(
-            dto,
-            "Registered event ids retrieved successfully."));
+        return Ok(ApiResponse<IReadOnlyList<Guid>>.Success(dto,"Registered event ids retrieved successfully."));
     }
 }

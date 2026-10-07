@@ -22,7 +22,6 @@ namespace EventFlow.Event.Api.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetSettings(Guid eventId,CancellationToken cancellationToken)
         {
-            // Send query
             var result = await sender.Send(new GetEventSettingsQuery(eventId), cancellationToken);
 
             // Check whether settings exist

@@ -2,8 +2,7 @@ using FluentValidation;
 
 namespace EventFlow.Event.Application.Features.Analytics.Queries.GetEventOverviewAnalytics;
 
-internal sealed class GetEventOverviewAnalyticsQueryValidator
-    : AbstractValidator<GetEventOverviewAnalyticsQuery>
+internal sealed class GetEventOverviewAnalyticsQueryValidator: AbstractValidator<GetEventOverviewAnalyticsQuery>
 {
     public GetEventOverviewAnalyticsQueryValidator()
     {

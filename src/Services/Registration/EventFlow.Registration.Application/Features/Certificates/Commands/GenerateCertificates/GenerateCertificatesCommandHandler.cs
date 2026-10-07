@@ -1,13 +1,8 @@
 using System.Globalization;
 using System.Security.Cryptography;
-using EventFlow.Registration.Application.Abstractions.Persistence;
-using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Common.Certificates;
-using EventFlow.Registration.Application.Common.Mappings;
-using EventFlow.Registration.Application.Contracts.Certificates;
-using EventFlow.Registration.Domain.Entities;
 using EventFlow.SharedKernel.Exceptions;
-using MediatR;
+using EventFlow.Security.Authentication;
 
 namespace EventFlow.Registration.Application.Features.Certificates.Commands.GenerateCertificates;
 
@@ -20,7 +15,7 @@ public sealed class GenerateCertificatesCommandHandler(
     ICertificateFileStore fileStore,
     ICertificateVerifyUrlProvider verifyUrlProvider,
     IUnitOfWork unitOfWork,
-    EventFlow.Security.Authentication.ICurrentUserService user,
+    ICurrentUserService user,
     IEventRegistrationAccessService access)
     : IRequestHandler<GenerateCertificatesCommand, CertificateGenerationResultDto>
 {
@@ -28,37 +23,26 @@ public sealed class GenerateCertificatesCommandHandler(
         GenerateCertificatesCommand command,
         CancellationToken cancellationToken)
     {
-        if (!await access.CanManageRegistrationAsync(
-                command.EventId,
-                user.UserId,
-                cancellationToken))
+        if (!await access.CanManageRegistrationAsync(command.EventId,user.UserId,cancellationToken))
         {
             throw new ForbiddenException("You do not have permission.");
         }
 
-        var settings = await settingsRepository.GetByEventIdAsync(
-            command.EventId,
-            cancellationToken);
+        var settings = await settingsRepository.GetByEventIdAsync(command.EventId, cancellationToken);
 
         var requireApproved = settings?.RequireApprovedRegistration ?? true;
         var minAttendance = settings?.MinAttendancePercent;
 
-        var eventInfo = await sourceData.GetEventAsync(
-            command.EventId,
-            cancellationToken);
+        var eventInfo = await sourceData.GetEventAsync(command.EventId, cancellationToken);
 
         if (eventInfo is null)
         {
             throw new NotFoundException("Event details could not be loaded.");
         }
 
-        var registrationRows = await registrations.GetWithParticipantsAsync(
-            command.EventId,
-            cancellationToken);
+        var registrationRows = await registrations.GetWithParticipantsAsync(command.EventId,cancellationToken);
 
-        var issuedRegistrationIds = await certificates.GetIssuedRegistrationIdsAsync(
-            command.EventId,
-            cancellationToken);
+        var issuedRegistrationIds = await certificates.GetIssuedRegistrationIdsAsync(command.EventId, cancellationToken);
 
         var requestedIds = command.Request.RegistrationIds;
 

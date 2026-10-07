@@ -1,8 +1,4 @@
-using EventFlow.Registration.Application.Abstractions.Persistence;
-using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.SharedKernel.Exceptions;
-using MediatR;
-using RegistrationEntity = EventFlow.Registration.Domain.Entities.Registration;
 using RegistrationStatusEnum = EventFlow.Registration.Domain.Enums.RegistrationStatus;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Queries.GetRegistrationAnalytics;
@@ -11,29 +7,18 @@ public sealed class GetRegistrationAnalyticsQueryHandler(
     IRegistrationRepository registrations,
     EventFlow.Security.Authentication.ICurrentUserService user,
     IEventRegistrationAccessService access)
-    : IRequestHandler<
-        GetRegistrationAnalyticsQuery,
-        GetRegistrationAnalyticsResponse>
+    : IRequestHandler<GetRegistrationAnalyticsQuery, GetRegistrationAnalyticsResponse>
 {
-    public async Task<GetRegistrationAnalyticsResponse> Handle(
-        GetRegistrationAnalyticsQuery query,
-        CancellationToken cancellationToken)
+    public async Task<GetRegistrationAnalyticsResponse> Handle(GetRegistrationAnalyticsQuery query, CancellationToken cancellationToken)
     {
-        if (!await access.CanManageRegistrationAsync(
-                query.EventId,
-                user.UserId,
-                cancellationToken))
+        if (!await access.CanManageRegistrationAsync(query.EventId,user.UserId,cancellationToken))
         {
             throw new ForbiddenException("You do not have permission.");
         }
 
-        var stats = await registrations.GetStatisticsAsync(
-            query.EventId,
-            cancellationToken);
+        var stats = await registrations.GetStatisticsAsync(query.EventId, cancellationToken);
 
-        var rows = await registrations.GetWithParticipantsAsync(
-            query.EventId,
-            cancellationToken);
+        var rows = await registrations.GetWithParticipantsAsync(query.EventId, cancellationToken);
 
         var now = DateTime.UtcNow;
         var today = now.Date;
@@ -116,38 +101,19 @@ public sealed class GetRegistrationAnalyticsQueryHandler(
             Participants = stats.Participants,
             ActiveTickets = stats.ActiveTickets,
 
-            ApprovalRatePercent = stats.Total == 0
-                ? 0
-                : Math.Round(stats.Approved * 100d / stats.Total, 1),
-
-            RejectionRatePercent = stats.Total == 0
-                ? 0
-                : Math.Round(stats.Rejected * 100d / stats.Total, 1),
-
-            WaitlistRatePercent = stats.Total == 0
-                ? 0
-                : Math.Round(stats.Waitlisted * 100d / stats.Total, 1),
-
-            AvgApprovalHours = approvalDurations.Count == 0
-                ? 0
-                : Math.Round(approvalDurations.Average(), 1),
-
-            AvgRejectionHours = rejectionDurations.Count == 0
-                ? 0
-                : Math.Round(rejectionDurations.Average(), 1),
-
+            ApprovalRatePercent = stats.Total == 0 ? 0 : Math.Round(stats.Approved * 100d / stats.Total, 1),
+            RejectionRatePercent = stats.Total == 0 ? 0 : Math.Round(stats.Rejected * 100d / stats.Total, 1),
+            WaitlistRatePercent = stats.Total == 0? 0 : Math.Round(stats.Waitlisted * 100d / stats.Total, 1),
+            AvgApprovalHours = approvalDurations.Count == 0 ? 0 : Math.Round(approvalDurations.Average(), 1),
+            AvgRejectionHours = rejectionDurations.Count ==  0? 0 : Math.Round(rejectionDurations.Average(), 1),
+            
             RegisteredToday = trendDates.Count(x => x == today),
 
-            RegisteredLast7Days = trendDates.Count(
-                x => x <= today && x >= today.AddDays(-6)),
+            RegisteredLast7Days = trendDates.Count(x => x <= today && x >= today.AddDays(-6)),
 
-            FirstRegistrationAtUtc = trendDates.Count == 0
-                ? null
-                : rows.Min(x => x.RegisteredAtUtc),
+            FirstRegistrationAtUtc = trendDates.Count == 0? null : rows.Min(x => x.RegisteredAtUtc),
 
-            LastRegistrationAtUtc = trendDates.Count == 0
-                ? null
-                : rows.Max(x => x.RegisteredAtUtc),
+            LastRegistrationAtUtc = trendDates.Count == 0 ? null : rows.Max(x => x.RegisteredAtUtc),
 
             PeakDay = peak,
             Trend = trend,

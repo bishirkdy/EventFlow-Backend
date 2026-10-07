@@ -40,7 +40,7 @@ namespace EventFlow.Identity.Infrastructure.Persistence.Repositories
             return await context.Users.AnyAsync(x => x.Email == email,cancellationToken);
         }
 
-        public async Task<bool> ExistsByUserNameAsync(string userName,CancellationToken cancellationToken)
+        public async Task<bool> ExistsByUserNameAsync(string userName, CancellationToken cancellationToken)
         {
             return await context.Users.AnyAsync(x => x.UserName == userName,cancellationToken);
         }

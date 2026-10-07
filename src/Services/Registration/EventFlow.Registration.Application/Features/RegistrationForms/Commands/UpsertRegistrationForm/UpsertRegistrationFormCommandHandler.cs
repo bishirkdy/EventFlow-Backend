@@ -1,8 +1,6 @@
-using EventFlow.Registration.Application.Abstractions.Persistence;
-using EventFlow.Registration.Application.Contracts.RegistrationForms;
-using EventFlow.Registration.Domain.Entities;
-using EventFlow.Registration.Domain.Enums;
+
 using EventFlow.SharedKernel.Exceptions;
+using EventFlow.Security.Authentication;
 
 namespace EventFlow.Registration.Application.Features.RegistrationForms.Commands.UpsertRegistrationForm;
 
@@ -10,20 +8,14 @@ public sealed class UpsertRegistrationFormCommandHandler(
     IRegistrationFormRepository forms,
     IRegistrationRepository registrations,
     IUnitOfWork unitOfWork,
-    EventFlow.Security.Authentication.ICurrentUserService user,
+    ICurrentUserService user,
     IEventRegistrationAccessService access)
-    : IRequestHandler<
-        UpsertRegistrationFormCommand,
-        RegistrationFormDto>
+    : IRequestHandler<UpsertRegistrationFormCommand,RegistrationFormDto>
 {
     public async Task<RegistrationFormDto> Handle(
-        UpsertRegistrationFormCommand command,
-        CancellationToken cancellationToken)
+        UpsertRegistrationFormCommand command, CancellationToken cancellationToken)
     {
-        if (!await access.CanManageRegistrationAsync(
-                command.EventId,
-                user.UserId,
-                cancellationToken))
+        if (!await access.CanManageRegistrationAsync(command.EventId,user.UserId,cancellationToken))
         {
             throw new ForbiddenException("You do not have permission.");
         }
@@ -81,8 +73,7 @@ public sealed class UpsertRegistrationFormCommandHandler(
 
         if (invalidIds.Length > 0)
         {
-            throw new ConflictException(
-                "One or more registration fields do not belong to this form.");
+            throw new ConflictException("One or more registration fields do not belong to this form.");
         }
 
         var removedIds = existingFields.Keys
@@ -91,9 +82,7 @@ public sealed class UpsertRegistrationFormCommandHandler(
 
         if (removedIds.Length > 0)
         {
-            var usedFieldIds = await forms.GetFieldIdsWithAnswersAsync(
-                removedIds,
-                cancellationToken);
+            var usedFieldIds = await forms.GetFieldIdsWithAnswersAsync(removedIds,cancellationToken);
 
             if (usedFieldIds.Count > 0)
             {
@@ -102,8 +91,7 @@ public sealed class UpsertRegistrationFormCommandHandler(
                     .Select(x => x.Value.Label)
                     .ToArray();
 
-                throw new ConflictException(
-                    $"These fields already have registration answers and cannot be deleted: {string.Join(", ", usedLabels)}.");
+                throw new ConflictException($"These fields already have registration answers and cannot be deleted: {string.Join(", ", usedLabels)}.");
             }
         }
 

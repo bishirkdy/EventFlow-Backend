@@ -1,10 +1,5 @@
-using EventFlow.Registration.Application.Abstractions.Persistence;
-using EventFlow.Registration.Application.Abstractions.Services;
-using EventFlow.Registration.Application.Common.Mappings;
-using EventFlow.Registration.Application.Contracts.Registrations;
-using EventFlow.Registration.Domain.Enums;
 using EventFlow.SharedKernel.Exceptions;
-using MediatR;
+using EventFlow.Security.Authentication;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Commands.CancelRegistration;
 
@@ -12,12 +7,10 @@ public sealed class CancelRegistrationCommandHandler(
     IRegistrationRepository registrations,
     IUnitOfWork unitOfWork,
     IWaitlistPromotionService promotions,
-    EventFlow.Security.Authentication.ICurrentUserService user)
+    ICurrentUserService user)
     : IRequestHandler<CancelRegistrationCommand, RegistrationDto>
 {
-    public async Task<RegistrationDto> Handle(
-        CancelRegistrationCommand command,
-        CancellationToken cancellationToken)
+    public async Task<RegistrationDto> Handle(CancelRegistrationCommand command,CancellationToken cancellationToken)
     {
         var registration = await registrations.GetByIdAsync(
             command.EventId,
@@ -41,8 +34,7 @@ public sealed class CancelRegistrationCommandHandler(
         var now = DateTime.UtcNow;
 
         registration.Status = RegistrationStatus.Cancelled;
-        registration.CancellationReason =
-            command.Request.Reason?.Trim();
+        registration.CancellationReason = command.Request.Reason?.Trim();
         registration.CancelledAtUtc = now;
 
         if (registration.Participant is not null)

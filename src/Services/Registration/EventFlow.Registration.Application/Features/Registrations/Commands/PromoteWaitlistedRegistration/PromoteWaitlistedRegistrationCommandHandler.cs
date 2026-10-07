@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using EventFlow.SharedKernel.Exceptions;
+using EventFlow.Security.Authentication;
 
 
 namespace EventFlow.Registration.Application.Features.Registrations.Commands.PromoteWaitlistedRegistration;
@@ -8,11 +9,9 @@ public sealed class PromoteWaitlistedRegistrationCommandHandler(
     IRegistrationRepository registrations,
     IRegistrationFormRepository forms,
     IUnitOfWork unitOfWork,
-    EventFlow.Security.Authentication.ICurrentUserService user,
+    ICurrentUserService user,
     IEventRegistrationAccessService access)
-    : IRequestHandler<
-        PromoteWaitlistedRegistrationCommand,
-        RegistrationDto>
+    : IRequestHandler<PromoteWaitlistedRegistrationCommand, RegistrationDto>
 {
     public async Task<RegistrationDto> Handle(
         PromoteWaitlistedRegistrationCommand command,
@@ -43,17 +42,10 @@ public sealed class PromoteWaitlistedRegistrationCommandHandler(
             throw new ConflictException("Registration is not waitlisted.");
         }
 
-        var form = await forms.GetByEventIdAsync(
-            command.EventId,
-            asNoTracking: true,
-            cancellationToken: cancellationToken);
+        var form = await forms.GetByEventIdAsync(command.EventId, asNoTracking: true, cancellationToken: cancellationToken);
 
-        if (form?.CapacityMode == CapacityMode.Limited &&
-            form.Capacity.HasValue &&
-            await registrations.CountByStatusAsync(
-                command.EventId,
-                RegistrationStatus.Approved,
-                cancellationToken) >= form.Capacity.Value)
+        if (form?.CapacityMode == CapacityMode.Limited && form.Capacity.HasValue &&
+            await registrations.CountByStatusAsync(command.EventId,RegistrationStatus.Approved,cancellationToken) >= form.Capacity.Value)
         {
             throw new ConflictException("No available capacity.");
         }

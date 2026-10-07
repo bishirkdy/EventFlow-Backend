@@ -12,17 +12,12 @@ namespace EventFlow.Registration.Api.Controllers;
 public sealed class RegistrationAnalyticsController(ISender sender) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> Get(
-        Guid eventId,
-        [FromQuery] int days = 30,
-        CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Get(Guid eventId,[FromQuery] int days = 30,CancellationToken cancellationToken = default)
     {
         var dto = await sender.Send(
             new GetRegistrationAnalyticsQuery(eventId, days),
             cancellationToken);
 
-        return Ok(ApiResponse<GetRegistrationAnalyticsResponse>.Success(
-            dto,
-            "Registration analytics computed."));
+        return Ok(ApiResponse<GetRegistrationAnalyticsResponse>.Success(dto, "Registration analytics computed."));
     }
 }

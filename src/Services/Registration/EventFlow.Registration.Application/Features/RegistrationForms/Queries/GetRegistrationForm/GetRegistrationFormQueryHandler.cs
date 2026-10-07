@@ -1,9 +1,5 @@
-using EventFlow.Registration.Application.Abstractions.Persistence;
-using EventFlow.Registration.Application.Contracts.RegistrationForms;
-using EventFlow.Registration.Domain.Entities;
-using EventFlow.Registration.Domain.Enums;
+
 using EventFlow.SharedKernel.Exceptions;
-using MediatR;
 
 namespace EventFlow.Registration.Application.Features.RegistrationForms.Queries.GetRegistrationForm;
 
@@ -11,19 +7,11 @@ public sealed class GetRegistrationFormQueryHandler(
     IRegistrationFormRepository forms,
     IRegistrationRepository registrations,
     IUnitOfWork unitOfWork)
-    : IRequestHandler<
-        GetRegistrationFormQuery,
-        RegistrationFormDto>
+    : IRequestHandler<GetRegistrationFormQuery,RegistrationFormDto>
 {
-    public async Task<RegistrationFormDto> Handle(
-        GetRegistrationFormQuery query,
-        CancellationToken cancellationToken)
+    public async Task<RegistrationFormDto> Handle(GetRegistrationFormQuery query, CancellationToken cancellationToken)
     {
-        var form = await forms.GetByEventIdAsync(
-            query.EventId,
-            includeFields: true,
-            asNoTracking: true,
-            cancellationToken: cancellationToken);
+        var form = await forms.GetByEventIdAsync(query.EventId,includeFields: true,asNoTracking: true,cancellationToken: cancellationToken);
 
         if (form is null)
         {
@@ -31,11 +19,7 @@ public sealed class GetRegistrationFormQueryHandler(
             // somebody opens it, so registration never starts empty handed.
             await CreateDefaultFormAsync(query.EventId, cancellationToken);
 
-            form = await forms.GetByEventIdAsync(
-                query.EventId,
-                includeFields: true,
-                asNoTracking: true,
-                cancellationToken: cancellationToken);
+            form = await forms.GetByEventIdAsync(query.EventId,includeFields: true,asNoTracking: true,cancellationToken: cancellationToken);
 
             if (form is null)
             {
@@ -43,15 +27,9 @@ public sealed class GetRegistrationFormQueryHandler(
             }
         }
 
-        var approvedCount = await registrations.CountByStatusAsync(
-            query.EventId,
-            RegistrationStatus.Approved,
-            cancellationToken);
+        var approvedCount = await registrations.CountByStatusAsync(query.EventId,RegistrationStatus.Approved,cancellationToken);
 
-        var waitlistCount = await registrations.CountByStatusAsync(
-            query.EventId,
-            RegistrationStatus.Waitlisted,
-            cancellationToken);
+        var waitlistCount = await registrations.CountByStatusAsync(query.EventId,RegistrationStatus.Waitlisted,cancellationToken);
 
         var response = new RegistrationFormDto
         {
@@ -87,9 +65,7 @@ public sealed class GetRegistrationFormQueryHandler(
         return response;
     }
 
-    private async Task CreateDefaultFormAsync(
-        Guid eventId,
-        CancellationToken cancellationToken)
+    private async Task CreateDefaultFormAsync(Guid eventId,CancellationToken cancellationToken)
     {
         var now = DateTime.UtcNow;
 
@@ -119,9 +95,7 @@ public sealed class GetRegistrationFormQueryHandler(
         {
             // Another request created the form at the same time
             // (EventId is unique), so simply keep using that one.
-            var existing = await forms.GetByEventIdAsync(
-                eventId,
-                cancellationToken: cancellationToken);
+            var existing = await forms.GetByEventIdAsync(eventId,cancellationToken: cancellationToken);
 
             if (existing is null)
             {

@@ -5,13 +5,9 @@ namespace EventFlow.Event.Application.Features.Analytics.Queries.GetEventOvervie
 public sealed class GetEventOverviewAnalyticsResponse
 {
     public Guid EventId { get; init; }
-
     public GetEventByIdResponse? Event { get; init; }
-
     public int Sections { get; init; }
-
     public int Sessions { get; init; }
-
     public int Venues { get; init; }
 
     public int Speakers { get; init; }

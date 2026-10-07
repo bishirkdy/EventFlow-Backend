@@ -20,7 +20,7 @@ namespace EventFlow.Identity.Infrastructure.Persistence.Repositories
         public async Task<List<UserEventRole>> GetByUserAndEventAsync(Guid userId,Guid eventId,CancellationToken cancellationToken = default)
         {
             return await context.UserEventRoles
-                .Include(x => x.Role)
+                .AsNoTracking()
                 .Where(x =>
                     x.UserId == userId &&
                     x.EventId == eventId)

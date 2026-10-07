@@ -2,7 +2,6 @@ using EventFlow.Api.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -16,8 +15,7 @@ public static class ApiApplicationExtensions
 {
     public const string CorsPolicy = "EventFlowCors";
 
-    public static IServiceCollection AddEventFlowApiDefaults(
-        this IServiceCollection services,
+    public static IServiceCollection AddEventFlowApiDefaults(this IServiceCollection services,
         string title,
         string version = "v1",
         IConfiguration? configuration = null)
@@ -26,9 +24,7 @@ public static class ApiApplicationExtensions
         services.AddHealthChecks();
         services.AddEndpointsApiExplorer();
 
-        var allowedOrigins = configuration?
-            .GetSection("Cors:AllowedOrigins")
-            .Get<string[]>() ?? [];
+        var allowedOrigins = configuration?.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
 
         services.AddCors(options =>
         {

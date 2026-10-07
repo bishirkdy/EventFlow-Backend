@@ -1,17 +1,12 @@
-using EventFlow.Registration.Application.Abstractions.Persistence;
-using EventFlow.Registration.Application.Abstractions.Services;
-using EventFlow.Registration.Application.Common.Mappings;
-using EventFlow.Registration.Application.Contracts.Certificates;
-using EventFlow.Registration.Domain.Enums;
 using EventFlow.SharedKernel.Exceptions;
-using MediatR;
+using EventFlow.Security.Authentication;
 
 namespace EventFlow.Registration.Application.Features.Certificates.Commands.RevokeCertificate;
 
 public sealed class RevokeCertificateCommandHandler(
     ICertificateRepository certificates,
     IUnitOfWork unitOfWork,
-    EventFlow.Security.Authentication.ICurrentUserService user,
+    ICurrentUserService user,
     IEventRegistrationAccessService access)
     : IRequestHandler<RevokeCertificateCommand, CertificateDto>
 {

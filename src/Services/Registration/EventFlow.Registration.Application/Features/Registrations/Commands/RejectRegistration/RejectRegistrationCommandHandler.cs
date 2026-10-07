@@ -1,10 +1,6 @@
-using EventFlow.Registration.Application.Abstractions.Persistence;
-using EventFlow.Registration.Application.Abstractions.Services;
-using EventFlow.Registration.Application.Common.Mappings;
-using EventFlow.Registration.Application.Contracts.Registrations;
-using EventFlow.Registration.Domain.Enums;
+
 using EventFlow.SharedKernel.Exceptions;
-using MediatR;
+using EventFlow.Security.Authentication;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Commands.RejectRegistration;
 
@@ -12,7 +8,7 @@ public sealed class RejectRegistrationCommandHandler(
     IRegistrationRepository registrations,
     IUnitOfWork unitOfWork,
     IWaitlistPromotionService promotions,
-    EventFlow.Security.Authentication.ICurrentUserService user,
+    ICurrentUserService user,
     IEventRegistrationAccessService access)
     : IRequestHandler<RejectRegistrationCommand, RegistrationDto>
 {

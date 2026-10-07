@@ -6,17 +6,13 @@ using Microsoft.Extensions.Logging;
 namespace EventFlow.Operations.Infrastructure.Background;
 
 public sealed class NotificationWorker(
-    IServiceScopeFactory scopeFactory,
-    ILogger<NotificationWorker> logger)
-    : BackgroundService
+    IServiceScopeFactory scopeFactory, ILogger<NotificationWorker> logger) : BackgroundService
 {
     private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(10);
 
-    protected override async Task ExecuteAsync(
-        CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        logger.LogInformation(
-            "EventFlow notification worker started.");
+        logger.LogInformation("EventFlow notification worker started.");
 
         while (!stoppingToken.IsCancellationRequested)
         {

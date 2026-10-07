@@ -2,9 +2,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHealthChecks();
 
-var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-    ?? ["http://localhost:4200", "https://localhost:4200"];
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? ["http://localhost:4200", "https://localhost:4200"];
 
+//Register cors
 builder.Services.AddCors(option => {
     option.AddPolicy("Frontend", policy =>
     {

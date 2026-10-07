@@ -1,12 +1,6 @@
 using System.Security.Cryptography;
-using EventFlow.Registration.Application.Abstractions.Persistence;
-using EventFlow.Registration.Application.Abstractions.Services;
-using EventFlow.Registration.Application.Common.Mappings;
-using EventFlow.Registration.Application.Contracts.Registrations;
-using EventFlow.Registration.Domain.Entities;
-using EventFlow.Registration.Domain.Enums;
 using EventFlow.SharedKernel.Exceptions;
-using MediatR;
+using EventFlow.Security.Authentication;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Commands.ApproveRegistration;
 
@@ -14,18 +8,13 @@ public sealed class ApproveRegistrationCommandHandler(
     IRegistrationRepository registrations,
     IRegistrationFormRepository forms,
     IUnitOfWork unitOfWork,
-    EventFlow.Security.Authentication.ICurrentUserService user,
+    ICurrentUserService user,
     IEventRegistrationAccessService access)
     : IRequestHandler<ApproveRegistrationCommand, RegistrationDto>
 {
-    public async Task<RegistrationDto> Handle(
-        ApproveRegistrationCommand command,
-        CancellationToken cancellationToken)
+    public async Task<RegistrationDto> Handle(ApproveRegistrationCommand command, CancellationToken cancellationToken)
     {
-        if (!await access.CanManageRegistrationAsync(
-                command.EventId,
-                user.UserId,
-                cancellationToken))
+        if (!await access.CanManageRegistrationAsync(command.EventId,user.UserId,cancellationToken))
         {
             throw new ForbiddenException("You do not have permission.");
         }
@@ -42,9 +31,7 @@ public sealed class ApproveRegistrationCommandHandler(
             throw new NotFoundException("Registration not found.");
         }
 
-        if (registration.Status is
-            RegistrationStatus.Cancelled or
-            RegistrationStatus.Rejected)
+        if (registration.Status is RegistrationStatus.Cancelled or RegistrationStatus.Rejected)
         {
             throw new ConflictException("Registration cannot be approved.");
         }

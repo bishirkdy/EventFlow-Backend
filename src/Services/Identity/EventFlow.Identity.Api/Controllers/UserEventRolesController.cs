@@ -16,11 +16,8 @@ namespace EventFlow.Identity.Api.Controllers;
 public sealed class UserEventRolesController(ISender sender) : ControllerBase
 {
     [HttpPost]
-    public async Task<IActionResult> AssignRole(
-        Guid eventId,
-        Guid userId,
-        [FromBody] AssignUserRoleRequest request,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> AssignRole(Guid eventId,Guid userId,
+        [FromBody] AssignUserRoleRequest request, CancellationToken cancellationToken)
     {
         var roleId = await sender.Send(
             new AssignUserRoleCommand(userId, eventId, request.RoleId),
@@ -32,10 +29,7 @@ public sealed class UserEventRolesController(ISender sender) : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetRoles(
-        Guid eventId,
-        Guid userId,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> GetRoles(Guid eventId,Guid userId,CancellationToken cancellationToken)
     {
         var result = await sender.Send(
             new GetUserEventRolesQuery(userId, eventId),
@@ -47,15 +41,9 @@ public sealed class UserEventRolesController(ISender sender) : ControllerBase
     }
 
     [HttpDelete("{roleId:guid}")]
-    public async Task<IActionResult> RemoveRole(
-        Guid eventId,
-        Guid userId,
-        Guid roleId,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> RemoveRole(Guid eventId,Guid userId,Guid roleId,CancellationToken cancellationToken)
     {
-        await sender.Send(
-            new RemoveUserRoleCommand(userId, eventId, roleId),
-            cancellationToken);
+        await sender.Send(new RemoveUserRoleCommand(userId, eventId, roleId),cancellationToken);
 
         return Ok(ApiResponse<object?>.Success(
             null,

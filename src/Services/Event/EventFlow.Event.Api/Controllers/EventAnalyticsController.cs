@@ -18,9 +18,7 @@ public sealed class EventAnalyticsController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Overview(Guid eventId, CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
-            new GetEventOverviewAnalyticsQuery(eventId),
-            cancellationToken);
+        var result = await sender.Send(new GetEventOverviewAnalyticsQuery(eventId),cancellationToken);
 
         if (result is null)
         {
@@ -46,9 +44,7 @@ public sealed class EventAnalyticsController(ISender sender) : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<GetProgrammeAnalyticsResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Programme(Guid eventId, CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
-            new GetProgrammeAnalyticsQuery(eventId),
-            cancellationToken);
+        var result = await sender.Send(new GetProgrammeAnalyticsQuery(eventId), cancellationToken);
 
         return Ok(new ApiResponse<GetProgrammeAnalyticsResponse>
         {
@@ -63,9 +59,7 @@ public sealed class EventAnalyticsController(ISender sender) : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<GetContentAnalyticsResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Content(Guid eventId, CancellationToken cancellationToken)
     {
-        var result = await sender.Send(
-            new GetContentAnalyticsQuery(eventId),
-            cancellationToken);
+        var result = await sender.Send(new GetContentAnalyticsQuery(eventId), cancellationToken);
 
         return Ok(new ApiResponse<GetContentAnalyticsResponse>
         {
