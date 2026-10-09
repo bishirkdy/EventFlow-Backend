@@ -201,6 +201,11 @@ namespace EventFlow.Identity.Infrastructure.Persistence
                     RoleId = organizerRoleId,
                     PermissionId = attendanceManageId
                 },
+                new
+                {
+                    RoleId = organizerRoleId,
+                    PermissionId = eventTeamManageId
+                },
 
                 // EventAdmin permissions
                 new

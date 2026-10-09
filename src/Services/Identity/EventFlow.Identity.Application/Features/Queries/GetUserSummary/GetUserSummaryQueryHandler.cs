@@ -31,6 +31,7 @@ public sealed class GetUserSummaryQueryHandler(IUserRepository userRepository)
         return new UserSummaryResponse(
             user.Id,
             user.UserName,
+            user.Email,
             user.FirstName,
             user.LastName,
             displayName);

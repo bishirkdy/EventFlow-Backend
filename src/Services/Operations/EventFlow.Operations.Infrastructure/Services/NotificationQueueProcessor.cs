@@ -5,25 +5,19 @@ using Microsoft.Extensions.Logging;
 
 namespace EventFlow.Operations.Infrastructure.Services;
 
-public sealed class NotificationQueueProcessor(
-    IOperationsDbContext db,
-    IEmailSender emailSender,
-    ILogger<NotificationQueueProcessor> logger)
+public sealed class NotificationQueueProcessor(IOperationsDbContext db,IEmailSender emailSender,ILogger<NotificationQueueProcessor> logger)
     : INotificationQueueProcessor
 {
     private const int BatchSize = 20;
     private const int MaxAttempts = 3;
 
-    public async Task<int> ProcessDueAsync(
-        CancellationToken cancellationToken = default)
+    public async Task<int> ProcessDueAsync(CancellationToken cancellationToken = default)
     {
         var now = DateTime.UtcNow;
 
         var due = await db.Notifications
             .Where(
-                x =>
-                    x.Status == NotificationStatus.Pending &&
-                    x.ScheduledAtUtc <= now)
+                x => x.Status == NotificationStatus.Pending && x.ScheduledAtUtc <= now)
             .OrderBy(x => x.ScheduledAtUtc)
             .Take(BatchSize)
             .ToListAsync(cancellationToken);
@@ -75,13 +69,6 @@ public sealed class NotificationQueueProcessor(
                 {
                     notification.Status = NotificationStatus.Pending;
                 }
-
-                logger.LogWarning(
-                    exception,
-                    "Failed to send notification {NotificationId} to {Recipient} (attempt {Attempt}).",
-                    notification.Id,
-                    notification.RecipientEmail,
-                    notification.AttemptCount);
             }
 
             await db.SaveChangesAsync(cancellationToken);
@@ -92,8 +79,6 @@ public sealed class NotificationQueueProcessor(
 
     private static string Truncate(string value, int maxLength)
     {
-        return value.Length <= maxLength
-            ? value
-            : value[..maxLength];
+        return value.Length <= maxLength? value : value[..maxLength];
     }
 }

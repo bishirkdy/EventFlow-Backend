@@ -1,15 +1,11 @@
-using EventFlow.Registration.Application.Abstractions.Persistence;
-using EventFlow.Registration.Application.Abstractions.Services;
-using EventFlow.Registration.Application.Common.Mappings;
-using EventFlow.Registration.Application.Contracts.Registrations;
 using EventFlow.SharedKernel.Exceptions;
-using MediatR;
+using EventFlow.Security.Authentication;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Queries.GetRegistrationById;
 
 public sealed class GetRegistrationByIdQueryHandler(
     IRegistrationRepository registrations,
-    EventFlow.Security.Authentication.ICurrentUserService user,
+    ICurrentUserService user,
     IEventRegistrationAccessService access)
     : IRequestHandler<GetRegistrationByIdQuery, RegistrationDto>
 {

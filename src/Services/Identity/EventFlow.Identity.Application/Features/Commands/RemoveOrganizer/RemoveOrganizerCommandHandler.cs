@@ -24,7 +24,7 @@ public sealed class RemoveOrganizerCommandHandler(IRoleRepository roleRepository
             throw new ConflictException("The Organizer role is not configured.");
         }
 
-        var assignments = await userEventRoleRepository.GetByUserAndEventAsync(request.UserId,request.EventId, cancellationToken);
+        var assignments = await userEventRoleRepository.GetByUserAndEventForUpdateAsync(request.UserId,request.EventId, cancellationToken);
         var assignment = assignments.FirstOrDefault(x => x.RoleId == organizerRole.Id);
 
         if (assignment is null)

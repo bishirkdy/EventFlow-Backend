@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\EventFlow.Identity.Application\EventFlow.Identity.Application.csproj" />
     <ProjectReference Include="..\EventFlow.Identity.Domain\EventFlow.Identity.Domain.csproj" />
+	  <ProjectReference Include="..\..\..\BuildingBlocks\EventFlow.Messaging\EventFlow.Messaging.csproj" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore" />
 	  <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />	   

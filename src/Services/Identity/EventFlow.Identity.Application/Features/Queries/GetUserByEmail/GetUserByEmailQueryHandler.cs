@@ -24,6 +24,7 @@ public sealed class GetUserByEmailQueryHandler(IUserRepository userRepository)
         return new UserSummaryResponse(
             user.Id,
             user.UserName,
+            user.Email,
             user.FirstName,
             user.LastName,
             $"{user.FirstName} {user.LastName}".Trim());

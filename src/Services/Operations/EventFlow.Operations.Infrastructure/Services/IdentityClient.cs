@@ -133,7 +133,17 @@ public sealed class IdentityClient(
             request,
             cancellationToken);
 
-        return response.IsSuccessStatusCode;
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync(
+                cancellationToken);
+
+            throw new InvalidOperationException(
+                $"Identity role removal failed. " +
+                $"Status: {(int)response.StatusCode}, Response: {error}");
+        }
+
+        return true;
     }
 
     private void AddInternalServiceKey(HttpRequestMessage request)

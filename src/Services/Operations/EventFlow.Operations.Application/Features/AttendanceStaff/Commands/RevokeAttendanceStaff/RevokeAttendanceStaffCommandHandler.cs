@@ -3,6 +3,7 @@ using EventFlow.Security.Authentication;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace EventFlow.Operations.Application.Features.AttendanceStaff.Commands.RevokeAttendanceStaff;
 
@@ -10,7 +11,8 @@ public sealed class RevokeAttendanceStaffCommandHandler(
     IOperationsDbContext db,
     IEventAuthorizationClient authorization,
     IIdentityClient identity,
-    ICurrentUserService currentUser)
+    ICurrentUserService currentUser,
+    ILogger<RevokeAttendanceStaffCommandHandler> logger)
     : IRequestHandler<RevokeAttendanceStaffCommand, object?>
 {
     private const string AttendanceStaffRoleName = "AttendanceStaff";
@@ -42,9 +44,9 @@ public sealed class RevokeAttendanceStaffCommandHandler(
 
         entity.IsActive = false;
         entity.RevokedAtUtc = DateTime.UtcNow;
+
         await db.SaveChangesAsync(cancellationToken);
 
-        // Drop the event role only when no other active assignment remains.
         var stillAssigned = await db.AttendanceStaffAssignments.AnyAsync(
             x => x.EventId == command.EventId
                  && x.UserId == entity.UserId
@@ -53,11 +55,22 @@ public sealed class RevokeAttendanceStaffCommandHandler(
 
         if (!stillAssigned)
         {
-            await identity.RemoveEventRoleAsync(
-                entity.UserId,
-                command.EventId,
-                AttendanceStaffRoleName,
-                cancellationToken);
+            try
+            {
+                await identity.RemoveEventRoleAsync(
+                    entity.UserId,
+                    command.EventId,
+                    AttendanceStaffRoleName,
+                    cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(
+                    ex,
+                    "Failed to remove AttendanceStaff role for user {UserId} from event {EventId}.",
+                    entity.UserId,
+                    command.EventId);
+            }
         }
 
         return null;

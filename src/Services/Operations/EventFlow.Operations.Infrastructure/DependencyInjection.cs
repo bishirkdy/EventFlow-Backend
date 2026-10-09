@@ -1,3 +1,4 @@
+using EventFlow.Messaging;
 using EventFlow.Operations.Application.Abstractions;
 using EventFlow.Operations.Infrastructure.Background;
 using EventFlow.Operations.Infrastructure.Persistence;
@@ -10,10 +11,10 @@ namespace EventFlow.Operations.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddOperationsInfrastructure(
-        this IServiceCollection services,
-        IConfiguration configuration)
+    public static IServiceCollection AddOperationsInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddEventFlowMessaging(configuration);
+
         services.AddDbContext<OperationsDbContext>(options =>
         {
             options.UseNpgsql(
@@ -31,6 +32,7 @@ public static class DependencyInjection
         services.AddScoped<IIdentityClient, IdentityClient>();
 
         services.AddHostedService<NotificationWorker>();
+        services.AddHostedService<PhotographerInvitationCreatedConsumer>();
 
         services.AddScoped<INotificationQueueProcessor, NotificationQueueProcessor>();
 

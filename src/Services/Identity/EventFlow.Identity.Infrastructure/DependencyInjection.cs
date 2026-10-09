@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using EventFlow.Identity.Infrastructure.Persistence.Repositories;
+using EventFlow.Messaging;
 
 namespace EventFlow.Identity.Infrastructure
 {
@@ -22,6 +23,7 @@ namespace EventFlow.Identity.Infrastructure
                 options.UseNpgsql(configuration.GetConnectionString("IdentityDatabase"));
             });
 
+            services.AddEventFlowMessaging(configuration);
             // Bind Jwt configuration to JwtOptions.
             services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
 

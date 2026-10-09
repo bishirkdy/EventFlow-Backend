@@ -5,22 +5,14 @@ using Microsoft.Extensions.Configuration;
 
 namespace EventFlow.Operations.Infrastructure.Services;
 
-public sealed class EventAuthorizationClient(
-    HttpClient httpClient,
-    IConfiguration configuration) : IEventAuthorizationClient
+public sealed class EventAuthorizationClient(HttpClient httpClient, IConfiguration configuration) : IEventAuthorizationClient
 {
-    public async Task<bool> HasPermissionAsync(
-        Guid userId,
-        Guid eventId,
-        string permission,
+    public async Task<bool> HasPermissionAsync(Guid userId, Guid eventId, string permission,
         CancellationToken cancellationToken = default)
     {
-        var baseUrl = configuration["Services:Identity:BaseUrl"]
-            ?? throw new InvalidOperationException("Services:Identity:BaseUrl is not configured.");
+        var baseUrl = configuration["Services:Identity:BaseUrl"] ?? throw new InvalidOperationException("Services:Identity:BaseUrl is not configured.");
 
-        using var request = new HttpRequestMessage(
-            HttpMethod.Post,
-            $"{baseUrl.TrimEnd('/')}/api/authorization/v1/check-permission")
+        using var request = new HttpRequestMessage(HttpMethod.Post,$"{baseUrl.TrimEnd('/')}/api/authorization/v1/check-permission")
         {
             Content = JsonContent.Create(new
             {

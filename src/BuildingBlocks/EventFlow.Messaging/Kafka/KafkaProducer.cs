@@ -23,8 +23,7 @@ public sealed class KafkaProducer : IKafkaProducer
     {
         var json = JsonSerializer.Serialize(message);
 
-        await _producer.ProduceAsync(topic,
-            new Message<string, string>
+        await _producer.ProduceAsync(topic, new Message<string, string>
             {
                 Key = message.EventContextId.ToString(),
                 Value = json

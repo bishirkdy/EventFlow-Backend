@@ -63,12 +63,6 @@ public sealed class EventPermissionMiddleware(RequestDelegate next, EventAuthori
         await next(context);
     }
 
-    // Photo endpoints mix two audiences: photographers (photo.* permissions)
-    // and organizers (event.update via role inheritance). Read endpoints stay
-    // open to anyone with event.view OR photo.view (authenticated gallery).
-    // Feedback submission is open to any participant with event.view; the
-    // handler enforces the feature flag, duplicate rules and (for results)
-    // the organizer-only event.update permission.
     private static string[] ResolveRequiredPermissions(HttpRequest request)
     {
         var path = request.Path.Value ?? string.Empty;

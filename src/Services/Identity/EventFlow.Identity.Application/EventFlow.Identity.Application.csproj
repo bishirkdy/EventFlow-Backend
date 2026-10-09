@@ -6,10 +6,11 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\BuildingBlocks\EventFlow.Security\EventFlow.Security.csproj" />
-    <ProjectReference Include="..\EventFlow.Identity.Domain\EventFlow.Identity.Domain.csproj" />
-  </ItemGroup>
+<ItemGroup>
+  <ProjectReference Include="..\..\..\BuildingBlocks\EventFlow.Security\EventFlow.Security.csproj" />
+  <ProjectReference Include="..\EventFlow.Identity.Domain\EventFlow.Identity.Domain.csproj" />
+  <ProjectReference Include="..\..\..\BuildingBlocks\EventFlow.Messaging\EventFlow.Messaging.csproj" />
+</ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="MediatR" />

@@ -14,23 +14,14 @@ public sealed class GetUserEventRolesQueryHandler(
     ICurrentUserService currentUser)
     : IRequestHandler<GetUserEventRolesQuery, List<UserEventRoleResponse>>
 {
-    public async Task<List<UserEventRoleResponse>> Handle(
-        GetUserEventRolesQuery request,
-        CancellationToken cancellationToken)
+    public async Task<List<UserEventRoleResponse>> Handle(GetUserEventRolesQuery request,CancellationToken cancellationToken)
     {
-        if (!await permissions.HasPermissionAsync(
-                currentUser.UserId,
-                request.EventId,
-                PermissionConstants.Event.View,
-                cancellationToken))
+        if (!await permissions.HasPermissionAsync(currentUser.UserId,request.EventId, PermissionConstants.Event.View, cancellationToken))
         {
             throw new ForbiddenException("You do not have permission to view this event.");
         }
 
-        var userEventRoles = await userEventRoleRepository.GetByUserAndEventAsync(
-            request.UserId,
-            request.EventId,
-            cancellationToken);
+        var userEventRoles = await userEventRoleRepository.GetByUserAndEventAsync(request.UserId,request.EventId,cancellationToken);
 
         return userEventRoles
             .Select(x => new UserEventRoleResponse(

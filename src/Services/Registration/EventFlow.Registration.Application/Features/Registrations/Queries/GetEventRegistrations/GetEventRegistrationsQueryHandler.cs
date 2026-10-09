@@ -1,10 +1,5 @@
 using EventFlow.Contracts.Common;
-using EventFlow.Registration.Application.Abstractions.Persistence;
-using EventFlow.Registration.Application.Abstractions.Services;
-using EventFlow.Registration.Application.Common.Mappings;
-using EventFlow.Registration.Application.Contracts.Registrations;
 using EventFlow.SharedKernel.Exceptions;
-using MediatR;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Queries.GetEventRegistrations;
 

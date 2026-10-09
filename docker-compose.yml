@@ -69,6 +69,7 @@ services:
 
       ConnectionStrings__IdentityDatabase: "Host=postgres;Port=5432;Database=IdentityDatabase;Username=postgres;Password=${POSTGRES_PASSWORD}"
 
+      Kafka__BootstrapServers: "kafka:9092"
     develop:
       watch:
         - action: rebuild
@@ -209,7 +210,9 @@ services:
       Smtp__UseSsl: "${SMTP_USE_SSL:-true}"
       Smtp__Username: "${SMTP_USERNAME:-}"
       Smtp__Password: "${SMTP_PASSWORD:-}"
-      Smtp__From: "${SMTP_FROM:-no-reply@eventflow.local}"
+      Smtp__From: "${SMTP_FROM:-}"
+
+      Kafka__BootstrapServers: "kafka:9092"
 
     develop:
       watch:

@@ -19,6 +19,8 @@ public interface IUserEventRoleRepository
         Guid eventId,
         CancellationToken cancellationToken = default);
 
+    Task<List<UserEventRole>> GetByUserAndEventForUpdateAsync(Guid userId, Guid eventId, CancellationToken cancellationToken = default);
+
     Task<List<UserEventRole>> GetByUserAsync(
         Guid userId,
         CancellationToken cancellationToken = default);

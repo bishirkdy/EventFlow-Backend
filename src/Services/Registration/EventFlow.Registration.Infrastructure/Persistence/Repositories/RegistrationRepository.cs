@@ -43,6 +43,7 @@ public sealed class RegistrationRepository(RegistrationDbContext db)
         query = query.Where(
             x => x.Id == registrationId && x.EventId == eventId);
 
+
         if (userId.HasValue)
         {
             query = query.Where(x => x.UserId == userId.Value);

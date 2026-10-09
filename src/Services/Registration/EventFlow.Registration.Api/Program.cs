@@ -1,6 +1,7 @@
 using EventFlow.Api.Extensions;
 using EventFlow.Contracts.Common;
 using EventFlow.Registration.Api.Extensions;
+using EventFlow.Registration.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +44,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.ApplyMigrations<EventFlow.Registration.Infrastructure.Persistence.RegistrationDbContext>();
+app.ApplyMigrations<RegistrationDbContext>();
 
 app.Run();

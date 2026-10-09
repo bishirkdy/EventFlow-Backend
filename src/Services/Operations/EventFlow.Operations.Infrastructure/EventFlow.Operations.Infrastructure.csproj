@@ -9,6 +9,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\EventFlow.Operations.Application\EventFlow.Operations.Application.csproj" />
 		<ProjectReference Include="..\EventFlow.Operations.Domain\EventFlow.Operations.Domain.csproj" />
+		<ProjectReference Include="..\..\..\BuildingBlocks\EventFlow.Messaging\EventFlow.Messaging.csproj" />
 
 		<ProjectReference Include="..\..\..\BuildingBlocks\EventFlow.Contracts\EventFlow.Contracts.csproj" />
 		<ProjectReference Include="..\..\..\BuildingBlocks\EventFlow.Security\EventFlow.Security.csproj" />
