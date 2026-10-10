@@ -3,10 +3,7 @@ using EventFlow.Security.Authentication;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Queries.GetRegistrationById;
 
-public sealed class GetRegistrationByIdQueryHandler(
-    IRegistrationRepository registrations,
-    ICurrentUserService user,
-    IEventRegistrationAccessService access)
+public sealed class GetRegistrationByIdQueryHandler(IRegistrationRepository registrations,ICurrentUserService user,IEventRegistrationAccessService access)
     : IRequestHandler<GetRegistrationByIdQuery, RegistrationDto>
 {
     public async Task<RegistrationDto> Handle(

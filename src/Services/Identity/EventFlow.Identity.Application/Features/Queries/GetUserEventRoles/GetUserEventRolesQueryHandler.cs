@@ -8,20 +8,21 @@ using MediatR;
 
 namespace EventFlow.Identity.Application.Features.Queries.GetUserEventRoles;
 
-public sealed class GetUserEventRolesQueryHandler(
-    IUserEventRoleRepository userEventRoleRepository,
-    IPermissionService permissions,
-    ICurrentUserService currentUser)
+public sealed class GetUserEventRolesQueryHandler(IUserEventRoleRepository userEventRoleRepository,IPermissionService permissions,ICurrentUserService currentUser)
     : IRequestHandler<GetUserEventRolesQuery, List<UserEventRoleResponse>>
 {
     public async Task<List<UserEventRoleResponse>> Handle(GetUserEventRolesQuery request,CancellationToken cancellationToken)
     {
-        if (!await permissions.HasPermissionAsync(currentUser.UserId,request.EventId, PermissionConstants.Event.View, cancellationToken))
+        // Users may retrieve their own roles without event.view permission.
+        // Retrieving another user's roles requires event.view permission.
+        if (request.UserId != currentUser.UserId &&
+            !await permissions.HasPermissionAsync(currentUser.UserId,request.EventId,PermissionConstants.Event.View,cancellationToken))
         {
-            throw new ForbiddenException("You do not have permission to view this event.");
+            throw new ForbiddenException("You do not have permission to view this user's roles.");
         }
 
-        var userEventRoles = await userEventRoleRepository.GetByUserAndEventAsync(request.UserId,request.EventId,cancellationToken);
+        var userEventRoles =
+            await userEventRoleRepository.GetByUserAndEventAsync(request.UserId,request.EventId,cancellationToken);
 
         return userEventRoles
             .Select(x => new UserEventRoleResponse(

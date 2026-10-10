@@ -44,7 +44,7 @@ public static class RegistrationMapping
         Id = x.Id,
         RegistrationId = x.RegistrationId,
         ParticipantId = x.ParticipantId,
-        ParticipantUserId = x.Participant.UserId,
+        ParticipantUserId = x.Participant?.UserId ?? Guid.Empty,
         TicketNumber = x.TicketNumber,
         QrCodeValue = x.QrCodeValue,
         IssuedAtUtc = x.IssuedAtUtc,

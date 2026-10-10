@@ -18,8 +18,7 @@ public sealed class PhotographerInvitationCreatedConsumer(IServiceScopeFactory s
     private const string Topic = "photographer-invitation-created";
     private const string GroupId = "operations-photographer-invitation";
 
-    protected override async Task ExecuteAsync(
-        CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync( CancellationToken stoppingToken)
     {
         
         var config = new ConsumerConfig

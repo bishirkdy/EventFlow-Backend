@@ -48,12 +48,38 @@ public sealed class RegistrationsController(ISender sender) : ControllerBase
             "Registration updated successfully."));
     }
 
+    // Participant view own registration
     [Authorize]
     [HttpGet("{registrationId:guid}")]
-    public async Task<IActionResult> Get(Guid eventId, Guid registrationId, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetMyRegistration(
+        Guid eventId,
+        Guid registrationId,
+        CancellationToken cancellationToken)
     {
         var dto = await sender.Send(
-            new GetRegistrationByIdQuery(eventId,registrationId),cancellationToken);
+            new GetRegistrationByIdQuery(
+                eventId,
+                registrationId,
+                OrganizerView: false),
+            cancellationToken);
+
+        return Ok(ApiResponse<RegistrationDto>.Success(dto));
+    }
+
+    // Organizer view a participant's registration
+    [Authorize]
+    [HttpGet("organizer/{registrationId:guid}")]
+    public async Task<IActionResult> GetForOrganizer(
+        Guid eventId,
+        Guid registrationId,
+        CancellationToken cancellationToken)
+    {
+        var dto = await sender.Send(
+            new GetRegistrationByIdQuery(
+                eventId,
+                registrationId,
+                OrganizerView: true),
+            cancellationToken);
 
         return Ok(ApiResponse<RegistrationDto>.Success(dto));
     }
