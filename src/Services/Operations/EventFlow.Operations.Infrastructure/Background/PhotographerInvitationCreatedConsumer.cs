@@ -4,6 +4,7 @@ using EventFlow.Messaging.Kafka;
 using EventFlow.Operations.Application.Abstractions;
 using EventFlow.Operations.Domain.Entities;
 using EventFlow.Operations.Domain.Enums;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -13,10 +14,12 @@ using System.Text.Json;
 namespace EventFlow.Operations.Infrastructure.Background;
 
 public sealed class PhotographerInvitationCreatedConsumer(IServiceScopeFactory scopeFactory, IOptions<KafkaOptions> kafkaOptions,
-    ILogger<PhotographerInvitationCreatedConsumer> logger): BackgroundService
+    IConfiguration configuration , ILogger<PhotographerInvitationCreatedConsumer> logger): BackgroundService
 {
     private const string Topic = "photographer-invitation-created";
     private const string GroupId = "operations-photographer-invitation";
+
+    private readonly string _frontendBaseUrl = configuration["Frontend:BaseUrl"] ?? throw new InvalidOperationException("Frontend:BaseUrl is not configured.");
 
     protected override async Task ExecuteAsync( CancellationToken stoppingToken)
     {
@@ -140,19 +143,20 @@ public sealed class PhotographerInvitationCreatedConsumer(IServiceScopeFactory s
         }
     }
 
-    private static string BuildEmailBody(
+    private string BuildEmailBody(
         PhotographerInvitationCreatedEvent message)
     {
+        var invitationLink =
+             $"{_frontendBaseUrl.TrimEnd('/')}/photographer-invitation/{Uri.EscapeDataString(message.Token)}";
+
         return $"""
-            You have been invited to join an event as a photographer.
+        You have been invited to join an event as a photographer.
 
-            Invitation Token:
-            {message.Token}
-
-            This invitation expires on:
-            {message.ExpiresAt:u}
-
-            Please use the invitation link to accept the invitation.
-            """;
+        Accept your invitation using this link:
+        {invitationLink}
+         
+        This invitation expires on:
+        {message.ExpiresAt:u}
+        """;
     }
 }

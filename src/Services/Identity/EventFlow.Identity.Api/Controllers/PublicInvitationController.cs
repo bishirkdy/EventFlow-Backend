@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EventFlow.Identity.Api.Controllers;
 
-// Public endpoints for invitation acceptance (no auth required).
+// Public endpoints for invitation acceptance
 [ApiController]
 [Route("api/v1/invitations")]
 [AllowAnonymous]
@@ -43,8 +43,6 @@ public sealed class PublicInvitationController(ISender sender) : ControllerBase
                 request.LastName),
             cancellationToken);
 
-        return Ok(ApiResponse<AcceptPhotographerInvitationResponse>.Success(
-            response,
-            "Invitation accepted successfully."));
+        return Ok(ApiResponse<AcceptPhotographerInvitationResponse>.Success(response, "Invitation accepted successfully."));
     }
 }
