@@ -1,3 +1,5 @@
+using EventFlow.Registration.Domain.Enums;
+
 namespace EventFlow.Registration.Domain.Entities;
 
 public sealed class CertificateSettings
@@ -5,6 +7,18 @@ public sealed class CertificateSettings
     public Guid Id { get; set; }
 
     public Guid EventId { get; set; }
+
+    public CertificateTemplateMode TemplateMode { get; set; } = CertificateTemplateMode.Classic;
+
+    public string? BackgroundImageUrl { get; set; }
+
+    public string? BackgroundImagePublicId { get; set; }
+
+    public int BackgroundImageWidth { get; set; }
+
+    public int BackgroundImageHeight { get; set; }
+
+    public List<CertificateTemplateField> TemplateFields { get; set; } = [];
 
     public string Title { get; set; } = "Certificate of Participation";
 

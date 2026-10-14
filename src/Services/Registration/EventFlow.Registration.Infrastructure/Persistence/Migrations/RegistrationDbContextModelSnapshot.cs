@@ -98,6 +98,20 @@ namespace EventFlow.Registration.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int>("BackgroundImageHeight")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("BackgroundImagePublicId")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("BackgroundImageUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int>("BackgroundImageWidth")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -122,6 +136,13 @@ namespace EventFlow.Registration.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
+
+                    b.Property<string>("TemplateFields")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<int>("TemplateMode")
+                        .HasColumnType("integer");
 
                     b.Property<string>("ThemeColor")
                         .IsRequired()
