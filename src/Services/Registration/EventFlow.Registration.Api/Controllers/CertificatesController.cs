@@ -1,8 +1,11 @@
 using EventFlow.Contracts.Common;
+using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Contracts.Certificates;
+using EventFlow.Registration.Application.Features.Certificates.Commands.DeleteCertificateTemplateImage;
 using EventFlow.Registration.Application.Features.Certificates.Commands.GenerateCertificates;
 using EventFlow.Registration.Application.Features.Certificates.Commands.RevokeCertificate;
 using EventFlow.Registration.Application.Features.Certificates.Commands.UpsertCertificateSettings;
+using EventFlow.Registration.Application.Features.Certificates.Commands.UploadCertificateTemplateImage;
 using EventFlow.Registration.Application.Features.Certificates.Queries.DownloadCertificate;
 using EventFlow.Registration.Application.Features.Certificates.Queries.GetCertificateEligibility;
 using EventFlow.Registration.Application.Features.Certificates.Queries.GetCertificateSettings;
@@ -40,6 +43,39 @@ public sealed class CertificatesController(ISender sender) : ControllerBase
             new UpsertCertificateSettingsCommand(eventId, request), cancellationToken);
 
         return Ok(ApiResponse<CertificateSettingsDto>.Success(dto, "Certificate settings saved."));
+    }
+
+    [Authorize]
+    [HttpPost("settings/template-image")]
+    [RequestSizeLimit(10 * 1024 * 1024)]
+    public async Task<IActionResult> UploadTemplateImage(
+        Guid eventId,
+        IFormFile? image,
+        CancellationToken cancellationToken)
+    {
+        var dto = await sender.Send(
+            new UploadCertificateTemplateImageCommand(
+                eventId,
+                image is null
+                    ? null
+                    : new UploadedFile(
+                        image.OpenReadStream(),
+                        image.FileName,
+                        image.ContentType,
+                        image.Length)),
+            cancellationToken);
+
+        return Ok(ApiResponse<CertificateSettingsDto>.Success(dto, "Certificate template image uploaded."));
+    }
+
+    [Authorize]
+    [HttpDelete("settings/template-image")]
+    public async Task<IActionResult> DeleteTemplateImage(Guid eventId, CancellationToken cancellationToken)
+    {
+        var dto = await sender.Send(
+            new DeleteCertificateTemplateImageCommand(eventId), cancellationToken);
+
+        return Ok(ApiResponse<CertificateSettingsDto>.Success(dto, "Certificate template image removed."));
     }
 
     [Authorize]
