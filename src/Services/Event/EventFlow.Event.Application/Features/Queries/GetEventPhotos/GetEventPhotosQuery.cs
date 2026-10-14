@@ -7,6 +7,6 @@ namespace EventFlow.Event.Application.Features.Queries.GetEventPhotos
         Guid EventId,
         int Page = 1,
         int PageSize = 20,
-        bool VisibleOnly = true)
+        bool? VisibleOnly = null)
         : IRequest<PaginatedResponse<GetEventPhotosResponse>>;
 }

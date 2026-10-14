@@ -1,3 +1,4 @@
+
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.Security.Authentication;
@@ -15,10 +16,11 @@ namespace EventFlow.Event.Application.Features.Queries.GetEventPhotos
             GetEventPhotosQuery request,
             CancellationToken cancellationToken)
         {
-            if (!request.VisibleOnly && currentUser.UserId == Guid.Empty)
+            if (request.VisibleOnly == false &&
+                currentUser.UserId == Guid.Empty)
             {
                 throw new UnauthorizedException(
-                    "Authentication is required to view non-public photos.");
+                    "Authentication is required to view hidden photos.");
             }
 
             var paged = await photoRepository.GetPagedByEventIdAsync(
@@ -28,7 +30,7 @@ namespace EventFlow.Event.Application.Features.Queries.GetEventPhotos
                 request.VisibleOnly,
                 cancellationToken);
 
-            var response = new PaginatedResponse<GetEventPhotosResponse>
+            return new PaginatedResponse<GetEventPhotosResponse>
             {
                 Items = paged.Items.Select(p => new GetEventPhotosResponse(
                     p.Id,
@@ -43,8 +45,6 @@ namespace EventFlow.Event.Application.Features.Queries.GetEventPhotos
                 PageSize = paged.PageSize,
                 TotalCount = paged.TotalCount
             };
-
-            return response;
         }
     }
 }

@@ -15,9 +15,7 @@ namespace EventFlow.Identity.Api.Controllers;
 public sealed class PhotographerInvitationController(ISender sender) : ControllerBase
 {
     [HttpPost("invite")]
-    public async Task<IActionResult> InvitePhotographer(
-        Guid eventId,
-        [FromBody] InvitePhotographerRequest request,
+    public async Task<IActionResult> InvitePhotographer(Guid eventId, [FromBody] InvitePhotographerRequest request,
         CancellationToken cancellationToken)
     {
         var response = await sender.Send(
@@ -25,8 +23,7 @@ public sealed class PhotographerInvitationController(ISender sender) : Controlle
             cancellationToken);
 
         return Ok(ApiResponse<CreatePhotographerInvitationResponse>.Success(
-            response,
-            "Photographer invitation created successfully."));
+            response, "Photographer invitation created successfully."));
     }
 
     [HttpGet]

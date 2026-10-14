@@ -36,9 +36,8 @@ public sealed class EventPhotoController(ISender sender, ICurrentUserService cur
         return Ok(ApiResponse<UploadEventPhotoResponse>.Success(response, "Photo uploaded successfully."));
     }
 
-    // List photos (Public for visible, Authenticated for all)
     [HttpGet]
-    public async Task<IActionResult> GetPhotos(Guid eventId,[FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] bool visibleOnly = true,
+    public async Task<IActionResult> GetPhotos(Guid eventId,[FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] bool? visibleOnly = null,
         CancellationToken cancellationToken = default)
     {
         var response = await sender.Send(
@@ -48,7 +47,6 @@ public sealed class EventPhotoController(ISender sender, ICurrentUserService cur
         return Ok(ApiResponse<PaginatedResponse<GetEventPhotosResponse>>.Success(response, "Photos retrieved successfully."));
     }
 
-    // Approve/hide photo (Organizer)
     [Authorize]
     [HttpPatch("{photoId:guid}/visibility")]
     public async Task<IActionResult> UpdateVisibility(Guid eventId,Guid photoId, [FromBody] UpdateVisibilityRequest request,

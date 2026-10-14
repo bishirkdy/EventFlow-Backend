@@ -1,6 +1,5 @@
 using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.Event.Domain.Entities;
-using EventFlow.Event.Infrastructure.Persistence;
 using EventFlow.Contracts.Common;
 using Microsoft.EntityFrameworkCore;
 
@@ -38,16 +37,19 @@ namespace EventFlow.Event.Infrastructure.Persistence.Repositories
                 .FirstOrDefaultAsync(x => x.Id == photoId, cancellationToken);
         }
 
-        public async Task<PaginatedResponse<EventPhoto>> GetPagedByEventIdAsync(Guid eventId, int page, int pageSize, bool visibleOnly, CancellationToken cancellationToken = default)
+        public async Task<PaginatedResponse<EventPhoto>> GetPagedByEventIdAsync(Guid eventId,int page,int pageSize,bool? visibleOnly,CancellationToken cancellationToken = default)
         {
             var query = DbSet.Where(x => x.EventId == eventId);
 
-            if (visibleOnly)
+            // Apply the filter when true OR false.
+            // null means return all photos.
+            if (visibleOnly.HasValue)
             {
-                query = query.Where(x => x.IsVisible);
+                query = query.Where(x => x.IsVisible == visibleOnly.Value);
             }
 
             var totalCount = await query.CountAsync(cancellationToken);
+
             var items = await query
                 .OrderByDescending(x => x.UploadedAt)
                 .Skip((page - 1) * pageSize)
