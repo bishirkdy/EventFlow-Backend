@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Security.Cryptography;
 using EventFlow.Registration.Application.Common.Certificates;
 using EventFlow.SharedKernel.Exceptions;
@@ -14,6 +13,7 @@ public sealed class GenerateCertificatesCommandHandler(
     ICertificateDocumentService documentService,
     ICertificateFileStore fileStore,
     ICertificateVerifyUrlProvider verifyUrlProvider,
+    ICertificateTemplateBackgroundResolver templateBackground,
     IUnitOfWork unitOfWork,
     ICurrentUserService user,
     IEventRegistrationAccessService access)
@@ -52,7 +52,15 @@ public sealed class GenerateCertificatesCommandHandler(
 
         var result = new CertificateGenerationResultDto();
         var settingsSnapshot = settings ?? CreateDefaultSettings(command.EventId);
-        var datesText = FormatEventDates(eventInfo.StartDate, eventInfo.EndDate);
+        var datesText = CertificateEventText.FormatEventDates(eventInfo.StartDate, eventInfo.EndDate);
+
+        var useImageTemplate = settingsSnapshot.TemplateMode == CertificateTemplateMode.ImageTemplate;
+
+        byte[]? backgroundImage = null;
+        if (useImageTemplate)
+        {
+            backgroundImage = await templateBackground.ResolveAsync(settingsSnapshot, cancellationToken);
+        }
 
         foreach (var registration in candidates)
         {
@@ -104,7 +112,12 @@ public sealed class GenerateCertificatesCommandHandler(
                 settingsSnapshot.SignatoryName,
                 settingsSnapshot.SignatoryTitle,
                 DateTime.UtcNow,
-                verifyUrlProvider.GetUrl(certificateNumber));
+                verifyUrlProvider.GetUrl(certificateNumber),
+                useImageTemplate,
+                settingsSnapshot.TemplateFields,
+                backgroundImage,
+                settingsSnapshot.BackgroundImageWidth,
+                settingsSnapshot.BackgroundImageHeight);
 
             byte[] pdf;
             try
@@ -181,25 +194,4 @@ public sealed class GenerateCertificatesCommandHandler(
         CreatedAtUtc = DateTime.UtcNow,
         UpdatedAtUtc = DateTime.UtcNow
     };
-
-    private static string FormatEventDates(DateTime startDate, DateTime endDate)
-    {
-        if (startDate.Date == endDate.Date)
-        {
-            return startDate.ToString("d MMMM yyyy", CultureInfo.InvariantCulture);
-        }
-
-        if (startDate.Year == endDate.Year &&
-            startDate.Month == endDate.Month)
-        {
-            return $"{startDate.Day} - {endDate.ToString("d MMMM yyyy", CultureInfo.InvariantCulture)}";
-        }
-
-        if (startDate.Year == endDate.Year)
-        {
-            return $"{startDate.ToString("d MMM", CultureInfo.InvariantCulture)} - {endDate.ToString("d MMMM yyyy", CultureInfo.InvariantCulture)}";
-        }
-
-        return $"{startDate.ToString("d MMM yyyy", CultureInfo.InvariantCulture)} - {endDate.ToString("d MMM yyyy", CultureInfo.InvariantCulture)}";
-    }
 }

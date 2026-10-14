@@ -11,6 +11,7 @@ using EventFlow.Registration.Application.Features.Certificates.Queries.GetCertif
 using EventFlow.Registration.Application.Features.Certificates.Queries.GetCertificateSettings;
 using EventFlow.Registration.Application.Features.Certificates.Queries.GetMyCertificates;
 using EventFlow.Registration.Application.Features.Certificates.Queries.ListCertificates;
+using EventFlow.Registration.Application.Features.Certificates.Queries.PreviewCertificate;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -86,6 +87,19 @@ public sealed class CertificatesController(ISender sender) : ControllerBase
             new GetCertificateEligibilityQuery(eventId), cancellationToken);
 
         return Ok(ApiResponse<CertificateEligibilityDto>.Success(dto,"Eligibility computed."));
+    }
+
+    [Authorize]
+    [HttpGet("settings/preview")]
+    public async Task<IActionResult> Preview(
+        Guid eventId,
+        [FromQuery] string? sampleName,
+        CancellationToken cancellationToken)
+    {
+        var dto = await sender.Send(
+            new PreviewCertificateQuery(eventId, sampleName), cancellationToken);
+
+        return File(dto.Content, dto.ContentType, dto.FileName);
     }
 
     [Authorize]

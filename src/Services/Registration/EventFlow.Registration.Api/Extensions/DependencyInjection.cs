@@ -17,7 +17,15 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IEventRegistrationAccessService, EventRegistrationAccessService>();
         services.AddScoped<ICertificateSourceDataService, CertificateSourceDataService>();
+        services.AddScoped<ICertificateTemplateImageLoader, CertificateTemplateImageLoader>();
         services.AddSingleton<ICertificateVerifyUrlProvider, CertificateVerifyUrlProvider>();
+
+        services.AddHttpClient(
+            "CertificateTemplateImages",
+            client =>
+            {
+                client.Timeout = TimeSpan.FromSeconds(30);
+            });
 
         services.AddRegistrationApplication();
         services.AddRegistrationInfrastructure(configuration);

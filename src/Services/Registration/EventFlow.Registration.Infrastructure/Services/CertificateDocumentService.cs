@@ -1,4 +1,6 @@
 using EventFlow.Registration.Application.Abstractions.Services;
+using EventFlow.Registration.Domain.Entities;
+using EventFlow.Registration.Domain.Enums;
 using QRCoder;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
@@ -8,6 +10,9 @@ namespace EventFlow.Registration.Infrastructure.Services;
 
 public sealed class CertificateDocumentService : ICertificateDocumentService
 {
+    private const string DefaultTemplateFont = "Arial";
+    private const string DefaultFieldColor = "#111827";
+
     static CertificateDocumentService()
     {
         QuestPDF.Settings.License = LicenseType.Community;
@@ -17,6 +22,143 @@ public sealed class CertificateDocumentService : ICertificateDocumentService
     }
 
     public byte[] Generate(CertificateDocumentData data)
+    {
+        if (data.UseImageTemplate &&
+            data.BackgroundImage is { Length: > 0 } &&
+            data.TemplateFields is { Count: > 0 } &&
+            data.BackgroundImageWidth > 0 &&
+            data.BackgroundImageHeight > 0)
+        {
+            return GenerateImageTemplate(data);
+        }
+
+        return GenerateClassic(data);
+    }
+
+    private static byte[] GenerateImageTemplate(CertificateDocumentData data)
+    {
+        var pageHeight = PageSizes.A4.Landscape().Height;
+        var pageWidth = pageHeight * data.BackgroundImageWidth / data.BackgroundImageHeight;
+        var qrPng = GenerateQrPng(data.VerificationUrl);
+
+        var document = Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(pageWidth, pageHeight);
+                page.Margin(0);
+                page.DefaultTextStyle(x =>
+                    x.FontFamily(DefaultTemplateFont).FontSize(12).FontColor(Colors.Grey.Darken3));
+
+                page.Content()
+                    .Layers(layers =>
+                    {
+                        layers.Layer()
+                            .Image(data.BackgroundImage!)
+                            .FitUnproportionally();
+
+                        layers.PrimaryLayer()
+                            .Width(pageWidth)
+                            .Height(pageHeight)
+                            .Column(column =>
+                            {
+                                foreach (var field in data.TemplateFields!)
+                                {
+                                    RenderTemplateField(column, field, data, pageWidth, pageHeight, qrPng);
+                                }
+                            });
+                    });
+            });
+        });
+
+        return document.GeneratePdf();
+    }
+
+    private static void RenderTemplateField(
+        ColumnDescriptor column,
+        CertificateTemplateField field,
+        CertificateDocumentData data,
+        float pageWidth,
+        float pageHeight,
+        byte[] qrPng)
+    {
+        var x = (float)(field.XPercent / 100d * pageWidth);
+        var y = (float)(field.YPercent / 100d * pageHeight);
+        var boxWidth = Math.Max(1f, (float)(field.WidthPercent / 100d * pageWidth));
+
+        if (field.Key.Equals("verificationQr", StringComparison.OrdinalIgnoreCase))
+        {
+            column.Item()
+                .Unconstrained()
+                .OffsetX(x)
+                .OffsetY(y)
+                .Width(boxWidth)
+                .Height(boxWidth)
+                .Image(qrPng)
+                .FitArea();
+
+            return;
+        }
+
+        var value = ResolveFieldValue(field, data);
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return;
+        }
+
+        var fontFamily = string.IsNullOrWhiteSpace(field.FontFamily)
+            ? DefaultTemplateFont
+            : field.FontFamily!.Trim();
+
+        var descriptor = column.Item()
+            .Unconstrained()
+            .OffsetX(x)
+            .OffsetY(y)
+            .Width(boxWidth)
+            .Text(value)
+            .FontFamily(fontFamily)
+            .FontSize((float)field.FontSizePt)
+            .FontColor(NormalizeColor(field.FontColor, DefaultFieldColor));
+
+        if (field.Bold)
+        {
+            descriptor.Bold();
+        }
+
+        switch (field.Align)
+        {
+            case CertificateFieldAlign.Left:
+                descriptor.AlignLeft();
+                break;
+            case CertificateFieldAlign.Right:
+                descriptor.AlignRight();
+                break;
+            default:
+                descriptor.AlignCenter();
+                break;
+        }
+    }
+
+    private static string ResolveFieldValue(CertificateTemplateField field, CertificateDocumentData data)
+    {
+        return field.Key.ToLowerInvariant() switch
+        {
+            "participantname" => data.ParticipantName,
+            "eventtitle" => data.EventName,
+            "eventdates" => data.EventDatesText,
+            "certificatenumber" => data.CertificateNumber,
+            "issuedate" => data.IssuedAtUtc.ToLocalTime().ToString("d"),
+            "signatoryname" => data.SignatoryName ?? "",
+            "signatorytitle" => data.SignatoryTitle ?? "",
+            "title" => data.Title,
+            "subtitle" => data.Subtitle,
+            "customtext" => field.Text ?? "",
+            _ => ""
+        };
+    }
+
+    private static byte[] GenerateClassic(CertificateDocumentData data)
     {
         var themeColor = NormalizeColor(data.ThemeColor);
         var qrPng = GenerateQrPng(data.VerificationUrl);
@@ -179,9 +321,9 @@ public sealed class CertificateDocumentService : ICertificateDocumentService
         return png.GetGraphic(8);
     }
 
-    private static string NormalizeColor(string color)
+    private static string NormalizeColor(string color, string fallback = "#2563EB")
     {
-        var value = string.IsNullOrWhiteSpace(color) ? "#2563EB" : color.Trim();
+        var value = string.IsNullOrWhiteSpace(color) ? fallback : color.Trim();
 
         if (value.StartsWith('#') && value.Length == 7)
         {
@@ -193,6 +335,6 @@ public sealed class CertificateDocumentService : ICertificateDocumentService
             return $"#{value}";
         }
 
-        return "#2563EB";
+        return fallback;
     }
 }

@@ -10,6 +10,7 @@ namespace EventFlow.Registration.Application
         public static IServiceCollection AddRegistrationApplication(this IServiceCollection services)
         {
             services.AddScoped<IWaitlistPromotionService, WaitlistPromotionService>();
+            services.AddScoped<ICertificateTemplateBackgroundResolver, CertificateTemplateBackgroundResolver>();
 
             services.AddMediatR(
                 options =>

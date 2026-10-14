@@ -1,3 +1,5 @@
+using EventFlow.Registration.Domain.Entities;
+
 namespace EventFlow.Registration.Application.Abstractions.Services;
 
 public sealed record CertificateDocumentData(
@@ -11,4 +13,9 @@ public sealed record CertificateDocumentData(
     string? SignatoryName,
     string? SignatoryTitle,
     DateTime IssuedAtUtc,
-    string VerificationUrl);
+    string VerificationUrl,
+    bool UseImageTemplate = false,
+    IReadOnlyList<CertificateTemplateField>? TemplateFields = null,
+    byte[]? BackgroundImage = null,
+    int BackgroundImageWidth = 0,
+    int BackgroundImageHeight = 0);
