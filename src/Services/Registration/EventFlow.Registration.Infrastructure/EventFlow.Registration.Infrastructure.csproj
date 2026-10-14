@@ -8,6 +8,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\EventFlow.Registration.Application\EventFlow.Registration.Application.csproj" />
+		<ProjectReference Include="..\..\..\BuildingBlocks\EventFlow.Infrastructure\EventFlow.Infrastructure.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -17,6 +18,7 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
 		<PackageReference Include="QuestPDF" />
 		<PackageReference Include="QRCoder" />

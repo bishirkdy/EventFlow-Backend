@@ -3,6 +3,7 @@ using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Infrastructure.Persistence;
 using EventFlow.Registration.Infrastructure.Persistence.Repositories;
 using EventFlow.Registration.Infrastructure.Services;
+using EventFlow.Infrastructure.Storage.Cloudinary;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,7 +14,7 @@ public static class DependencyInjection
     public static IServiceCollection AddRegistrationInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext<RegistrationDbContext>(
-            
+
             options =>
             {
                 options.UseNpgsql(configuration.GetConnectionString("RegistrationDatabase"));
@@ -28,6 +29,10 @@ public static class DependencyInjection
         services.AddScoped<ICertificateSettingsRepository, CertificateSettingsRepository>();
         services.AddSingleton<ICertificateDocumentService, CertificateDocumentService>();
         services.AddScoped<ICertificateFileStore, FileCertificateStore>();
+
+        services.Configure<CloudinaryStorageOptions>(configuration.GetSection("Cloudinary"));
+        services.AddSingleton<ICloudinaryStorage, CloudinaryStorage>();
+        services.AddScoped<ICertificateTemplateImageStore, CloudinaryCertificateTemplateImageStore>();
 
         return services;
     }
