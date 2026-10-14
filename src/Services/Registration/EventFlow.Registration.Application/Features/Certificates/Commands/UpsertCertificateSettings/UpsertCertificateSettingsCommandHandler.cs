@@ -55,26 +55,17 @@ public sealed class UpsertCertificateSettingsCommandHandler(
                 : request.ThemeColor.Trim();
         entity.RequireApprovedRegistration = request.RequireApprovedRegistration;
         entity.MinAttendancePercent = request.MinAttendancePercent;
+        entity.TemplateMode = CertificateSettingsMappings.ParseTemplateMode(request.TemplateMode);
+        entity.TemplateFields = request.TemplateFields
+            .Select(CertificateSettingsMappings.ToEntity)
+            .ToList();
         entity.UpdatedAtUtc = now;
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return ToDto(entity);
+        return entity.ToSettingsDto();
     }
 
     private static string? NullIfWhiteSpace(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
-    private static CertificateSettingsDto ToDto(CertificateSettings entity) => new()
-    {
-        EventId = entity.EventId,
-        Title = entity.Title,
-        Subtitle = entity.Subtitle,
-        SignatoryName = entity.SignatoryName,
-        SignatoryTitle = entity.SignatoryTitle,
-        ThemeColor = entity.ThemeColor,
-        RequireApprovedRegistration = entity.RequireApprovedRegistration,
-        MinAttendancePercent = entity.MinAttendancePercent,
-        UpdatedAtUtc = entity.UpdatedAtUtc
-    };
 }

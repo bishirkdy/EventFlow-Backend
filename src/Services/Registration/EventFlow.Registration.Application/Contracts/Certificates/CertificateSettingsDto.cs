@@ -10,5 +10,10 @@ public sealed class CertificateSettingsDto
     public string ThemeColor { get; set; } = "";
     public bool RequireApprovedRegistration { get; set; }
     public double? MinAttendancePercent { get; set; }
+    public string TemplateMode { get; set; } = "Classic";
+    public string? BackgroundImageUrl { get; set; }
+    public int BackgroundImageWidth { get; set; }
+    public int BackgroundImageHeight { get; set; }
+    public List<CertificateTemplateFieldDto> TemplateFields { get; set; } = [];
     public DateTime? UpdatedAtUtc { get; set; }
 }

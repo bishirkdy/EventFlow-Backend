@@ -9,4 +9,6 @@ public sealed class UpsertCertificateSettingsRequest
     public string ThemeColor { get; set; } = "#2563EB";
     public bool RequireApprovedRegistration { get; set; } = true;
     public double? MinAttendancePercent { get; set; }
+    public string TemplateMode { get; set; } = "Classic";
+    public List<CertificateTemplateFieldDto> TemplateFields { get; set; } = [];
 }

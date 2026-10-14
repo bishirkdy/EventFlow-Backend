@@ -35,21 +35,11 @@ public sealed class GetCertificateSettingsQueryHandler(
                 Title = "Certificate of Participation",
                 Subtitle = "",
                 ThemeColor = "#2563EB",
-                RequireApprovedRegistration = true
+                RequireApprovedRegistration = true,
+                TemplateMode = nameof(CertificateTemplateMode.Classic)
             };
         }
 
-        return new CertificateSettingsDto
-        {
-            EventId = entity.EventId,
-            Title = entity.Title,
-            Subtitle = entity.Subtitle,
-            SignatoryName = entity.SignatoryName,
-            SignatoryTitle = entity.SignatoryTitle,
-            ThemeColor = entity.ThemeColor,
-            RequireApprovedRegistration = entity.RequireApprovedRegistration,
-            MinAttendancePercent = entity.MinAttendancePercent,
-            UpdatedAtUtc = entity.UpdatedAtUtc
-        };
+        return entity.ToSettingsDto();
     }
 }
