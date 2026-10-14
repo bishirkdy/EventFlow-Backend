@@ -6,4 +6,5 @@ public sealed class CertificateGenerationResultDto
     public int Skipped { get; set; }
     public int Failed { get; set; }
     public List<CertificateDto> Certificates { get; set; } = [];
+    public List<string> Errors { get; set; } = [];
 }

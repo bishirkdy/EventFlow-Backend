@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using EventFlow.Registration.Application.Common.Certificates;
 using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Security.Authentication;
+using Microsoft.Extensions.Logging;
 
 namespace EventFlow.Registration.Application.Features.Certificates.Commands.GenerateCertificates;
 
@@ -16,9 +17,12 @@ public sealed class GenerateCertificatesCommandHandler(
     ICertificateTemplateBackgroundResolver templateBackground,
     IUnitOfWork unitOfWork,
     ICurrentUserService user,
-    IEventRegistrationAccessService access)
+    IEventRegistrationAccessService access,
+    ILogger<GenerateCertificatesCommandHandler> logger)
     : IRequestHandler<GenerateCertificatesCommand, CertificateGenerationResultDto>
 {
+    private const int MaxReportedErrors = 20;
+
     public async Task<CertificateGenerationResultDto> Handle(
         GenerateCertificatesCommand command,
         CancellationToken cancellationToken)
@@ -62,6 +66,9 @@ public sealed class GenerateCertificatesCommandHandler(
             backgroundImage = await templateBackground.ResolveAsync(settingsSnapshot, cancellationToken);
         }
 
+        var attendanceCache = new Dictionary<Guid, double?>();
+        var savedFiles = new List<string>();
+
         foreach (var registration in candidates)
         {
             if (issuedRegistrationIds.Contains(registration.Id))
@@ -75,10 +82,15 @@ public sealed class GenerateCertificatesCommandHandler(
             double? attendance = null;
             if (minAttendance.HasValue)
             {
-                attendance = await sourceData.GetAttendancePercentAsync(
-                    command.EventId,
-                    registration.UserId,
-                    cancellationToken);
+                if (!attendanceCache.TryGetValue(registration.UserId, out attendance))
+                {
+                    attendance = await sourceData.GetAttendancePercentAsync(
+                        command.EventId,
+                        registration.UserId,
+                        cancellationToken);
+
+                    attendanceCache[registration.UserId] = attendance;
+                }
             }
 
             var reasons = CertificateRules.Evaluate(
@@ -128,10 +140,25 @@ public sealed class GenerateCertificatesCommandHandler(
                     fileName,
                     pdf,
                     cancellationToken);
+
+                savedFiles.Add(fileName);
             }
-            catch
+            catch (Exception ex)
             {
+                logger.LogError(
+                    ex,
+                    "Failed to generate certificate for registration {RegistrationId} in event {EventId}.",
+                    registration.Id,
+                    command.EventId);
+
                 result.Failed++;
+
+                if (result.Errors.Count < MaxReportedErrors)
+                {
+                    result.Errors.Add(
+                        $"{registration.RegistrationNumber}: {DescribeFailure(ex)}");
+                }
+
                 continue;
             }
 
@@ -160,11 +187,52 @@ public sealed class GenerateCertificatesCommandHandler(
 
         if (result.Generated > 0)
         {
-            await unitOfWork.SaveChangesAsync(cancellationToken);
+            try
+            {
+                await unitOfWork.SaveChangesAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(
+                    ex,
+                    "Failed to persist {Count} generated certificate(s) for event {EventId}; removing written files.",
+                    savedFiles.Count,
+                    command.EventId);
+
+                await DeleteSavedFilesAsync(command.EventId, savedFiles);
+
+                throw;
+            }
         }
 
         return result;
     }
+
+    private async Task DeleteSavedFilesAsync(Guid eventId, IReadOnlyList<string> fileNames)
+    {
+        foreach (var fileName in fileNames)
+        {
+            try
+            {
+                await fileStore.DeleteAsync(eventId, fileName);
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(
+                    ex,
+                    "Failed to clean up certificate file {FileName} for event {EventId}.",
+                    fileName,
+                    eventId);
+            }
+        }
+    }
+
+    private static string DescribeFailure(Exception exception) => exception switch
+    {
+        EventFlowException flowException => flowException.Message,
+        InvalidOperationException invalidOperation => invalidOperation.Message,
+        _ => "Unexpected error while generating the certificate."
+    };
 
     private async Task<string> GenerateUniqueNumberAsync(
         CancellationToken cancellationToken)

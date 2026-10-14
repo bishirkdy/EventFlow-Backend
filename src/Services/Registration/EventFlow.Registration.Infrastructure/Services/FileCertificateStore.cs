@@ -35,6 +35,21 @@ public sealed class FileCertificateStore(IConfiguration configuration) : ICertif
         return File.OpenRead(path);
     }
 
+    public Task DeleteAsync(
+        Guid eventId,
+        string fileName,
+        CancellationToken cancellationToken = default)
+    {
+        var path = Path.Combine(GetDirectory(eventId), fileName);
+
+        if (File.Exists(path))
+        {
+            File.Delete(path);
+        }
+
+        return Task.CompletedTask;
+    }
+
     private string GetDirectory(Guid eventId)
     {
         var root = configuration["Certificates:StoragePath"];

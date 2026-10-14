@@ -12,4 +12,9 @@ public interface ICertificateFileStore
         Guid eventId,
         string fileName,
         CancellationToken cancellationToken = default);
+
+    Task DeleteAsync(
+        Guid eventId,
+        string fileName,
+        CancellationToken cancellationToken = default);
 }

@@ -38,6 +38,11 @@ public sealed class DownloadCertificateQueryHandler(
             throw new ForbiddenException("You do not have permission.");
         }
 
+        if (certificate.Status == CertificateStatus.Revoked)
+        {
+            throw new NotFoundException("This certificate has been revoked and can no longer be downloaded.");
+        }
+
         await using var content = await fileStore.OpenReadAsync(
             query.EventId,
             certificate.DocumentFileName,

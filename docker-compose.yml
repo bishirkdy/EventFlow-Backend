@@ -173,6 +173,12 @@ services:
       Cloudinary__ApiKey: "${CLOUDINARY_API_KEY}"
       Cloudinary__ApiSecret: "${CLOUDINARY_API_SECRET}"
 
+      Certificates__PublicBaseUrl: "${CERTIFICATES_PUBLIC_BASE_URL:-http://localhost:4200}"
+      Certificates__StoragePath: "/var/certificates"
+
+    volumes:
+      - certificate-storage:/var/certificates
+
     develop:
       watch:
         - action: rebuild
@@ -227,3 +233,4 @@ services:
 
 volumes:
   postgres-data:
+  certificate-storage:

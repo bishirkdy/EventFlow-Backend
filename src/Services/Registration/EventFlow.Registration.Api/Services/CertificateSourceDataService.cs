@@ -6,7 +6,8 @@ namespace EventFlow.Registration.Api.Services;
 public sealed class CertificateSourceDataService(
     IHttpClientFactory factory,
     IHttpContextAccessor httpContextAccessor,
-    IConfiguration configuration) : ICertificateSourceDataService
+    IConfiguration configuration,
+    ILogger<CertificateSourceDataService> logger) : ICertificateSourceDataService
 {
     public async Task<CertificateEventInfo?> GetEventAsync(
         Guid eventId,
@@ -24,6 +25,10 @@ public sealed class CertificateSourceDataService(
 
             if (!response.IsSuccessStatusCode)
             {
+                logger.LogWarning(
+                    "Loading event {EventId} for certificates failed with status {StatusCode}.",
+                    eventId,
+                    response.StatusCode);
                 return null;
             }
 
@@ -32,6 +37,9 @@ public sealed class CertificateSourceDataService(
 
             if (payload?.Data is null)
             {
+                logger.LogWarning(
+                    "Loading event {EventId} for certificates returned no data.",
+                    eventId);
                 return null;
             }
 
@@ -42,8 +50,13 @@ public sealed class CertificateSourceDataService(
                 payload.Data.EndDate,
                 payload.Data.TimeZone);
         }
-        catch
+        catch (OperationCanceledException)
         {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to load event {EventId} for certificates.", eventId);
             return null;
         }
     }
@@ -65,6 +78,11 @@ public sealed class CertificateSourceDataService(
 
             if (!response.IsSuccessStatusCode)
             {
+                logger.LogWarning(
+                    "Loading attendance for user {UserId} in event {EventId} failed with status {StatusCode}.",
+                    participantUserId,
+                    eventId,
+                    response.StatusCode);
                 return null;
             }
 
@@ -78,8 +96,17 @@ public sealed class CertificateSourceDataService(
 
             return payload.Data?.AttendancePercentage;
         }
-        catch
+        catch (OperationCanceledException)
         {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(
+                ex,
+                "Failed to load attendance for user {UserId} in event {EventId}.",
+                participantUserId,
+                eventId);
             return null;
         }
     }
