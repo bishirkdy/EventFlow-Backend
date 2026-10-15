@@ -1,7 +1,7 @@
+using AutoMapper;
 using EventFlow.Operations.Application.Abstractions;
 using EventFlow.Operations.Application.Contracts;
 using EventFlow.Operations.Domain.Entities;
-using EventFlow.Operations.Domain.Enums;
 using EventFlow.Security.Authentication;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
@@ -13,7 +13,8 @@ public sealed class AssignAttendanceStaffCommandHandler(
     IOperationsDbContext db,
     IEventAuthorizationClient authorization,
     IIdentityClient identity,
-    ICurrentUserService currentUser)
+    ICurrentUserService currentUser,
+    IMapper mapper)
     : IRequestHandler<AssignAttendanceStaffCommand, AttendanceStaffDto>
 {
     private const string AttendanceStaffRoleName = "AttendanceStaff";
@@ -59,13 +60,11 @@ public sealed class AssignAttendanceStaffCommandHandler(
             return ToDto(exists, user.Email);
         }
 
-        var entity = new AttendanceStaffAssignment
-        {
-            EventId = command.EventId,
-            UserId = user.Id,
-            ScopeType = command.ScopeType,
-            ScopeId = command.ScopeId
-        };
+        var entity = new AttendanceStaffAssignment(
+            command.EventId,
+            user.Id,
+            command.ScopeType,
+            command.ScopeId);
 
         db.AttendanceStaffAssignments.Add(entity);
         await db.SaveChangesAsync(cancellationToken);
@@ -90,14 +89,11 @@ public sealed class AssignAttendanceStaffCommandHandler(
         return ToDto(entity, user.Email);
     }
 
-    private static AttendanceStaffDto ToDto(
+    private AttendanceStaffDto ToDto(
         AttendanceStaffAssignment assignment,
-        string email) => new(
-        assignment.Id,
-        assignment.EventId,
-        assignment.UserId,
-        email,
-        assignment.ScopeType,
-        assignment.ScopeId,
-        assignment.IsActive);
+        string email) =>
+        mapper.Map<AttendanceStaffDto>(assignment) with
+        {
+            Email = email
+        };
 }

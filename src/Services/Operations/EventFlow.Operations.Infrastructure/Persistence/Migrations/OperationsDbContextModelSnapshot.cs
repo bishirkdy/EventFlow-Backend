@@ -34,7 +34,7 @@ namespace EventFlow.Operations.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("CheckedOutAtUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("CreatedAtUtc")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("EventId")
@@ -61,6 +61,9 @@ namespace EventFlow.Operations.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("StaffUserId")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Id");
 
                     b.HasIndex("EventId", "RegistrationId", "SessionId")
@@ -75,7 +78,7 @@ namespace EventFlow.Operations.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAtUtc")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("EventId")
@@ -92,6 +95,9 @@ namespace EventFlow.Operations.Infrastructure.Persistence.Migrations
 
                     b.Property<int>("ScopeType")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
@@ -117,7 +123,7 @@ namespace EventFlow.Operations.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAtUtc")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Error")
@@ -147,6 +153,9 @@ namespace EventFlow.Operations.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(300)
                         .HasColumnType("character varying(300)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid?>("UserId")
                         .HasColumnType("uuid");

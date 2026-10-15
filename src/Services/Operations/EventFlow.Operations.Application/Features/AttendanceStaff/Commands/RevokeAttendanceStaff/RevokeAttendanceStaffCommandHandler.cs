@@ -42,8 +42,7 @@ public sealed class RevokeAttendanceStaffCommandHandler(
             throw new NotFoundException("Attendance staff assignment not found.");
         }
 
-        entity.IsActive = false;
-        entity.RevokedAtUtc = DateTime.UtcNow;
+        entity.Revoke();
 
         await db.SaveChangesAsync(cancellationToken);
 

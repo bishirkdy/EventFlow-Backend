@@ -1,3 +1,4 @@
+using AutoMapper;
 using EventFlow.Operations.Application.Abstractions;
 using EventFlow.Operations.Application.Contracts;
 using EventFlow.Operations.Domain.Entities;
@@ -12,7 +13,8 @@ public sealed class GetAttendanceStaffQueryHandler(
     IOperationsDbContext db,
     IEventAuthorizationClient authorization,
     IIdentityClient identity,
-    ICurrentUserService currentUser)
+    ICurrentUserService currentUser,
+    IMapper mapper)
     : IRequestHandler<GetAttendanceStaffQuery, IReadOnlyList<AttendanceStaffDto>>
 {
     public async Task<IReadOnlyList<AttendanceStaffDto>> Handle(
@@ -43,14 +45,11 @@ public sealed class GetAttendanceStaffQueryHandler(
         return result;
     }
 
-    private static AttendanceStaffDto ToDto(
+    private AttendanceStaffDto ToDto(
         AttendanceStaffAssignment assignment,
-        string email) => new(
-        assignment.Id,
-        assignment.EventId,
-        assignment.UserId,
-        email,
-        assignment.ScopeType,
-        assignment.ScopeId,
-        assignment.IsActive);
+        string email) =>
+        mapper.Map<AttendanceStaffDto>(assignment) with
+        {
+            Email = email
+        };
 }

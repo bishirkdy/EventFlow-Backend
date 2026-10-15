@@ -1,3 +1,4 @@
+using AutoMapper;
 using EventFlow.Operations.Application.Abstractions;
 using EventFlow.Operations.Application.Contracts;
 using EventFlow.Security.Authentication;
@@ -10,7 +11,8 @@ namespace EventFlow.Operations.Application.Features.Attendance.Commands.CheckOut
 public sealed class CheckOutCommandHandler(
     IOperationsDbContext db,
     IEventAuthorizationClient authorization,
-    ICurrentUserService currentUser)
+    ICurrentUserService currentUser,
+    IMapper mapper)
     : IRequestHandler<CheckOutCommand, AttendanceDto>
 {
     public async Task<AttendanceDto> Handle(
@@ -40,23 +42,13 @@ public sealed class CheckOutCommandHandler(
             throw new ForbiddenException("You are not assigned to this attendance scope.");
         }
 
+        // Idempotent: only the first checkout mutates the record.
         if (record.CheckedOutAtUtc is null)
         {
-            record.CheckedOutAtUtc = DateTime.UtcNow;
+            record.CheckOut();
             await db.SaveChangesAsync(cancellationToken);
         }
 
-        return new AttendanceDto(
-            record.Id,
-            record.EventId,
-            record.RegistrationId,
-            record.ParticipantId,
-            record.ParticipantUserId,
-            record.SectionId,
-            record.SessionId,
-            record.StaffUserId,
-            record.Method,
-            record.CheckedInAtUtc,
-            record.CheckedOutAtUtc);
+        return mapper.Map<AttendanceDto>(record);
     }
 }

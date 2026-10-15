@@ -31,8 +31,7 @@ public sealed class NotificationQueueProcessor(IOperationsDbContext db,IEmailSen
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            notification.Status = NotificationStatus.Processing;
-            notification.AttemptCount++;
+            notification.MarkProcessing();
             await db.SaveChangesAsync(cancellationToken);
 
             try
@@ -43,31 +42,26 @@ public sealed class NotificationQueueProcessor(IOperationsDbContext db,IEmailSen
                     notification.Body,
                     cancellationToken);
 
-                notification.Status = NotificationStatus.Sent;
-                notification.SentAtUtc = DateTime.UtcNow;
-                notification.FailedAtUtc = null;
-                notification.Error = null;
+                notification.MarkSent();
             }
             catch (OperationCanceledException)
                 when (cancellationToken.IsCancellationRequested)
             {
-                notification.Status = NotificationStatus.Pending;
-                notification.AttemptCount--;
+                notification.RevertToPending();
                 await db.SaveChangesAsync(cancellationToken);
                 throw;
             }
             catch (Exception exception)
             {
-                notification.Error = Truncate(exception.Message, 1000);
+                var error = Truncate(exception.Message, 1000);
 
                 if (notification.AttemptCount >= MaxAttempts)
                 {
-                    notification.Status = NotificationStatus.Failed;
-                    notification.FailedAtUtc = DateTime.UtcNow;
+                    notification.MarkFailed(error);
                 }
                 else
                 {
-                    notification.Status = NotificationStatus.Pending;
+                    notification.ScheduleRetry(error);
                 }
             }
 

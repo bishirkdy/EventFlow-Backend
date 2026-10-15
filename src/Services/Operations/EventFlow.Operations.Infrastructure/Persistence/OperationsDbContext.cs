@@ -28,6 +28,12 @@ public sealed class OperationsDbContext(DbContextOptions<OperationsDbContext> op
 
             b.Property(x => x.ScopeType)
                 .HasConversion<int>();
+
+            // Audit fields from the base entity.
+            b.Property(x => x.CreatedAt)
+                .IsRequired();
+
+            b.Property(x => x.UpdatedAt);
         });
 
         m.Entity<AttendanceRecord>(b =>
@@ -44,6 +50,12 @@ public sealed class OperationsDbContext(DbContextOptions<OperationsDbContext> op
 
             b.Property(x => x.Method)
                 .HasConversion<int>();
+
+            // Audit fields from the base entity.
+            b.Property(x => x.CreatedAt)
+                .IsRequired();
+
+            b.Property(x => x.UpdatedAt);
         });
 
         m.Entity<Notification>(b =>
@@ -66,6 +78,12 @@ public sealed class OperationsDbContext(DbContextOptions<OperationsDbContext> op
             b.Property(x => x.Subject)
                 .HasMaxLength(300)
                 .IsRequired();
+
+            // Audit fields from the base entity.
+            b.Property(x => x.CreatedAt)
+                .IsRequired();
+
+            b.Property(x => x.UpdatedAt);
         });
     }
 }

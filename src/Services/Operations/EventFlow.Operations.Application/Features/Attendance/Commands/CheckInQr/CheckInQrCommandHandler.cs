@@ -1,3 +1,4 @@
+using AutoMapper;
 using EventFlow.Operations.Application.Abstractions;
 using EventFlow.Operations.Application.Contracts;
 using EventFlow.Operations.Domain.Entities;
@@ -13,7 +14,8 @@ public sealed class CheckInQrCommandHandler(
     IOperationsDbContext db,
     IEventAuthorizationClient authorization,
     IRegistrationClient registrationClient,
-    ICurrentUserService currentUser)
+    ICurrentUserService currentUser,
+    IMapper mapper)
     : IRequestHandler<CheckInQrCommand, AttendanceDto>
 {
     public async Task<AttendanceDto> Handle(
@@ -51,40 +53,25 @@ public sealed class CheckInQrCommandHandler(
                  && x.SessionId == command.SessionId,
             cancellationToken);
 
+        // Idempotent: return the record if the ticket was already checked in.
         if (existing is not null)
         {
-            return ToDto(existing);
+            return mapper.Map<AttendanceDto>(existing);
         }
 
-        var entity = new AttendanceRecord
-        {
-            EventId = command.EventId,
-            RegistrationId = verified.RegistrationId,
-            ParticipantId = verified.ParticipantId,
-            ParticipantUserId = verified.ParticipantUserId,
-            SectionId = command.SectionId,
-            SessionId = command.SessionId,
-            StaffUserId = actorUserId,
-            Method = command.Method,
-            CheckedInAtUtc = DateTime.UtcNow
-        };
+        var entity = new AttendanceRecord(
+            command.EventId,
+            verified.RegistrationId,
+            verified.ParticipantId,
+            verified.ParticipantUserId,
+            command.SectionId,
+            command.SessionId,
+            actorUserId,
+            command.Method);
 
         db.AttendanceRecords.Add(entity);
         await db.SaveChangesAsync(cancellationToken);
 
-        return ToDto(entity);
+        return mapper.Map<AttendanceDto>(entity);
     }
-
-    private static AttendanceDto ToDto(AttendanceRecord record) => new(
-        record.Id,
-        record.EventId,
-        record.RegistrationId,
-        record.ParticipantId,
-        record.ParticipantUserId,
-        record.SectionId,
-        record.SessionId,
-        record.StaffUserId,
-        record.Method,
-        record.CheckedInAtUtc,
-        record.CheckedOutAtUtc);
 }

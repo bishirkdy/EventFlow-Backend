@@ -1,3 +1,4 @@
+using AutoMapper;
 using EventFlow.Operations.Application.Abstractions;
 using EventFlow.Operations.Application.Contracts;
 using EventFlow.Security.Authentication;
@@ -10,7 +11,8 @@ namespace EventFlow.Operations.Application.Features.Notifications.Queries.GetNot
 public sealed class GetNotificationsQueryHandler(
     IOperationsDbContext db,
     IEventAuthorizationClient authorization,
-    ICurrentUserService currentUser)
+    ICurrentUserService currentUser,
+    IMapper mapper)
     : IRequestHandler<GetNotificationsQuery, IReadOnlyList<NotificationDto>>
 {
     public async Task<IReadOnlyList<NotificationDto>> Handle(
@@ -28,20 +30,10 @@ public sealed class GetNotificationsQueryHandler(
 
         var list = await db.Notifications
             .Where(x => x.EventId == query.EventId)
-            .OrderByDescending(x => x.CreatedAtUtc)
+            .OrderByDescending(x => x.CreatedAt)
             .Take(100)
             .ToListAsync(cancellationToken);
 
-        return list.Select(x => new NotificationDto(
-            x.Id,
-            x.EventId,
-            x.UserId,
-            x.RecipientEmail,
-            x.Subject,
-            x.Status,
-            x.AttemptCount,
-            x.ScheduledAtUtc,
-            x.SentAtUtc,
-            x.Error)).ToList();
+        return mapper.Map<IReadOnlyList<NotificationDto>>(list);
     }
 }

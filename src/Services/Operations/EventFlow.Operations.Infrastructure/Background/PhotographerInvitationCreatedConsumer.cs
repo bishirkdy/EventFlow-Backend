@@ -3,7 +3,6 @@ using EventFlow.Messaging.Events;
 using EventFlow.Messaging.Kafka;
 using EventFlow.Operations.Application.Abstractions;
 using EventFlow.Operations.Domain.Entities;
-using EventFlow.Operations.Domain.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -104,17 +103,13 @@ public sealed class PhotographerInvitationCreatedConsumer(IServiceScopeFactory s
                 var db = scope.ServiceProvider
                     .GetRequiredService<IOperationsDbContext>();
 
-                db.Notifications.Add(new Notification
-                {
-                    EventId = message.EventId,
-                    RecipientEmail = message.Email,
-                    Subject = "Photographer Invitation",
-                    Body = BuildEmailBody(message),
-                    Status = NotificationStatus.Pending,
-                    ScheduledAtUtc = DateTime.UtcNow,
-                    CreatedAtUtc = DateTime.UtcNow,
-                    AttemptCount = 0
-                });
+                db.Notifications.Add(new Notification(
+                    message.EventId,
+                    null,
+                    message.Email,
+                    "Photographer Invitation",
+                    BuildEmailBody(message),
+                    DateTime.UtcNow));
 
                 await db.SaveChangesAsync(stoppingToken);
 
