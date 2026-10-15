@@ -227,12 +227,25 @@ public sealed class GenerateCertificatesCommandHandler(
         }
     }
 
-    private static string DescribeFailure(Exception exception) => exception switch
+    private static string DescribeFailure(Exception exception)
     {
-        EventFlowException flowException => flowException.Message,
-        InvalidOperationException invalidOperation => invalidOperation.Message,
-        _ => "Unexpected error while generating the certificate."
-    };
+        var message = exception switch
+        {
+            EventFlowException flowException => flowException.Message,
+            _ => exception.Message
+        };
+
+        // QuestPDF failures can produce multi-line diagnostics with deployment
+        // details; surface only the first, bounded line to API consumers.
+        var firstLine = message.Split('\n')[0].Trim();
+
+        if (firstLine.Length > 300)
+        {
+            firstLine = firstLine[..300] + "...";
+        }
+
+        return firstLine;
+    }
 
     private async Task<string> GenerateUniqueNumberAsync(
         CancellationToken cancellationToken)

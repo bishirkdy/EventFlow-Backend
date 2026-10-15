@@ -79,7 +79,17 @@ public sealed class PreviewCertificateQueryHandler(
             settings.BackgroundImageWidth,
             settings.BackgroundImageHeight);
 
-        var pdf = documentService.Generate(documentData);
+        byte[] pdf;
+        try
+        {
+            pdf = documentService.Generate(documentData);
+        }
+        catch (Exception)
+        {
+            throw new ConflictException(
+                "Certificate preview failed. Check the certificate design settings " +
+                "(background image, fields and fonts) and try again.");
+        }
 
         return new CertificateDownloadDto
         {

@@ -32,6 +32,9 @@ public sealed class UpsertCertificateSettingsCommandValidator : AbstractValidato
             .WithMessage("Signatory designation must be 200 characters or fewer.");
 
         RuleFor(x => x.Request.ThemeColor)
+            .Must(CertificateTemplateRules.IsHexColor)
+            .When(x => !string.IsNullOrWhiteSpace(x.Request.ThemeColor))
+            .WithMessage("Theme color must be a hex color such as #2563EB.")
             .MaximumLength(9)
             .WithMessage("Theme color must be 9 characters or fewer.");
 

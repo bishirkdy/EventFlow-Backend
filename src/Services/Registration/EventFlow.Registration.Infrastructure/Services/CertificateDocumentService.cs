@@ -10,15 +10,20 @@ namespace EventFlow.Registration.Infrastructure.Services;
 
 public sealed class CertificateDocumentService : ICertificateDocumentService
 {
-    private const string DefaultTemplateFont = "Arial";
+    // Lato ships with QuestPDF (QuestPDF.Fonts.Lato) so it is always registered,
+    // including inside the container where no system fonts are installed.
+    private const string DefaultTemplateFont = "Lato";
     private const string DefaultFieldColor = "#111827";
 
     static CertificateDocumentService()
     {
         QuestPDF.Settings.License = LicenseType.Community;
-        // QuestPDF 2026.9+ no longer resolves system font families implicitly;
-        // the certificate layout uses Arial, which comes from the OS fonts.
         QuestPDF.Settings.UseSystemFonts = true;
+        // QuestPDF 2026.9+ throws on missing font families. Fonts requested by
+        // previously saved settings (e.g. Arial) may not exist in every
+        // environment, so fall back to the first registered family instead of
+        // failing the whole document.
+        QuestPDF.Settings.ThrowOnMissingFontFamilies = false;
     }
 
     public byte[] Generate(CertificateDocumentData data)
@@ -39,6 +44,9 @@ public sealed class CertificateDocumentService : ICertificateDocumentService
     {
         var pageHeight = PageSizes.A4.Landscape().Height;
         var pageWidth = pageHeight * data.BackgroundImageWidth / data.BackgroundImageHeight;
+        // Guard against extreme background aspect ratios producing a page
+        // wider than QuestPDF supports.
+        pageWidth = Math.Clamp(pageWidth, 200f, 2000f);
         var qrPng = GenerateQrPng(data.VerificationUrl);
 
         var document = Document.Create(container =>
@@ -170,7 +178,7 @@ public sealed class CertificateDocumentService : ICertificateDocumentService
                 page.Size(PageSizes.A4.Landscape());
                 page.Margin(28);
                 page.DefaultTextStyle(x =>
-                    x.FontFamily("Arial").FontSize(11).FontColor(Colors.Grey.Darken3));
+                    x.FontFamily(DefaultTemplateFont).FontSize(11).FontColor(Colors.Grey.Darken3));
 
                 page.Content()
                     .Border(3)

@@ -24,6 +24,8 @@ public static class CertificateTemplateRules
 
     public static readonly IReadOnlySet<string> AllowedFontFamilies = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
+        // Bundled with QuestPDF - always available, including in containers.
+        "Lato",
         "Arial",
         "Times New Roman",
         "Courier New",
