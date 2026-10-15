@@ -1,7 +1,7 @@
 using EventFlow.Contracts.Common;
 using EventFlow.Identity.Api.Contracts.Request.PhotographerInvitations;
-using EventFlow.Identity.Application.Features.Commands.AcceptPhotographerInvitation;
-using EventFlow.Identity.Application.Features.Queries.GetPhotographerInvitation;
+using EventFlow.Identity.Application.Features.PhotographerInvitations.Commands.AcceptPhotographerInvitation;
+using EventFlow.Identity.Application.Features.PhotographerInvitations.Queries.GetPhotographerInvitation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

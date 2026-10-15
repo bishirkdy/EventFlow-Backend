@@ -1,9 +1,9 @@
 using EventFlow.Contracts.Common;
 using EventFlow.Identity.Api.Contracts.UserEventRoles;
 using EventFlow.Identity.Application.DTOs.UserEventRoles;
-using EventFlow.Identity.Application.Features.Commands.AssignUserRole;
-using EventFlow.Identity.Application.Features.Commands.RemoveUserRole;
-using EventFlow.Identity.Application.Features.Queries.GetUserEventRoles;
+using EventFlow.Identity.Application.Features.EventTeam.Commands.AssignUserRole;
+using EventFlow.Identity.Application.Features.EventTeam.Commands.RemoveUserRole;
+using EventFlow.Identity.Application.Features.EventTeam.Queries.GetUserEventRoles;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

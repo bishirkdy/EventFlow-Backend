@@ -1,5 +1,5 @@
 using EventFlow.Contracts.Common;
-using EventFlow.Identity.Application.Features.Queries.GetTeamAnalytics;
+using EventFlow.Identity.Application.Features.EventTeam.Queries.GetTeamAnalytics;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

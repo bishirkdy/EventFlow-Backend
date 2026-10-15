@@ -1,8 +1,8 @@
 using EventFlow.Contracts.Common;
 using EventFlow.Identity.Api.Contracts.Request.OrganizerRequests;
-using EventFlow.Identity.Application.Features.Commands.AssignOrganizer;
-using EventFlow.Identity.Application.Features.Commands.RemoveOrganizer;
-using EventFlow.Identity.Application.Features.Queries.GetEventTeam;
+using EventFlow.Identity.Application.Features.EventTeam.Commands.AssignOrganizer;
+using EventFlow.Identity.Application.Features.EventTeam.Commands.RemoveOrganizer;
+using EventFlow.Identity.Application.Features.EventTeam.Queries.GetEventTeam;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

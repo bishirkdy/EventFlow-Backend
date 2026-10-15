@@ -1,9 +1,9 @@
 using EventFlow.Contracts.Common;
 using EventFlow.Identity.Api.Contracts.Authorization;
-using EventFlow.Identity.Application.Features.Commands.AssignEventRole;
-using EventFlow.Identity.Application.Features.Commands.AssignOwnerRole;
-using EventFlow.Identity.Application.Features.Commands.RemoveEventRole;
-using EventFlow.Identity.Application.Features.Queries.CheckPermission;
+using EventFlow.Identity.Application.Features.EventTeam.Commands.AssignEventRole;
+using EventFlow.Identity.Application.Features.EventTeam.Commands.AssignOwnerRole;
+using EventFlow.Identity.Application.Features.EventTeam.Commands.RemoveEventRole;
+using EventFlow.Identity.Application.Features.EventTeam.Queries.CheckPermission;
 using EventFlow.Security.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

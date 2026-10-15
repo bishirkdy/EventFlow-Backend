@@ -1,8 +1,8 @@
 using EventFlow.Contracts.Common;
 using EventFlow.Identity.Application.DTOs.Users;
-using EventFlow.Identity.Application.Features.Queries.GetUserByEmail;
-using EventFlow.Identity.Application.Features.Queries.GetUserEventRolesLookup;
-using EventFlow.Identity.Application.Features.Queries.GetUserSummary;
+using EventFlow.Identity.Application.Features.Users.Queries.GetUserByEmail;
+using EventFlow.Identity.Application.Features.EventTeam.Queries.GetUserEventRolesLookup;
+using EventFlow.Identity.Application.Features.Users.Queries.GetUserSummary;
 using EventFlow.Security.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

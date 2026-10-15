@@ -1,8 +1,8 @@
 using EventFlow.Contracts.Common;
 using EventFlow.Identity.Api.Contracts.Request.PhotographerInvitations;
-using EventFlow.Identity.Application.Features.Commands.CreatePhotographerInvitation;
-using EventFlow.Identity.Application.Features.Commands.RevokePhotographerInvitation;
-using EventFlow.Identity.Application.Features.Queries.GetEventPhotographerInvitations;
+using EventFlow.Identity.Application.Features.PhotographerInvitations.Commands.CreatePhotographerInvitation;
+using EventFlow.Identity.Application.Features.PhotographerInvitations.Commands.RevokePhotographerInvitation;
+using EventFlow.Identity.Application.Features.PhotographerInvitations.Queries.GetEventPhotographerInvitations;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
