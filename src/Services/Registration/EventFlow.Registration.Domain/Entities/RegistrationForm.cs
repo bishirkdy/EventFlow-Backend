@@ -1,32 +1,59 @@
 using EventFlow.Registration.Domain.Enums;
+using EventFlow.SharedKernel.Domain;
 
 namespace EventFlow.Registration.Domain.Entities;
 
-public sealed class RegistrationForm
+public sealed class RegistrationForm : Entity
 {
-    public Guid Id { get; set; }
+    // EF Core materialization constructor.
+    private RegistrationForm()
+    {
+    }
 
-    public Guid EventId { get; set; }
+    public RegistrationForm(Guid eventId)
+    {
+        EventId = eventId;
+    }
 
-    public string Name { get; set; } = "Event Registration";
+    public Guid EventId { get; private set; }
 
-    public string? Description { get; set; }
+    public string Name { get; private set; } = "Event Registration";
 
-    public bool IsActive { get; set; } = true;
+    public string? Description { get; private set; }
 
-    public CapacityMode CapacityMode { get; set; } = CapacityMode.Unlimited;
+    public bool IsActive { get; private set; } = true;
 
-    public int? Capacity { get; set; }
+    public CapacityMode CapacityMode { get; private set; } = CapacityMode.Unlimited;
 
-    public bool EnableWaitlist { get; set; }
+    public int? Capacity { get; private set; }
 
-    public DateTime? OpensAtUtc { get; set; }
+    public bool EnableWaitlist { get; private set; }
 
-    public DateTime? ClosesAtUtc { get; set; }
+    public DateTime? OpensAtUtc { get; private set; }
 
-    public DateTime CreatedAtUtc { get; set; }
+    public DateTime? ClosesAtUtc { get; private set; }
 
-    public DateTime? UpdatedAtUtc { get; set; }
+    public ICollection<RegistrationFormField> Fields { get; private set; } = new List<RegistrationFormField>();
 
-    public ICollection<RegistrationFormField> Fields { get; set; } = new List<RegistrationFormField>();
+    // Applies the editable form configuration.
+    public void Update(
+        string name,
+        string? description,
+        bool isActive,
+        CapacityMode capacityMode,
+        int? capacity,
+        bool enableWaitlist,
+        DateTime? opensAtUtc,
+        DateTime? closesAtUtc)
+    {
+        Name = name;
+        Description = description;
+        IsActive = isActive;
+        CapacityMode = capacityMode;
+        Capacity = capacity;
+        EnableWaitlist = enableWaitlist;
+        OpensAtUtc = opensAtUtc;
+        ClosesAtUtc = closesAtUtc;
+        SetUpdatedAt();
+    }
 }

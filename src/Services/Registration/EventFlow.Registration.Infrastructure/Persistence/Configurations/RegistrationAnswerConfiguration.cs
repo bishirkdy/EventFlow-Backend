@@ -14,5 +14,9 @@ public sealed class RegistrationAnswerConfiguration : IEntityTypeConfiguration<R
             x.RegistrationFormFieldId
         }
     ).IsUnique();
+
+    // Audit fields from the base entity.
+    b.Property(x => x.CreatedAt).IsRequired();
+    b.Property(x => x.UpdatedAt);
     }
 }

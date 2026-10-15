@@ -1,4 +1,5 @@
 
+using AutoMapper;
 using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Security.Authentication;
 
@@ -9,7 +10,8 @@ public sealed class RejectRegistrationCommandHandler(
     IUnitOfWork unitOfWork,
     IWaitlistPromotionService promotions,
     ICurrentUserService user,
-    IEventRegistrationAccessService access)
+    IEventRegistrationAccessService access,
+    IMapper mapper)
     : IRequestHandler<RejectRegistrationCommand, RegistrationDto>
 {
     public async Task<RegistrationDto> Handle(
@@ -43,19 +45,8 @@ public sealed class RejectRegistrationCommandHandler(
         }
 
         var previousStatus = registration.Status;
-        var now = DateTime.UtcNow;
 
-        registration.Status = RegistrationStatus.Rejected;
-        registration.RejectionReason = command.Request.Reason.Trim();
-        registration.RejectedAtUtc = now;
-        registration.WaitlistPosition = null;
-        registration.WaitlistedAtUtc = null;
-
-        if (registration.Ticket is not null)
-        {
-            registration.Ticket.IsActive = false;
-            registration.Ticket.RevokedAtUtc = now;
-        }
+        registration.Reject(command.Request.Reason.Trim());
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -66,6 +57,6 @@ public sealed class RejectRegistrationCommandHandler(
                 cancellationToken);
         }
 
-        return registration.ToDto();
+        return mapper.Map<RegistrationDto>(registration);
     }
 }

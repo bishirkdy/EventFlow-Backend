@@ -1,3 +1,4 @@
+using AutoMapper;
 using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Security.Authentication;
 
@@ -7,7 +8,8 @@ public sealed class CancelRegistrationCommandHandler(
     IRegistrationRepository registrations,
     IUnitOfWork unitOfWork,
     IWaitlistPromotionService promotions,
-    ICurrentUserService user)
+    ICurrentUserService user,
+    IMapper mapper)
     : IRequestHandler<CancelRegistrationCommand, RegistrationDto>
 {
     public async Task<RegistrationDto> Handle(CancelRegistrationCommand command,CancellationToken cancellationToken)
@@ -27,26 +29,12 @@ public sealed class CancelRegistrationCommandHandler(
 
         if (registration.Status == RegistrationStatus.Cancelled)
         {
-            return registration.ToDto();
+            return mapper.Map<RegistrationDto>(registration);
         }
 
         var previousStatus = registration.Status;
-        var now = DateTime.UtcNow;
 
-        registration.Status = RegistrationStatus.Cancelled;
-        registration.CancellationReason = command.Request.Reason?.Trim();
-        registration.CancelledAtUtc = now;
-
-        if (registration.Participant is not null)
-        {
-            registration.Participant.Status = ParticipantStatus.Cancelled;
-        }
-
-        if (registration.Ticket is not null)
-        {
-            registration.Ticket.IsActive = false;
-            registration.Ticket.RevokedAtUtc = now;
-        }
+        registration.Cancel(command.Request.Reason?.Trim());
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -57,6 +45,6 @@ public sealed class CancelRegistrationCommandHandler(
                 cancellationToken);
         }
 
-        return registration.ToDto();
+        return mapper.Map<RegistrationDto>(registration);
     }
 }

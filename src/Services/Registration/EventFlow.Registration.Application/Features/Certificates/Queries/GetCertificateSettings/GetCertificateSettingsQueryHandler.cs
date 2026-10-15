@@ -1,3 +1,4 @@
+using AutoMapper;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.SharedKernel.Exceptions;
@@ -8,7 +9,8 @@ namespace EventFlow.Registration.Application.Features.Certificates.Queries.GetCe
 public sealed class GetCertificateSettingsQueryHandler(
     ICertificateSettingsRepository settings,
     EventFlow.Security.Authentication.ICurrentUserService user,
-    IEventRegistrationAccessService access)
+    IEventRegistrationAccessService access,
+    IMapper mapper)
     : IRequestHandler<GetCertificateSettingsQuery, CertificateSettingsDto>
 {
     public async Task<CertificateSettingsDto> Handle(
@@ -40,6 +42,6 @@ public sealed class GetCertificateSettingsQueryHandler(
             };
         }
 
-        return entity.ToSettingsDto();
+        return mapper.Map<CertificateSettingsDto>(entity);
     }
 }

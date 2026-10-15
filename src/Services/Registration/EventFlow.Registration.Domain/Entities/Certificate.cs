@@ -1,34 +1,72 @@
 using EventFlow.Registration.Domain.Enums;
+using EventFlow.SharedKernel.Domain;
 
 namespace EventFlow.Registration.Domain.Entities;
 
-public sealed class Certificate
+public sealed class Certificate : Entity
 {
-    public Guid Id { get; set; }
+    // EF Core materialization constructor.
+    private Certificate()
+    {
+    }
 
-    public Guid EventId { get; set; }
+    public Certificate(
+        Guid eventId,
+        Guid registrationId,
+        Guid participantId,
+        Guid userId,
+        string certificateNumber,
+        string participantName,
+        string participantEmail,
+        string eventName,
+        string documentFileName,
+        Guid generatedByUserId)
+    {
+        EventId = eventId;
+        RegistrationId = registrationId;
+        ParticipantId = participantId;
+        UserId = userId;
+        CertificateNumber = certificateNumber;
+        ParticipantName = participantName;
+        ParticipantEmail = participantEmail;
+        EventName = eventName;
+        DocumentFileName = documentFileName;
+        GeneratedByUserId = generatedByUserId;
+        Status = CertificateStatus.Generated;
+        IssuedAtUtc = DateTime.UtcNow;
+    }
 
-    public Guid RegistrationId { get; set; }
+    public Guid EventId { get; private set; }
 
-    public Guid ParticipantId { get; set; }
+    public Guid RegistrationId { get; private set; }
 
-    public Guid UserId { get; set; }
+    public Guid ParticipantId { get; private set; }
 
-    public string CertificateNumber { get; set; } = "";
+    public Guid UserId { get; private set; }
 
-    public string ParticipantName { get; set; } = "";
+    public string CertificateNumber { get; private set; } = "";
 
-    public string ParticipantEmail { get; set; } = "";
+    public string ParticipantName { get; private set; } = "";
 
-    public string EventName { get; set; } = "";
+    public string ParticipantEmail { get; private set; } = "";
 
-    public string DocumentFileName { get; set; } = "";
+    public string EventName { get; private set; } = "";
 
-    public CertificateStatus Status { get; set; } = CertificateStatus.Generated;
+    public string DocumentFileName { get; private set; } = "";
 
-    public DateTime IssuedAtUtc { get; set; }
+    public CertificateStatus Status { get; private set; } = CertificateStatus.Generated;
 
-    public Guid GeneratedByUserId { get; set; }
+    public DateTime IssuedAtUtc { get; private set; }
 
-    public DateTime? RevokedAtUtc { get; set; }
+    public Guid GeneratedByUserId { get; private set; }
+
+    public DateTime? RevokedAtUtc { get; private set; }
+
+    // Revokes the certificate so it can no longer be downloaded or verified.
+    public void Revoke()
+    {
+        Status = CertificateStatus.Revoked;
+        RevokedAtUtc = DateTime.UtcNow;
+        SetUpdatedAt();
+    }
 }

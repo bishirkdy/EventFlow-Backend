@@ -14,5 +14,9 @@ public sealed class RegistrationFormConfiguration : IEntityTypeConfiguration<Reg
         b.HasMany(x => x.Fields).WithOne(x => x.RegistrationForm)
             .HasForeignKey(x => x.RegistrationFormId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Audit fields from the base entity.
+        b.Property(x => x.CreatedAt).IsRequired();
+        b.Property(x => x.UpdatedAt);
     }
 }

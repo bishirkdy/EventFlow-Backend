@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 
 using RegistrationEntity = EventFlow.Registration.Domain.Entities.Registration;
@@ -51,28 +50,13 @@ public sealed class WaitlistPromotionService(IRegistrationRepository registratio
     private static void Approve(
         RegistrationEntity registration)
     {
-        var now = DateTime.UtcNow;
+        registration.Approve();
 
-        registration.Status = RegistrationStatus.Approved;
-        registration.ApprovedAtUtc = now;
-        registration.WaitlistedAtUtc = null;
-        registration.WaitlistPosition = null;
-
-        if (registration.Participant is not null && registration.Ticket is null)
+        if (registration.Participant is not null &&
+            registration.Ticket is null)
         {
-            registration.Ticket = new Ticket
-            {
-                RegistrationId = registration.Id,
-                ParticipantId = registration.Participant.Id,
-                TicketNumber = $"TKT-{now:yyyyMMdd}-{Random.Shared.Next(100000, 999999)}",
-                QrCodeValue =
-                    Convert.ToBase64String(
-                            RandomNumberGenerator.GetBytes(32))
-                        .Replace("+", "-")
-                        .Replace("/", "_")
-                        .TrimEnd('='),
-                IssuedAtUtc = now
-            };
+            registration.AttachTicket(
+                Ticket.Issue(registration.Id, registration.Participant.Id));
         }
     }
 }

@@ -1,5 +1,5 @@
+using AutoMapper;
 using EventFlow.Registration.Application.Abstractions.Persistence;
-using EventFlow.Registration.Application.Common.Mappings;
 using EventFlow.Registration.Application.Contracts.Certificates;
 using MediatR;
 
@@ -7,7 +7,8 @@ namespace EventFlow.Registration.Application.Features.Certificates.Queries.GetMy
 
 public sealed class GetMyCertificatesQueryHandler(
     ICertificateRepository certificates,
-    EventFlow.Security.Authentication.ICurrentUserService user)
+    EventFlow.Security.Authentication.ICurrentUserService user,
+    IMapper mapper)
     : IRequestHandler<GetMyCertificatesQuery, List<CertificateDto>>
 {
     public async Task<List<CertificateDto>> Handle(
@@ -24,6 +25,6 @@ public sealed class GetMyCertificatesQueryHandler(
             return [];
         }
 
-        return [certificate.ToDto()];
+        return [mapper.Map<CertificateDto>(certificate)];
     }
 }

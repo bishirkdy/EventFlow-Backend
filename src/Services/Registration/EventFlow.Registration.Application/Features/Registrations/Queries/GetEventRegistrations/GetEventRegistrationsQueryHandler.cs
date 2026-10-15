@@ -1,3 +1,4 @@
+using AutoMapper;
 using EventFlow.Contracts.Common;
 using EventFlow.SharedKernel.Exceptions;
 
@@ -6,7 +7,8 @@ namespace EventFlow.Registration.Application.Features.Registrations.Queries.GetE
 public sealed class GetEventRegistrationsQueryHandler(
     IRegistrationRepository registrations,
     EventFlow.Security.Authentication.ICurrentUserService user,
-    IEventRegistrationAccessService access)
+    IEventRegistrationAccessService access,
+    IMapper mapper)
     : IRequestHandler<
         GetEventRegistrationsQuery,
         PaginatedResponse<RegistrationDto>>
@@ -37,7 +39,7 @@ public sealed class GetEventRegistrationsQueryHandler(
 
         return new PaginatedResponse<RegistrationDto>
         {
-            Items = items.Select(x => x.ToDto()).ToList(),
+            Items = mapper.Map<List<RegistrationDto>>(items),
             TotalCount = totalCount,
             PageNumber = page,
             PageSize = pageSize

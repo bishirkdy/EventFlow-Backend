@@ -1,3 +1,4 @@
+using AutoMapper;
 using EventFlow.Security.Authentication;
 using EventFlow.SharedKernel.Exceptions;
 using Microsoft.Extensions.Logging;
@@ -10,7 +11,8 @@ public sealed class UploadCertificateTemplateImageCommandHandler(
     IUnitOfWork unitOfWork,
     ICurrentUserService user,
     IEventRegistrationAccessService access,
-    ILogger<UploadCertificateTemplateImageCommandHandler> logger)
+    ILogger<UploadCertificateTemplateImageCommandHandler> logger,
+    IMapper mapper)
     : IRequestHandler<UploadCertificateTemplateImageCommand, CertificateSettingsDto>
 {
     public async Task<CertificateSettingsDto> Handle(
@@ -31,16 +33,9 @@ public sealed class UploadCertificateTemplateImageCommandHandler(
             command.EventId,
             cancellationToken);
 
-        var now = DateTime.UtcNow;
-
         if (entity is null)
         {
-            entity = new CertificateSettings
-            {
-                Id = Guid.NewGuid(),
-                EventId = command.EventId,
-                CreatedAtUtc = now
-            };
+            entity = new CertificateSettings(command.EventId);
             settings.Add(entity);
         }
 
@@ -51,17 +46,17 @@ public sealed class UploadCertificateTemplateImageCommandHandler(
 
         var previousPublicId = entity.BackgroundImagePublicId;
 
-        entity.BackgroundImageUrl = image.Url;
-        entity.BackgroundImagePublicId = image.PublicId;
-        entity.BackgroundImageWidth = image.Width;
-        entity.BackgroundImageHeight = image.Height;
-        entity.UpdatedAtUtc = now;
+        entity.SetBackgroundImage(
+            image.Url,
+            image.PublicId,
+            image.Width,
+            image.Height);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         await DeletePreviousImageAsync(previousPublicId, image.PublicId, cancellationToken);
 
-        return entity.ToSettingsDto();
+        return mapper.Map<CertificateSettingsDto>(entity);
     }
 
     private async Task DeletePreviousImageAsync(

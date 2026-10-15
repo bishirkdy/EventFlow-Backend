@@ -1,3 +1,4 @@
+using AutoMapper;
 using EventFlow.Security.Authentication;
 using EventFlow.SharedKernel.Exceptions;
 using Microsoft.Extensions.Logging;
@@ -10,7 +11,8 @@ public sealed class DeleteCertificateTemplateImageCommandHandler(
     IUnitOfWork unitOfWork,
     ICurrentUserService user,
     IEventRegistrationAccessService access,
-    ILogger<DeleteCertificateTemplateImageCommandHandler> logger)
+    ILogger<DeleteCertificateTemplateImageCommandHandler> logger,
+    IMapper mapper)
     : IRequestHandler<DeleteCertificateTemplateImageCommand, CertificateSettingsDto>
 {
     public async Task<CertificateSettingsDto> Handle(
@@ -36,11 +38,7 @@ public sealed class DeleteCertificateTemplateImageCommandHandler(
             throw new NotFoundException("No certificate template image is uploaded for this event.");
         }
 
-        entity.BackgroundImageUrl = null;
-        entity.BackgroundImagePublicId = null;
-        entity.BackgroundImageWidth = 0;
-        entity.BackgroundImageHeight = 0;
-        entity.UpdatedAtUtc = DateTime.UtcNow;
+        entity.ClearBackgroundImage();
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -56,6 +54,6 @@ public sealed class DeleteCertificateTemplateImageCommandHandler(
                 publicId);
         }
 
-        return entity.ToSettingsDto();
+        return mapper.Map<CertificateSettingsDto>(entity);
     }
 }

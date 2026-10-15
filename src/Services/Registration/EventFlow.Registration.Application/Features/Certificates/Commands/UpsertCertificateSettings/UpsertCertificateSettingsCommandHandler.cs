@@ -1,7 +1,9 @@
+using AutoMapper;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Contracts.Certificates;
 using EventFlow.Registration.Domain.Entities;
+using EventFlow.Registration.Domain.Enums;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
@@ -11,7 +13,8 @@ public sealed class UpsertCertificateSettingsCommandHandler(
     ICertificateSettingsRepository settings,
     IUnitOfWork unitOfWork,
     EventFlow.Security.Authentication.ICurrentUserService user,
-    IEventRegistrationAccessService access)
+    IEventRegistrationAccessService access,
+    IMapper mapper)
     : IRequestHandler<UpsertCertificateSettingsCommand, CertificateSettingsDto>
 {
     public async Task<CertificateSettingsDto> Handle(
@@ -32,38 +35,30 @@ public sealed class UpsertCertificateSettingsCommandHandler(
             command.EventId,
             cancellationToken);
 
-        var now = DateTime.UtcNow;
-
         if (entity is null)
         {
-            entity = new CertificateSettings
-            {
-                Id = Guid.NewGuid(),
-                EventId = command.EventId,
-                CreatedAtUtc = now
-            };
+            entity = new CertificateSettings(command.EventId);
             settings.Add(entity);
         }
 
-        entity.Title = request.Title.Trim();
-        entity.Subtitle = request.Subtitle.Trim();
-        entity.SignatoryName = NullIfWhiteSpace(request.SignatoryName);
-        entity.SignatoryTitle = NullIfWhiteSpace(request.SignatoryTitle);
-        entity.ThemeColor =
+        entity.Update(
+            request.Title.Trim(),
+            request.Subtitle.Trim(),
+            NullIfWhiteSpace(request.SignatoryName),
+            NullIfWhiteSpace(request.SignatoryTitle),
             string.IsNullOrWhiteSpace(request.ThemeColor)
                 ? "#2563EB"
-                : request.ThemeColor.Trim();
-        entity.RequireApprovedRegistration = request.RequireApprovedRegistration;
-        entity.MinAttendancePercent = request.MinAttendancePercent;
-        entity.TemplateMode = CertificateSettingsMappings.ParseTemplateMode(request.TemplateMode);
-        entity.TemplateFields = request.TemplateFields
-            .Select(CertificateSettingsMappings.ToEntity)
-            .ToList();
-        entity.UpdatedAtUtc = now;
+                : request.ThemeColor.Trim(),
+            request.RequireApprovedRegistration,
+            request.MinAttendancePercent,
+            mapper.Map<CertificateTemplateMode>(request.TemplateMode),
+            request.TemplateFields
+                .Select(mapper.Map<CertificateTemplateField>)
+                .ToList());
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return entity.ToSettingsDto();
+        return mapper.Map<CertificateSettingsDto>(entity);
     }
 
     private static string? NullIfWhiteSpace(string? value) =>

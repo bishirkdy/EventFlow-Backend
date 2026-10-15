@@ -31,6 +31,10 @@ public sealed class CertificateSettingsConfiguration : IEntityTypeConfiguration<
                         ? new List<CertificateTemplateField>()
                         : JsonSerializer.Deserialize<List<CertificateTemplateField>>(json, SerializerOptions) ?? new List<CertificateTemplateField>()))
             .Metadata.SetValueComparer(JsonValueComparer);
+
+        // Audit fields from the base entity.
+        b.Property(x => x.CreatedAt).IsRequired();
+        b.Property(x => x.UpdatedAt);
     }
 
     private static ValueComparer<List<CertificateTemplateField>> JsonValueComparer =>

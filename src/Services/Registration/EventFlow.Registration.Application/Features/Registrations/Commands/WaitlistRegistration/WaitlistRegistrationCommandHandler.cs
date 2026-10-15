@@ -1,3 +1,4 @@
+using AutoMapper;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Common.Mappings;
@@ -12,7 +13,8 @@ public sealed class WaitlistRegistrationCommandHandler(
     IRegistrationRepository registrations,
     IUnitOfWork unitOfWork,
     EventFlow.Security.Authentication.ICurrentUserService user,
-    IEventRegistrationAccessService access)
+    IEventRegistrationAccessService access,
+    IMapper mapper)
     : IRequestHandler<
         WaitlistRegistrationCommand,
         RegistrationDto>
@@ -50,11 +52,8 @@ public sealed class WaitlistRegistrationCommandHandler(
 
         if (registration.Status == RegistrationStatus.Waitlisted)
         {
-            return registration.ToDto();
+            return mapper.Map<RegistrationDto>(registration);
         }
-
-        registration.Status = RegistrationStatus.Waitlisted;
-        registration.WaitlistedAtUtc = DateTime.UtcNow;
 
         var currentWaitlistedCount =
             await registrations.CountByStatusAsync(
@@ -62,11 +61,10 @@ public sealed class WaitlistRegistrationCommandHandler(
                 RegistrationStatus.Waitlisted,
                 cancellationToken);
 
-        registration.WaitlistPosition =
-            currentWaitlistedCount + 1;
+        registration.Waitlist(currentWaitlistedCount + 1);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return registration.ToDto();
+        return mapper.Map<RegistrationDto>(registration);
     }
 }

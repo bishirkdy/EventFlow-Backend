@@ -1,3 +1,4 @@
+using AutoMapper;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Common.Mappings;
@@ -11,7 +12,8 @@ public sealed class RevokeTicketCommandHandler(
     ITicketRepository tickets,
     IUnitOfWork unitOfWork,
     EventFlow.Security.Authentication.ICurrentUserService user,
-    IEventRegistrationAccessService access)
+    IEventRegistrationAccessService access,
+    IMapper mapper)
     : IRequestHandler<RevokeTicketCommand, TicketDto>
 {
     public async Task<TicketDto> Handle(
@@ -36,11 +38,10 @@ public sealed class RevokeTicketCommandHandler(
             throw new NotFoundException("Ticket not found.");
         }
 
-        ticket.IsActive = false;
-        ticket.RevokedAtUtc = DateTime.UtcNow;
+        ticket.Revoke();
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return ticket.ToDto();
+        return mapper.Map<TicketDto>(ticket);
     }
 }

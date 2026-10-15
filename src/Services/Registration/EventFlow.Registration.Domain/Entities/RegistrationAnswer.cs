@@ -1,16 +1,31 @@
+using EventFlow.SharedKernel.Domain;
+
 namespace EventFlow.Registration.Domain.Entities;
 
-public sealed class RegistrationAnswer
+public sealed class RegistrationAnswer : Entity
 {
-    public Guid Id { get; set; }
+    // EF Core materialization constructor.
+    private RegistrationAnswer()
+    {
+    }
 
-    public Guid RegistrationId { get; set; }
+    public RegistrationAnswer(
+        Guid registrationId,
+        Guid registrationFormFieldId,
+        string value)
+    {
+        RegistrationId = registrationId;
+        RegistrationFormFieldId = registrationFormFieldId;
+        Value = value;
+    }
 
-    public Guid RegistrationFormFieldId { get; set; }
+    public Guid RegistrationId { get; private set; }
 
-    public string Value { get; set; } = "";
+    public Guid RegistrationFormFieldId { get; private set; }
 
-    public Registration Registration { get; set; } = null!;
+    public string Value { get; private set; } = "";
 
-    public RegistrationFormField RegistrationFormField { get; set; } = null!;
+    public Registration Registration { get; private set; } = null!;
+
+    public RegistrationFormField RegistrationFormField { get; private set; } = null!;
 }

@@ -1,12 +1,12 @@
+using AutoMapper;
 using EventFlow.Registration.Application.Abstractions.Persistence;
-using EventFlow.Registration.Application.Common.Mappings;
 using EventFlow.Registration.Application.Contracts.Registrations;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
 namespace EventFlow.Registration.Application.Features.Tickets.Queries.VerifyQr;
 
-public sealed class VerifyQrQueryHandler(ITicketRepository tickets,EventFlow.Security.Authentication.ICurrentUserService user,IEventRegistrationAccessService access)
+public sealed class VerifyQrQueryHandler(ITicketRepository tickets,EventFlow.Security.Authentication.ICurrentUserService user,IEventRegistrationAccessService access,IMapper mapper)
     : IRequestHandler<VerifyQrQuery, TicketDto>
 {
     public async Task<TicketDto> Handle(VerifyQrQuery query, CancellationToken cancellationToken)
@@ -28,6 +28,6 @@ public sealed class VerifyQrQueryHandler(ITicketRepository tickets,EventFlow.Sec
             throw new ConflictException("Ticket is inactive or revoked.");
         }
 
-        return ticket.ToDto();
+        return mapper.Map<TicketDto>(ticket);
     }
 }

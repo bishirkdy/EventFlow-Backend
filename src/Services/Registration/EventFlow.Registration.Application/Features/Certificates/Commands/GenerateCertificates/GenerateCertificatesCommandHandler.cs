@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using AutoMapper;
 using EventFlow.Registration.Application.Common.Certificates;
 using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Security.Authentication;
@@ -18,7 +19,8 @@ public sealed class GenerateCertificatesCommandHandler(
     IUnitOfWork unitOfWork,
     ICurrentUserService user,
     IEventRegistrationAccessService access,
-    ILogger<GenerateCertificatesCommandHandler> logger)
+    ILogger<GenerateCertificatesCommandHandler> logger,
+    IMapper mapper)
     : IRequestHandler<GenerateCertificatesCommand, CertificateGenerationResultDto>
 {
     private const int MaxReportedErrors = 20;
@@ -162,27 +164,23 @@ public sealed class GenerateCertificatesCommandHandler(
                 continue;
             }
 
-            var certificate = new Certificate
-            {
-                Id = Guid.NewGuid(),
-                EventId = command.EventId,
-                RegistrationId = registration.Id,
-                ParticipantId = participant?.Id ?? Guid.Empty,
-                UserId = registration.UserId,
-                CertificateNumber = certificateNumber,
-                ParticipantName = documentData.ParticipantName,
-                ParticipantEmail = participant?.Email ?? "",
-                EventName = eventInfo.Name,
-                DocumentFileName = fileName,
-                IssuedAtUtc = documentData.IssuedAtUtc,
-                GeneratedByUserId = user.UserId
-            };
+            var certificate = new Certificate(
+                command.EventId,
+                registration.Id,
+                participant?.Id ?? Guid.Empty,
+                registration.UserId,
+                certificateNumber,
+                documentData.ParticipantName,
+                participant?.Email ?? "",
+                eventInfo.Name,
+                fileName,
+                user.UserId);
 
             certificates.Add(certificate);
             issuedRegistrationIds.Add(registration.Id);
 
             result.Generated++;
-            result.Certificates.Add(certificate.ToDto());
+            result.Certificates.Add(mapper.Map<CertificateDto>(certificate));
         }
 
         if (result.Generated > 0)
@@ -268,11 +266,6 @@ public sealed class GenerateCertificatesCommandHandler(
         return $"{prefix}-{Guid.NewGuid():N}"[..22];
     }
 
-    private static CertificateSettings CreateDefaultSettings(Guid eventId) => new()
-    {
-        Id = Guid.NewGuid(),
-        EventId = eventId,
-        CreatedAtUtc = DateTime.UtcNow,
-        UpdatedAtUtc = DateTime.UtcNow
-    };
+    private static CertificateSettings CreateDefaultSettings(Guid eventId) =>
+        new(eventId);
 }

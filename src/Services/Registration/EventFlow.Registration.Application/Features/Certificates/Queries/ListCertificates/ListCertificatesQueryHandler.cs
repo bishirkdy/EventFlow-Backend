@@ -1,3 +1,4 @@
+using AutoMapper;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Common.Mappings;
@@ -10,7 +11,8 @@ namespace EventFlow.Registration.Application.Features.Certificates.Queries.ListC
 public sealed class ListCertificatesQueryHandler(
     ICertificateRepository certificates,
     EventFlow.Security.Authentication.ICurrentUserService user,
-    IEventRegistrationAccessService access)
+    IEventRegistrationAccessService access,
+    IMapper mapper)
     : IRequestHandler<ListCertificatesQuery, List<CertificateDto>>
 {
     public async Task<List<CertificateDto>> Handle(
@@ -29,10 +31,8 @@ public sealed class ListCertificatesQueryHandler(
             query.EventId,
             cancellationToken);
 
-        var dto = rows
-            .OrderByDescending(x => x.IssuedAtUtc)
-            .Select(x => x.ToDto())
-            .ToList();
+        var dto = mapper.Map<List<CertificateDto>>(
+            rows.OrderByDescending(x => x.IssuedAtUtc).ToList());
 
         return dto;
     }

@@ -1,4 +1,4 @@
-using System.Security.Cryptography;
+using AutoMapper;
 using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Security.Authentication;
 
@@ -9,7 +9,8 @@ public sealed class ApproveRegistrationCommandHandler(
     IRegistrationFormRepository forms,
     IUnitOfWork unitOfWork,
     ICurrentUserService user,
-    IEventRegistrationAccessService access)
+    IEventRegistrationAccessService access,
+    IMapper mapper)
     : IRequestHandler<ApproveRegistrationCommand, RegistrationDto>
 {
     public async Task<RegistrationDto> Handle(ApproveRegistrationCommand command, CancellationToken cancellationToken)
@@ -38,7 +39,7 @@ public sealed class ApproveRegistrationCommandHandler(
 
         if (registration.Status == RegistrationStatus.Approved)
         {
-            return registration.ToDto();
+            return mapper.Map<RegistrationDto>(registration);
         }
 
         var form = await forms.GetByEventIdAsync(
@@ -56,34 +57,17 @@ public sealed class ApproveRegistrationCommandHandler(
             throw new ConflictException("Event capacity has been reached.");
         }
 
-        var now = DateTime.UtcNow;
-
-        registration.Status = RegistrationStatus.Approved;
-        registration.ApprovedAtUtc = now;
-        registration.WaitlistPosition = null;
-        registration.WaitlistedAtUtc = null;
-        registration.UpdatedAtUtc = now;
+        registration.Approve();
 
         if (registration.Participant is not null &&
             registration.Ticket is null)
         {
-            registration.Ticket = new Ticket
-            {
-                RegistrationId = registration.Id,
-                ParticipantId = registration.Participant.Id,
-                TicketNumber =
-                    $"TKT-{now:yyyyMMdd}-{Random.Shared.Next(100000, 999999)}",
-                QrCodeValue =
-                    Convert.ToBase64String(RandomNumberGenerator.GetBytes(32))
-                        .Replace("+", "-")
-                        .Replace("/", "_")
-                        .TrimEnd('='),
-                IssuedAtUtc = now
-            };
+            registration.AttachTicket(
+                Ticket.Issue(registration.Id, registration.Participant.Id));
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return registration.ToDto();
+        return mapper.Map<RegistrationDto>(registration);
     }
 }

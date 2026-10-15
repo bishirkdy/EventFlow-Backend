@@ -1,8 +1,11 @@
+using AutoMapper;
+
 namespace EventFlow.Registration.Application.Features.Registrations.Queries.GetMyRegistrations;
 
 public sealed class GetMyRegistrationsQueryHandler(
     IRegistrationRepository registrations,
-    EventFlow.Security.Authentication.ICurrentUserService user)
+    EventFlow.Security.Authentication.ICurrentUserService user,
+    IMapper mapper)
     : IRequestHandler<GetMyRegistrationsQuery, IReadOnlyList<RegistrationDto>>
 {
     public async Task<IReadOnlyList<RegistrationDto>> Handle(
@@ -14,6 +17,6 @@ public sealed class GetMyRegistrationsQueryHandler(
             query.EventId,
             cancellationToken);
 
-        return items.Select(x => x.ToDto()).ToList();
+        return mapper.Map<List<RegistrationDto>>(items);
     }
 }

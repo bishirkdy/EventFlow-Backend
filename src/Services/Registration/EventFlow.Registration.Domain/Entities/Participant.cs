@@ -1,38 +1,88 @@
 using EventFlow.Registration.Domain.Enums;
+using EventFlow.SharedKernel.Domain;
 
 namespace EventFlow.Registration.Domain.Entities;
 
-public sealed class Participant
+public sealed class Participant : Entity
 {
-    public Guid Id { get; set; }
+    // EF Core materialization constructor.
+    private Participant()
+    {
+    }
 
-    public Guid RegistrationId { get; set; }
+    public Participant(
+        Guid registrationId,
+        Guid eventId,
+        Guid userId,
+        string participantNumber,
+        string firstName,
+        string lastName,
+        string email,
+        string? phone,
+        string? organization,
+        string? designation)
+    {
+        RegistrationId = registrationId;
+        EventId = eventId;
+        UserId = userId;
+        ParticipantNumber = participantNumber;
+        FirstName = firstName;
+        LastName = lastName;
+        Email = email;
+        Phone = phone;
+        Organization = organization;
+        Designation = designation;
+        Status = ParticipantStatus.Active;
+    }
 
-    public Guid EventId { get; set; }
+    public Guid RegistrationId { get; private set; }
 
-    public Guid UserId { get; set; }
+    public Guid EventId { get; private set; }
 
-    public string ParticipantNumber { get; set; } = "";
+    public Guid UserId { get; private set; }
 
-    public string FirstName { get; set; } = "";
+    public string ParticipantNumber { get; private set; } = "";
 
-    public string LastName { get; set; } = "";
+    public string FirstName { get; private set; } = "";
 
-    public string Email { get; set; } = "";
+    public string LastName { get; private set; } = "";
 
-    public string? Phone { get; set; }
+    public string Email { get; private set; } = "";
 
-    public string? Organization { get; set; }
+    public string? Phone { get; private set; }
 
-    public string? Designation { get; set; }
+    public string? Organization { get; private set; }
 
-    public ParticipantStatus Status { get; set; } = ParticipantStatus.Active;
+    public string? Designation { get; private set; }
 
-    public DateTime CreatedAtUtc { get; set; }
+    public ParticipantStatus Status { get; private set; } = ParticipantStatus.Active;
 
-    public DateTime? UpdatedAtUtc { get; set; }
+    public Registration Registration { get; private set; } = null!;
 
-    public Registration Registration { get; set; } = null!;
+    public Ticket? Ticket { get; private set; }
 
-    public Ticket? Ticket { get; set; }
+    // Updates the editable participant details.
+    public void Update(
+        string firstName,
+        string lastName,
+        string email,
+        string? phone,
+        string? organization,
+        string? designation)
+    {
+        FirstName = firstName;
+        LastName = lastName;
+        Email = email;
+        Phone = phone;
+        Organization = organization;
+        Designation = designation;
+        SetUpdatedAt();
+    }
+
+    // Marks the participant as cancelled.
+    public void Cancel()
+    {
+        Status = ParticipantStatus.Cancelled;
+        SetUpdatedAt();
+    }
 }

@@ -1,4 +1,5 @@
 
+using AutoMapper;
 using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Security.Authentication;
 
@@ -9,7 +10,8 @@ public sealed class UpsertRegistrationFormCommandHandler(
     IRegistrationRepository registrations,
     IUnitOfWork unitOfWork,
     ICurrentUserService user,
-    IEventRegistrationAccessService access)
+    IEventRegistrationAccessService access,
+    IMapper mapper)
     : IRequestHandler<UpsertRegistrationFormCommand,RegistrationFormDto>
 {
     public async Task<RegistrationFormDto> Handle(
@@ -22,7 +24,6 @@ public sealed class UpsertRegistrationFormCommandHandler(
 
         var request = command.Request;
 
-        var now = DateTime.UtcNow;
         var form = await forms.GetByEventIdAsync(
             command.EventId,
             includeFields: true,
@@ -30,36 +31,19 @@ public sealed class UpsertRegistrationFormCommandHandler(
 
         if (form is null)
         {
-            form = new RegistrationForm
-            {
-                Id = Guid.NewGuid(),
-                EventId = command.EventId,
-                CreatedAtUtc = now,
-                UpdatedAtUtc = now,
-                Name = request.Name.Trim(),
-                Description = request.Description?.Trim(),
-                IsActive = request.IsActive,
-                CapacityMode = request.CapacityMode,
-                Capacity = request.Capacity,
-                EnableWaitlist = request.EnableWaitlist,
-                OpensAtUtc = request.OpensAtUtc,
-                ClosesAtUtc = request.ClosesAtUtc
-            };
-
+            form = new RegistrationForm(command.EventId);
             forms.Add(form);
         }
-        else
-        {
-            form.Name = request.Name.Trim();
-            form.Description = request.Description?.Trim();
-            form.IsActive = request.IsActive;
-            form.CapacityMode = request.CapacityMode;
-            form.Capacity = request.Capacity;
-            form.EnableWaitlist = request.EnableWaitlist;
-            form.OpensAtUtc = request.OpensAtUtc;
-            form.ClosesAtUtc = request.ClosesAtUtc;
-            form.UpdatedAtUtc = now;
-        }
+
+        form.Update(
+            request.Name.Trim(),
+            request.Description?.Trim(),
+            request.IsActive,
+            request.CapacityMode,
+            request.Capacity,
+            request.EnableWaitlist,
+            request.OpensAtUtc,
+            request.ClosesAtUtc);
 
         var existingFields = form.Fields.ToDictionary(x => x.Id);
         var incomingIds = request.Fields
@@ -97,18 +81,26 @@ public sealed class UpsertRegistrationFormCommandHandler(
 
         var fields = request.Fields
             .OrderBy(x => x.DisplayOrder)
-            .Select((x, index) => new RegistrationFormField
-            {
-                Id = x.Id ?? Guid.Empty,
-                RegistrationFormId = form.Id,
-                FieldKey = x.FieldKey.Trim(),
-                Label = x.Label.Trim(),
-                FieldType = x.FieldType,
-                IsRequired = x.IsRequired,
-                DisplayOrder = index,
-                OptionsJson = NormalizeJson(x.OptionsJson),
-                ValidationJson = NormalizeJson(x.ValidationJson)
-            })
+            .Select((x, index) => x.Id.HasValue
+                ? new RegistrationFormField(
+                    x.Id.Value,
+                    form.Id,
+                    x.FieldKey.Trim(),
+                    x.Label.Trim(),
+                    x.FieldType,
+                    x.IsRequired,
+                    index,
+                    NormalizeJson(x.OptionsJson),
+                    NormalizeJson(x.ValidationJson))
+                : new RegistrationFormField(
+                    form.Id,
+                    x.FieldKey.Trim(),
+                    x.Label.Trim(),
+                    x.FieldType,
+                    x.IsRequired,
+                    index,
+                    NormalizeJson(x.OptionsJson),
+                    NormalizeJson(x.ValidationJson)))
             .ToList();
 
         forms.ReplaceFields(form, fields);
@@ -125,45 +117,13 @@ public sealed class UpsertRegistrationFormCommandHandler(
             RegistrationStatus.Waitlisted,
             cancellationToken);
 
-        return ToDto(form, approvedCount, waitlistCount);
+        var dto = mapper.Map<RegistrationFormDto>(form);
+        dto.ApprovedCount = approvedCount;
+        dto.WaitlistCount = waitlistCount;
+
+        return dto;
     }
 
     private static string? NormalizeJson(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
-    private static RegistrationFormDto ToDto(
-        RegistrationForm form,
-        int approvedCount,
-        int waitlistCount)
-    {
-        return new RegistrationFormDto
-        {
-            Id = form.Id,
-            EventId = form.EventId,
-            Name = form.Name,
-            Description = form.Description,
-            IsActive = form.IsActive,
-            CapacityMode = form.CapacityMode,
-            Capacity = form.Capacity,
-            ApprovedCount = approvedCount,
-            WaitlistCount = waitlistCount,
-            EnableWaitlist = form.EnableWaitlist,
-            OpensAtUtc = form.OpensAtUtc,
-            ClosesAtUtc = form.ClosesAtUtc,
-            Fields = form.Fields
-                .OrderBy(x => x.DisplayOrder)
-                .Select(x => new RegistrationFormFieldDto
-                {
-                    Id = x.Id,
-                    FieldKey = x.FieldKey,
-                    Label = x.Label,
-                    FieldType = x.FieldType,
-                    IsRequired = x.IsRequired,
-                    DisplayOrder = x.DisplayOrder,
-                    OptionsJson = x.OptionsJson,
-                    ValidationJson = x.ValidationJson
-                })
-                .ToList()
-        };
-    }
 }

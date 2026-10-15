@@ -1,4 +1,5 @@
 
+using AutoMapper;
 using EventFlow.SharedKernel.Exceptions;
 
 namespace EventFlow.Registration.Application.Features.RegistrationForms.Queries.GetRegistrationForm;
@@ -6,7 +7,8 @@ namespace EventFlow.Registration.Application.Features.RegistrationForms.Queries.
 public sealed class GetRegistrationFormQueryHandler(
     IRegistrationFormRepository forms,
     IRegistrationRepository registrations,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    IMapper mapper)
     : IRequestHandler<GetRegistrationFormQuery,RegistrationFormDto>
 {
     public async Task<RegistrationFormDto> Handle(GetRegistrationFormQuery query, CancellationToken cancellationToken)
@@ -31,59 +33,16 @@ public sealed class GetRegistrationFormQueryHandler(
 
         var waitlistCount = await registrations.CountByStatusAsync(query.EventId,RegistrationStatus.Waitlisted,cancellationToken);
 
-        var response = new RegistrationFormDto
-        {
-            Id = form.Id,
-            EventId = form.EventId,
-            Name = form.Name,
-            Description = form.Description,
-            IsActive = form.IsActive,
-            CapacityMode = form.CapacityMode,
-            Capacity = form.Capacity,
-            ApprovedCount = approvedCount,
-            WaitlistCount = waitlistCount,
-            EnableWaitlist = form.EnableWaitlist,
-            OpensAtUtc = form.OpensAtUtc,
-            ClosesAtUtc = form.ClosesAtUtc,
-            Fields = form.Fields
-                .OrderBy(x => x.DisplayOrder)
-                .Select(
-                    x => new RegistrationFormFieldDto
-                    {
-                        Id = x.Id,
-                        FieldKey = x.FieldKey,
-                        Label = x.Label,
-                        FieldType = x.FieldType,
-                        IsRequired = x.IsRequired,
-                        DisplayOrder = x.DisplayOrder,
-                        OptionsJson = x.OptionsJson,
-                        ValidationJson = x.ValidationJson
-                    })
-                .ToList()
-        };
+        var response = mapper.Map<RegistrationFormDto>(form);
+        response.ApprovedCount = approvedCount;
+        response.WaitlistCount = waitlistCount;
 
         return response;
     }
 
     private async Task CreateDefaultFormAsync(Guid eventId,CancellationToken cancellationToken)
     {
-        var now = DateTime.UtcNow;
-
-        var form = new RegistrationForm
-        {
-            Id = Guid.NewGuid(),
-            EventId = eventId,
-            Name = "Event Registration",
-            Description = null,
-            IsActive = true,
-            CapacityMode = CapacityMode.Unlimited,
-            Capacity = null,
-            EnableWaitlist = false,
-            OpensAtUtc = null,
-            ClosesAtUtc = null,
-            CreatedAtUtc = now,
-            UpdatedAtUtc = now
-        };
+        var form = new RegistrationForm(eventId);
 
         forms.Add(form);
 

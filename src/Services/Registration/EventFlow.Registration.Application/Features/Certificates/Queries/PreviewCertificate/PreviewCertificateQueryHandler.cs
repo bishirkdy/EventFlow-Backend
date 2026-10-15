@@ -32,13 +32,7 @@ public sealed class PreviewCertificateQueryHandler(
         var settings = await settingsRepository.GetByEventIdAsync(
                 query.EventId,
                 cancellationToken)
-            ?? new CertificateSettings
-            {
-                Id = Guid.NewGuid(),
-                EventId = query.EventId,
-                CreatedAtUtc = now,
-                UpdatedAtUtc = now
-            };
+            ?? new CertificateSettings(query.EventId);
 
         var eventInfo = await sourceData.GetEventAsync(query.EventId, cancellationToken);
 

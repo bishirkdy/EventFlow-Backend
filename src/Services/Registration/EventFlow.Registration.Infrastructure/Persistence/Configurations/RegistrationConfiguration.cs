@@ -30,5 +30,9 @@ public sealed class RegistrationConfiguration : IEntityTypeConfiguration<Registr
         b.HasOne(x => x.Ticket).WithOne(x => x.Registration)
             .HasForeignKey<Ticket>(x => x.RegistrationId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Audit fields from the base entity.
+        b.Property(x => x.CreatedAt).IsRequired();
+        b.Property(x => x.UpdatedAt);
     }
 }

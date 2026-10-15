@@ -1,9 +1,10 @@
+using AutoMapper;
 using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Security.Authentication;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Queries.GetRegistrationById;
 
-public sealed class GetRegistrationByIdQueryHandler(IRegistrationRepository registrations,ICurrentUserService user,IEventRegistrationAccessService access)
+public sealed class GetRegistrationByIdQueryHandler(IRegistrationRepository registrations,ICurrentUserService user,IEventRegistrationAccessService access,IMapper mapper)
     : IRequestHandler<GetRegistrationByIdQuery, RegistrationDto>
 {
     public async Task<RegistrationDto> Handle(
@@ -33,6 +34,6 @@ public sealed class GetRegistrationByIdQueryHandler(IRegistrationRepository regi
             throw new NotFoundException("Registration not found.");
         }
 
-        return registration.ToDto();
+        return mapper.Map<RegistrationDto>(registration);
     }
 }

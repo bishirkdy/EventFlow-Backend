@@ -58,7 +58,6 @@ public sealed class RegistrationFormRepository(RegistrationDbContext db)
         var incoming = fields.ToList();
         var existing = form.Fields.ToList();
         var incomingIds = incoming
-            .Where(x => x.Id != Guid.Empty)
             .Select(x => x.Id)
             .ToHashSet();
 
@@ -77,27 +76,19 @@ public sealed class RegistrationFormRepository(RegistrationDbContext db)
 
         foreach (var field in incoming)
         {
-            field.RegistrationFormId = form.Id;
-
-            if (field.Id != Guid.Empty)
+            if (existingById.TryGetValue(field.Id, out var existingField))
             {
-                if (!existingById.TryGetValue(field.Id, out var existingField))
-                {
-                    throw new InvalidOperationException(
-                        "The registration form contains a field that does not belong to this form.");
-                }
-
-                existingField.FieldKey = field.FieldKey;
-                existingField.Label = field.Label;
-                existingField.FieldType = field.FieldType;
-                existingField.IsRequired = field.IsRequired;
-                existingField.DisplayOrder = field.DisplayOrder;
-                existingField.OptionsJson = field.OptionsJson;
-                existingField.ValidationJson = field.ValidationJson;
+                existingField.Update(
+                    field.FieldKey,
+                    field.Label,
+                    field.FieldType,
+                    field.IsRequired,
+                    field.DisplayOrder,
+                    field.OptionsJson,
+                    field.ValidationJson);
                 continue;
             }
 
-            field.Id = Guid.NewGuid();
             form.Fields.Add(field);
             db.RegistrationFormFields.Add(field);
         }

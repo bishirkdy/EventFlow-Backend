@@ -1,3 +1,4 @@
+using AutoMapper;
 using EventFlow.SharedKernel.Exceptions;
 using FluentValidation.Results;
 using RegistrationEntity = EventFlow.Registration.Domain.Entities.Registration;
@@ -9,7 +10,8 @@ public sealed class CreateRegistrationCommandHandler(
     IRegistrationFormRepository forms,
     IUnitOfWork unitOfWork,
     EventFlow.Security.Authentication.ICurrentUserService user,
-    IEventRegistrationAccessService access)
+    IEventRegistrationAccessService access,
+    IMapper mapper)
     : IRequestHandler<
         CreateRegistrationCommand,
         RegistrationDto>
@@ -101,57 +103,36 @@ public sealed class CreateRegistrationCommandHandler(
             waitlistPosition = waitlistedCount + 1;
         }
 
-        var registrationId = Guid.NewGuid();
+        var registration = new RegistrationEntity(
+            command.EventId,
+            user.UserId,
+            $"REG-{now:yyyyMMdd}-{Random.Shared.Next(100000, 999999)}",
+            status,
+            waitlistPosition);
 
-        var registration = new RegistrationEntity
-        {
-            Id = registrationId,
-            EventId = command.EventId,
-            UserId = user.UserId,
-            RegistrationNumber =
-                $"REG-{now:yyyyMMdd}-{Random.Shared.Next(100000, 999999)}",
-            Status = status,
-            RegisteredAtUtc = now,
-            WaitlistedAtUtc =
-                status == RegistrationStatus.Waitlisted ? now : null,
-            WaitlistPosition = waitlistPosition,
-            CreatedAtUtc = now
-        };
+        var participant = new Participant(
+            registration.Id,
+            command.EventId,
+            user.UserId,
+            $"P-{now:yyyyMMdd}-{Random.Shared.Next(100000, 999999)}",
+            command.Request.FirstName.Trim(),
+            command.Request.LastName.Trim(),
+            command.Request.Email.Trim(),
+            command.Request.Phone?.Trim(),
+            command.Request.Organization?.Trim(),
+            command.Request.Designation?.Trim());
 
-        registration.Participant = new Participant
-        {
-            Id = Guid.NewGuid(),
-            RegistrationId = registrationId,
-            EventId = command.EventId,
-            UserId = user.UserId,
-            ParticipantNumber =
-                $"P-{now:yyyyMMdd}-{Random.Shared.Next(100000, 999999)}",
-            FirstName = command.Request.FirstName.Trim(),
-            LastName = command.Request.LastName.Trim(),
-            Email = command.Request.Email.Trim(),
-            Phone = command.Request.Phone?.Trim(),
-            Organization = command.Request.Organization?.Trim(),
-            Designation = command.Request.Designation?.Trim(),
-            CreatedAtUtc = now,
-            Registration = registration
-        };
+        registration.SetParticipant(participant);
 
         foreach (var answer in command.Request.Answers)
         {
-            registration.Answers.Add(
-                new RegistrationAnswer
-                {
-                    Id = Guid.NewGuid(),
-                    RegistrationId = registrationId,
-                    RegistrationFormFieldId = answer.Key,
-                    Value = answer.Value ?? string.Empty
-                });
+            registration.AddAnswer(answer.Key, answer.Value ?? string.Empty);
         }
 
         registrations.Add(registration);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return registration.ToDto();
+        return mapper.Map<RegistrationDto>(registration);
     }
 }

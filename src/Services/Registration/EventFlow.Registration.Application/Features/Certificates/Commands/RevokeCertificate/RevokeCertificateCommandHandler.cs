@@ -1,3 +1,4 @@
+using AutoMapper;
 using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Security.Authentication;
 
@@ -7,7 +8,8 @@ public sealed class RevokeCertificateCommandHandler(
     ICertificateRepository certificates,
     IUnitOfWork unitOfWork,
     ICurrentUserService user,
-    IEventRegistrationAccessService access)
+    IEventRegistrationAccessService access,
+    IMapper mapper)
     : IRequestHandler<RevokeCertificateCommand, CertificateDto>
 {
     public async Task<CertificateDto> Handle(
@@ -34,16 +36,15 @@ public sealed class RevokeCertificateCommandHandler(
 
         if (certificate.Status == CertificateStatus.Revoked)
         {
-            return certificate.ToDto();
+            return mapper.Map<CertificateDto>(certificate);
         }
 
-        certificate.Status = CertificateStatus.Revoked;
-        certificate.RevokedAtUtc = DateTime.UtcNow;
+        certificate.Revoke();
 
         certificates.Update(certificate);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return certificate.ToDto();
+        return mapper.Map<CertificateDto>(certificate);
     }
 }

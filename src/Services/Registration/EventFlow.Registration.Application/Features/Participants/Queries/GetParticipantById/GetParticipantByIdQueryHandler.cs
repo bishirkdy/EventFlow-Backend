@@ -1,8 +1,9 @@
+using AutoMapper;
 using EventFlow.SharedKernel.Exceptions;
 
 namespace EventFlow.Registration.Application.Features.Participants.Queries.GetParticipantById;
 
-public sealed class GetParticipantByIdQueryHandler(IParticipantRepository participants,EventFlow.Security.Authentication.ICurrentUserService user,IEventRegistrationAccessService access): IRequestHandler<GetParticipantByIdQuery, ParticipantDto>
+public sealed class GetParticipantByIdQueryHandler(IParticipantRepository participants,EventFlow.Security.Authentication.ICurrentUserService user,IEventRegistrationAccessService access,IMapper mapper): IRequestHandler<GetParticipantByIdQuery, ParticipantDto>
 {
     public async Task<ParticipantDto> Handle(GetParticipantByIdQuery query, CancellationToken cancellationToken)
     {
@@ -22,6 +23,6 @@ public sealed class GetParticipantByIdQueryHandler(IParticipantRepository partic
             throw new NotFoundException("Participant not found.");
         }
 
-        return participant.ToDto();
+        return mapper.Map<ParticipantDto>(participant);
     }
 }
