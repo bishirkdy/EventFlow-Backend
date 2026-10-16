@@ -48,5 +48,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/EventFlow.Event.Application.Tests/EventFlow.Event.Application.Tests.csproj" />
+    <Project Path="tests/EventFlow.Messaging.Tests/EventFlow.Messaging.Tests.csproj" />
+    <Project Path="tests/EventFlow.Operations.Infrastructure.Tests/EventFlow.Operations.Infrastructure.Tests.csproj" />
   </Folder>
 </Solution>
