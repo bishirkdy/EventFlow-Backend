@@ -33,6 +33,7 @@ public static class DependencyInjection
 
         services.AddHostedService<NotificationWorker>();
         services.AddHostedService<EventInvitationCreatedConsumer>();
+        services.AddHostedService<AttendanceStaffInvitationAcceptedConsumer>();
 
         services.AddScoped<INotificationQueueProcessor, NotificationQueueProcessor>();
 
