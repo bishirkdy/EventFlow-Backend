@@ -1,5 +1,6 @@
 using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.Event.Application.Abstractions.Storage;
+using EventFlow.Event.Application.Common;
 using EventFlow.Event.Application.Features.Commands.UploadEventPhoto;
 using EventFlow.Event.Domain.Entities;
 using EventFlow.Security.Authentication;
@@ -12,6 +13,7 @@ public sealed class UploadEventPhotoCommandHandler(
     IEventPhotoRepository photoRepository,
     IUnitOfWork unitOfWork,
     IFileStorage fileStorage,
+    IEventFeatureRepository featureRepository,
     ICurrentUserService currentUser)
     : IRequestHandler<UploadEventPhotoCommand, UploadEventPhotoResponse>
 {
@@ -19,6 +21,8 @@ public sealed class UploadEventPhotoCommandHandler(
         UploadEventPhotoCommand request,
         CancellationToken cancellationToken)
     {
+        await EventFeatureGuard.EnsureEnabledAsync(featureRepository, request.EventId, FeatureIds.Gallery, "gallery", cancellationToken);
+
         if (request.File is null || request.File.Length == 0)
         {
             throw new ValidationException("A photo file is required.");

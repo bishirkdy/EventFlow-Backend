@@ -1,15 +1,18 @@
 
 
 using EventFlow.Event.Application.Abstractions.Persistence;
+using EventFlow.Event.Application.Common;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
 namespace EventFlow.Event.Application.Features.Sections.Commands.UpdateSection
 {
-    public sealed class UpdateSectionCommandHandler(ISectionRepository sectionRepository, IUnitOfWork unitOfWork) : IRequestHandler<UpdateSectionCommand>
+    public sealed class UpdateSectionCommandHandler(ISectionRepository sectionRepository, IUnitOfWork unitOfWork, IEventFeatureRepository featureRepository) : IRequestHandler<UpdateSectionCommand>
     {
         public async Task Handle(UpdateSectionCommand request,CancellationToken cancellationToken)
         {
+            await EventFeatureGuard.EnsureEnabledAsync(featureRepository, request.EventId, FeatureIds.Sessions, "sessions", cancellationToken);
+
             // Get section belonging to the event
             var section = await sectionRepository.GetByIdAsync(
                request.Id,

@@ -1,6 +1,7 @@
 using EventFlow.Event.Application.Abstractions.Authorization;
 using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.Event.Application.Abstractions.Storage;
+using EventFlow.Event.Application.Common;
 using EventFlow.Security.Authorization;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
@@ -13,17 +14,20 @@ namespace EventFlow.Event.Application.Features.Commands.DeleteEventPhoto
         private readonly IUnitOfWork _unitOfWork;
         private readonly IAuthorizationService _authorizationService;
         private readonly IFileStorage _fileStorage;
+        private readonly IEventFeatureRepository _featureRepository;
 
         public DeleteEventPhotoCommandHandler(
             IEventPhotoRepository photoRepository,
             IUnitOfWork unitOfWork,
             IAuthorizationService authorizationService,
-            IFileStorage fileStorage)
+            IFileStorage fileStorage,
+            IEventFeatureRepository featureRepository)
         {
             _photoRepository = photoRepository;
             _unitOfWork = unitOfWork;
             _authorizationService = authorizationService;
             _fileStorage = fileStorage;
+            _featureRepository = featureRepository;
         }
 
         public async Task Handle(DeleteEventPhotoCommand request, CancellationToken cancellationToken)
@@ -33,6 +37,8 @@ namespace EventFlow.Event.Application.Features.Commands.DeleteEventPhoto
             {
                 throw new NotFoundException("Photo not found.");
             }
+
+            await EventFeatureGuard.EnsureEnabledAsync(_featureRepository, photo.EventId, FeatureIds.Gallery, "gallery", cancellationToken);
 
             if (photo.PhotographerId != request.RequestedBy)
             {

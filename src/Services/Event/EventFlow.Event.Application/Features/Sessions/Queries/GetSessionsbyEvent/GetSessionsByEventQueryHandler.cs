@@ -1,13 +1,16 @@
 using EventFlow.Event.Application.Abstractions.Persistence;
+using EventFlow.Event.Application.Common;
 using MediatR;
 
 namespace EventFlow.Event.Application.Features.Sessions.Queries.GetSessionsbyEvent
 {
-    public sealed class GetSessionsByEventQueryHandler(ISessionRepository sessionRepository )
+    public sealed class GetSessionsByEventQueryHandler(ISessionRepository sessionRepository, IEventFeatureRepository featureRepository )
         : IRequestHandler<GetSessionsByEventQuery, IReadOnlyList<GetSessionsByEventResponse>>
     {
         public async Task<IReadOnlyList<GetSessionsByEventResponse>> Handle(GetSessionsByEventQuery request, CancellationToken cancellationToken)
         {
+            await EventFeatureGuard.EnsureEnabledAsync(featureRepository, request.EventId, FeatureIds.Sessions, "sessions", cancellationToken);
+
             // Get sessions belonging to event
             var sessions = await sessionRepository.GetByEventIdAsync(request.EventId, cancellationToken);
 

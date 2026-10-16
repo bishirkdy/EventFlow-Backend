@@ -17,10 +17,13 @@ namespace EventFlow.Event.Application.Features.Sessions.Commands.CreateSession
         IEventRepository eventRepository,
         IUnitOfWork unitOfWork,
         IFileStorage fileStorage,
-        IEventWebsiteProvisioningService websiteProvisioningService) : IRequestHandler<CreateSessionCommand, Guid>
+        IEventWebsiteProvisioningService websiteProvisioningService,
+        IEventFeatureRepository featureRepository) : IRequestHandler<CreateSessionCommand, Guid>
     {
         public async Task<Guid> Handle(CreateSessionCommand request, CancellationToken cancellationToken)
         {
+            await EventFeatureGuard.EnsureEnabledAsync(featureRepository, request.EventId, FeatureIds.Sessions, "sessions", cancellationToken);
+
             var eventEntity = await eventRepository.GetByIdAsync(request.EventId, cancellationToken);
             if (eventEntity is null)
                 throw new NotFoundException("Event not found.");

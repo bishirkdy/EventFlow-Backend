@@ -17,6 +17,7 @@ public sealed class GetEventPhotosQueryHandlerTests
         var repository = new FakeEventPhotoRepository();
         var handler = new GetEventPhotosQueryHandler(
             repository,
+            new FakeEventFeatureRepository(),
             new FakeCurrentUserService { IsAuthenticated = false });
 
         await handler.Handle(
@@ -32,6 +33,7 @@ public sealed class GetEventPhotosQueryHandlerTests
         var repository = new FakeEventPhotoRepository();
         var handler = new GetEventPhotosQueryHandler(
             repository,
+            new FakeEventFeatureRepository(),
             new FakeCurrentUserService { IsAuthenticated = false });
 
         await handler.Handle(new GetEventPhotosQuery(EventId), Token);
@@ -45,6 +47,7 @@ public sealed class GetEventPhotosQueryHandlerTests
         var repository = new FakeEventPhotoRepository();
         var handler = new GetEventPhotosQueryHandler(
             repository,
+            new FakeEventFeatureRepository(),
             new FakeCurrentUserService { IsAuthenticated = true });
 
         await handler.Handle(
@@ -60,6 +63,7 @@ public sealed class GetEventPhotosQueryHandlerTests
         var repository = new FakeEventPhotoRepository();
         var handler = new GetEventPhotosQueryHandler(
             repository,
+            new FakeEventFeatureRepository(),
             new FakeCurrentUserService { IsAuthenticated = true });
 
         await handler.Handle(
@@ -128,6 +132,34 @@ public sealed class GetEventPhotosQueryHandlerTests
         }
 
         public void Remove(EventPhoto entity)
+        {
+        }
+    }
+
+    private sealed class FakeEventFeatureRepository : IEventFeatureRepository
+    {
+        public Task<EventFeature?> GetByEventAndFeatureAsync(
+            Guid eventId,
+            Guid featureId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<EventFeature?>(new EventFeature(eventId, featureId));
+
+        public Task<IReadOnlyList<EventFeature>> GetByEventIdAsync(
+            Guid eventId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<EventFeature>>([]);
+
+        public Task<EventFeature?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
+            Task.FromResult<EventFeature?>(null);
+
+        public Task AddAsync(EventFeature entity, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+
+        public void Update(EventFeature entity)
+        {
+        }
+
+        public void Remove(EventFeature entity)
         {
         }
     }

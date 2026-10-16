@@ -15,10 +15,13 @@ namespace EventFlow.Event.Application.Features.Sessions.Commands.UpdateSession
         ISessionSpeakerRepository linkRepository,
         ISpeakerRepository speakerRepository,
         IUnitOfWork unitOfWork,
-        IFileStorage fileStorage) : IRequestHandler<UpdateSessionCommand>
+        IFileStorage fileStorage,
+        IEventFeatureRepository featureRepository) : IRequestHandler<UpdateSessionCommand>
     {
         public async Task Handle(UpdateSessionCommand request, CancellationToken cancellationToken)
         {
+            await EventFeatureGuard.EnsureEnabledAsync(featureRepository, request.EventId, FeatureIds.Sessions, "sessions", cancellationToken);
+
             var session = await sessionRepository.GetByIdAsync(request.Id, cancellationToken);
             if (session is null || session.EventId != request.EventId)
                 throw new NotFoundException("Session not found.");

@@ -1,4 +1,5 @@
 using EventFlow.Event.Application.Abstractions.Persistence;
+using EventFlow.Event.Application.Common;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
@@ -8,11 +9,13 @@ namespace EventFlow.Event.Application.Features.Commands.UpdateEventPhotoVisibili
     {
         private readonly IEventPhotoRepository _photoRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IEventFeatureRepository _featureRepository;
 
-        public UpdateEventPhotoVisibilityCommandHandler(IEventPhotoRepository photoRepository, IUnitOfWork unitOfWork)
+        public UpdateEventPhotoVisibilityCommandHandler(IEventPhotoRepository photoRepository, IUnitOfWork unitOfWork, IEventFeatureRepository featureRepository)
         {
             _photoRepository = photoRepository;
             _unitOfWork = unitOfWork;
+            _featureRepository = featureRepository;
         }
 
         public async Task Handle(UpdateEventPhotoVisibilityCommand request, CancellationToken cancellationToken)
@@ -22,6 +25,8 @@ namespace EventFlow.Event.Application.Features.Commands.UpdateEventPhotoVisibili
             {
                 throw new NotFoundException("Photo not found.");
             }
+
+            await EventFeatureGuard.EnsureEnabledAsync(_featureRepository, photo.EventId, FeatureIds.Gallery, "gallery", cancellationToken);
 
             if (request.IsVisible)
             {
