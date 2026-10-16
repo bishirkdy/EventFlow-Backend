@@ -1,4 +1,4 @@
-using EventFlow.Contracts.Common;
+using EventFlow.Api.Extensions;
 using EventFlow.Event.Api.Mappings;
 using EventFlow.Event.Application.Abstractions.Authorization;
 using EventFlow.Security.Authentication;
@@ -11,28 +11,7 @@ public static class DependencyInjection
     public static IServiceCollection AddApiServices(this IServiceCollection services,IConfiguration configuration)
     {
         services.AddControllers();
-
-        services.Configure<Microsoft.AspNetCore.Mvc.ApiBehaviorOptions>(options =>
-        {
-            options.InvalidModelStateResponseFactory = context =>
-            {
-                var errors = context.ModelState.Values
-                    .SelectMany(value => value.Errors)
-                    .Select(error =>
-                        string.IsNullOrWhiteSpace(error.ErrorMessage)
-                            ? "The supplied value is invalid."
-                            : error.ErrorMessage)
-                    .Distinct()
-                    .ToList();
-
-                var response = ApiResponse<object?>.Fail(
-                    errors,
-                    "One or more validation errors occurred.",
-                    System.Net.HttpStatusCode.BadRequest);
-
-                return new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(response);
-            };
-        });
+        services.AddEventFlowValidation();
 
         services.AddHttpContextAccessor();
 
