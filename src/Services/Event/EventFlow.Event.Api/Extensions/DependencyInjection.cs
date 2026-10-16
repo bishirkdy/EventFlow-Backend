@@ -54,6 +54,7 @@ public static class DependencyInjection
         services.AddAutoMapper(cfg =>
         {
             cfg.AddProfile<EventMappingProfile>();
+            cfg.AddProfile<AdminMappingProfile>();
         });
 
         return services;

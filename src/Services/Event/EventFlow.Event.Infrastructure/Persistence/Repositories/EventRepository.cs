@@ -1,6 +1,8 @@
 using EventFlow.Event.Application.Abstractions.Persistence;
+using EventFlow.Event.Application.Abstractions.Persistence.ReadModels;
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Domain.Entities;
+using EventFlow.Event.Domain.Enums;
 using EventFlow.Event.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -87,6 +89,63 @@ namespace EventFlow.Event.Infrastructure.Persistence.Repositories
                 .OrderBy(x => x.StartDate)
                 .Take(Math.Clamp(take, 1, 12))
                 .ToListAsync(cancellationToken);
+        }
+
+        // Get all events by pagination for the admin console (without images).
+        public async Task<PaginatedResponse<EventEntity>> GetAdminPagedAsync(
+            int page,
+            int pageSize,
+            EventStatus? status,
+            string? search,
+            CancellationToken cancellationToken)
+        {
+            var query = _context.EventEntities
+                .AsNoTracking()
+                .Include(x => x.EventType)
+                .AsQueryable();
+
+            if (status.HasValue)
+            {
+                query = query.Where(x => x.Status == status.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var term = search.Trim();
+                query = query.Where(x => EF.Functions.ILike(x.Name, $"%{term}%"));
+            }
+
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            var items = await query
+                .OrderByDescending(x => x.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return new PaginatedResponse<EventEntity>
+            {
+                Items = items,
+                PageNumber = page,
+                PageSize = pageSize,
+                TotalCount = totalCount
+            };
+        }
+
+        // Get event counts grouped by status in a single query.
+        public async Task<EventStatusCounts> GetStatusCountsAsync(CancellationToken cancellationToken)
+        {
+            var counts = await _context.EventEntities
+                .AsNoTracking()
+                .GroupBy(_ => 1)
+                .Select(group => new EventStatusCounts(
+                    group.Count(),
+                    group.Count(x => x.Status == EventStatus.Published),
+                    group.Count(x => x.Status == EventStatus.Draft),
+                    group.Count(x => x.Status == EventStatus.Cancelled)))
+                .FirstOrDefaultAsync(cancellationToken);
+
+            return counts ?? new EventStatusCounts(0, 0, 0, 0);
         }
     }
 }
