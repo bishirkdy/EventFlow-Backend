@@ -16,7 +16,8 @@ internal sealed class Outbox<TContext>(TContext context, ICorrelationIdProvider 
             ? message
             : message with { CorrelationId = correlationId };
 
-        var payload = JsonSerializer.Serialize(envelope);
+        // Serialize using the runtime type so the derived event properties are kept.
+        var payload = JsonSerializer.Serialize(envelope, envelope.GetType());
 
         context.OutboxMessages.Add(new OutboxMessage(topic, payload, envelope));
     }
