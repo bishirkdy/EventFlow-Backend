@@ -2,6 +2,7 @@ using EventFlow.Api.Extensions;
 using EventFlow.Contracts.Common;
 using EventFlow.Registration.Api.Extensions;
 using EventFlow.Registration.Infrastructure.Persistence;
+using EventFlow.Security.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,8 +30,7 @@ builder.Services.Configure<Microsoft.AspNetCore.Mvc.ApiBehaviorOptions>(options 
     };
 });
 
-builder.Services.AddRegistrationAuth(builder.Configuration);
-builder.Services.AddAuthorization();
+builder.Services.AddEventFlowJwtAuthentication(builder.Configuration);
 builder.Services.AddRegistration(builder.Configuration);
 
 var app = builder.Build();
