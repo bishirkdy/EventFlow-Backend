@@ -2,7 +2,6 @@
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.Security.Authentication;
-using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
 namespace EventFlow.Event.Application.Features.Queries.GetEventPhotos
@@ -16,18 +15,16 @@ namespace EventFlow.Event.Application.Features.Queries.GetEventPhotos
             GetEventPhotosQuery request,
             CancellationToken cancellationToken)
         {
-            if (request.VisibleOnly == false &&
-                currentUser.UserId == Guid.Empty)
-            {
-                throw new UnauthorizedException(
-                    "Authentication is required to view hidden photos.");
-            }
+            // Anonymous callers may only ever see visible photos; authenticated callers may request hidden ones.
+            var visibleOnly = currentUser.UserId == Guid.Empty
+                ? true
+                : request.VisibleOnly;
 
             var paged = await photoRepository.GetPagedByEventIdAsync(
                 request.EventId,
                 request.Page,
                 request.PageSize,
-                request.VisibleOnly,
+                visibleOnly,
                 cancellationToken);
 
             return new PaginatedResponse<GetEventPhotosResponse>
