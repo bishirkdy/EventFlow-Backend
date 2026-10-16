@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 using EventFlow.Contracts.Common;
+using EventFlow.Security.Authorization;
 using EventFlow.Security.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -90,7 +91,12 @@ public static class JwtAuthenticationExtensions
                 };
             });
 
-        services.AddAuthorization();
+        services.AddAuthorization(options =>
+        {
+            // Only tokens carrying the platform-admin claim can access admin endpoints.
+            options.AddPolicy(PlatformAdminPolicy.Name, policy =>
+                policy.RequireClaim(PlatformClaims.IsPlatformAdmin, "true"));
+        });
         return services;
     }
 }

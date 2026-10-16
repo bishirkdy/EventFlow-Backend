@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
+using EventFlow.Security.Authorization;
 using EventFlow.SharedKernel.Exceptions;
 
 namespace EventFlow.Security.Authentication;
@@ -32,4 +33,8 @@ public sealed class CurrentUserService(IHttpContextAccessor accessor) : ICurrent
             return userId;
         }
     }
+
+    // Checks whether the current user is a platform administrator.
+    public bool IsPlatformAdmin =>
+        accessor.HttpContext?.User.FindFirstValue(PlatformClaims.IsPlatformAdmin) == "true";
 }
