@@ -36,6 +36,7 @@ public abstract class KafkaConsumerBase<TEvent>(
     {
         var logger = loggerFactory.CreateLogger(GetType());
         var options = kafkaOptions.Value;
+        var retryDelay = TimeSpan.FromSeconds(options.ConsumerRetryBackoffSeconds);
 
         var config = new ConsumerConfig
         {
@@ -79,6 +80,35 @@ public abstract class KafkaConsumerBase<TEvent>(
                 {
                     break;
                 }
+                catch (ConsumeException exception)
+                {
+                    // The broker or a subscribed topic may not be ready yet (for
+                    // example a topic that has not been created). Keep the
+                    // consumer alive and retry instead of stopping the service.
+                    logger.LogWarning(
+                        "Consumer {Consumer} could not consume from {Topic}: {Reason}",
+                        ConsumerName,
+                        Topic,
+                        exception.Error.Reason);
+
+                    await DelayBeforeRetryAsync(retryDelay, stoppingToken);
+                    continue;
+                }
+                catch (KafkaException exception)
+                {
+                    if (exception.Error.IsFatal)
+                    {
+                        throw;
+                    }
+
+                    logger.LogWarning(
+                        exception,
+                        "Consumer {Consumer} encountered a transient Kafka error while consuming.",
+                        ConsumerName);
+
+                    await DelayBeforeRetryAsync(retryDelay, stoppingToken);
+                    continue;
+                }
 
                 if (result?.Message?.Value is null)
                 {
@@ -94,8 +124,20 @@ public abstract class KafkaConsumerBase<TEvent>(
                     stoppingToken);
 
                 // The message is only committed once processing finished or it
-                // was parked in the dead-letter topic.
-                consumer.Commit(result);
+                // was parked in the dead-letter topic. A commit failure is not
+                // fatal: the message may simply be reprocessed and is guarded
+                // by the processed-message check.
+                try
+                {
+                    consumer.Commit(result);
+                }
+                catch (KafkaException exception)
+                {
+                    logger.LogWarning(
+                        exception,
+                        "Consumer {Consumer} failed to commit an offset; the message may be reprocessed.",
+                        ConsumerName);
+                }
             }
         }
         catch (OperationCanceledException)
@@ -112,6 +154,18 @@ public abstract class KafkaConsumerBase<TEvent>(
             consumer.Close();
 
             logger.LogInformation("Kafka consumer {Consumer} closed.", ConsumerName);
+        }
+    }
+
+    private static async Task DelayBeforeRetryAsync(TimeSpan delay, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(delay, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // The host is shutting down; the caller loop will observe the token.
         }
     }
 
