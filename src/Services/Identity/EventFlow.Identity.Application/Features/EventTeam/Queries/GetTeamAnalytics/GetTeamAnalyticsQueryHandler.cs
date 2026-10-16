@@ -53,11 +53,11 @@ public sealed class GetTeamAnalyticsQueryHandler(
 
         return new GetTeamAnalyticsResponse(
             TotalMembers: members.Count,
-            Owners: members.Count(x => x.RoleNames.Contains("Owner")),
-            Organizers: members.Count(x => x.RoleNames.Contains("Organizer")),
+            Owners: members.Count(x => x.RoleNames.Contains(RoleConstants.EventOwner)),
+            Organizers: members.Count(x => x.RoleNames.Contains(RoleConstants.Organizer)),
             Others: members.Count(x =>
-                !x.RoleNames.Contains("Owner") &&
-                !x.RoleNames.Contains("Organizer")),
+                !x.RoleNames.Contains(RoleConstants.EventOwner) &&
+                !x.RoleNames.Contains(RoleConstants.Organizer)),
             AssignedLast7Days: assignments.Count(x => x.AssignedAt >= now.AddDays(-7)),
             LastAssignedAtUtc: assignments.Count == 0
                 ? null

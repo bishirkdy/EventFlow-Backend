@@ -1,5 +1,6 @@
 using EventFlow.Identity.Application.Abstractions.Repositories;
 using EventFlow.Identity.Domain.Entities;
+using EventFlow.Security.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventFlow.Identity.Infrastructure.Persistence.Repositories;
@@ -18,8 +19,8 @@ public sealed class RoleRepository(IdentityDbContext context) : IRoleRepository
 
     public async Task<Role> GetOrCreateOwnerRoleAsync(CancellationToken cancellationToken = default)
     {
-        const string ownerRoleName = "Owner";
-        const string ownerPermissionName = "event.team.manage";
+        const string ownerRoleName = RoleConstants.EventOwner;
+        const string ownerPermissionName = PermissionConstants.Event.TeamManage;
 
         // Find the Owner role if it already exists.
         var ownerRole = await context.Roles
@@ -37,12 +38,12 @@ public sealed class RoleRepository(IdentityDbContext context) : IRoleRepository
 
         // Find the event.view permission.
         var eventViewPermission = await context.Permissions
-            .FirstOrDefaultAsync(x => x.Name == "event.view", cancellationToken);
+            .FirstOrDefaultAsync(x => x.Name == PermissionConstants.Event.View, cancellationToken);
 
         // Create the event.view permission if it does not exist.
         if (eventViewPermission is null)
         {
-            eventViewPermission = new Permission("event.view", "View event information.");
+            eventViewPermission = new Permission(PermissionConstants.Event.View, "View event information.");
             await context.Permissions.AddAsync(eventViewPermission,cancellationToken);
         }
 
