@@ -86,7 +86,16 @@ public abstract class KafkaConsumerBase<TEvent>(
                     continue;
                 }
 
-                await ProcessAsync(consumer, result, logger, options, stoppingToken);
+                await ProcessMessageAsync(
+                    result.Message.Key,
+                    result.Message.Value,
+                    logger,
+                    options,
+                    stoppingToken);
+
+                // The message is only committed once processing finished or it
+                // was parked in the dead-letter topic.
+                consumer.Commit(result);
             }
         }
         catch (OperationCanceledException)
@@ -106,9 +115,11 @@ public abstract class KafkaConsumerBase<TEvent>(
         }
     }
 
-    private async Task ProcessAsync(
-        IConsumer<string, string> consumer,
-        ConsumeResult<string, string> result,
+    // Deserializes, de-duplicates, retries and dead-letters a single message.
+    // Exposed so the processing pipeline can be tested without a broker.
+    public async Task<MessageOutcome> ProcessMessageAsync(
+        string? key,
+        string value,
         ILogger logger,
         KafkaOptions options,
         CancellationToken cancellationToken)
@@ -117,31 +128,27 @@ public abstract class KafkaConsumerBase<TEvent>(
 
         try
         {
-            message = JsonSerializer.Deserialize<TEvent>(result.Message.Value);
+            message = JsonSerializer.Deserialize<TEvent>(value);
         }
         catch (JsonException exception)
         {
-            logger.LogError(
-                exception,
-                "Consumer {Consumer} failed to deserialize a message.",
-                ConsumerName);
+            logger.LogError(exception, "Consumer {Consumer} failed to deserialize a message.", ConsumerName);
 
-            await DeadLetterAsync(result, exception, logger, options, cancellationToken);
-            consumer.Commit(result);
-            return;
+            await DeadLetterAsync(key, value, exception, logger, options, cancellationToken);
+            return MessageOutcome.DeadLettered;
         }
 
         if (message is null)
         {
             await DeadLetterAsync(
-                result,
+                key,
+                value,
                 new InvalidOperationException("The message deserialized to null."),
                 logger,
                 options,
                 cancellationToken);
 
-            consumer.Commit(result);
-            return;
+            return MessageOutcome.DeadLettered;
         }
 
         using var logScope = logger.BeginScope(new Dictionary<string, object?>
@@ -170,8 +177,7 @@ public abstract class KafkaConsumerBase<TEvent>(
                         ConsumerName,
                         message.MessageId);
 
-                    consumer.Commit(result);
-                    return;
+                    return MessageOutcome.Duplicate;
                 }
 
                 await HandleMessageAsync(message, db, cancellationToken);
@@ -181,14 +187,12 @@ public abstract class KafkaConsumerBase<TEvent>(
 
                 await db.SaveChangesAsync(cancellationToken);
 
-                consumer.Commit(result);
-
                 logger.LogInformation(
                     "Consumer {Consumer} processed message {MessageId}.",
                     ConsumerName,
                     message.MessageId);
 
-                return;
+                return MessageOutcome.Processed;
             }
             catch (OperationCanceledException)
                 when (cancellationToken.IsCancellationRequested)
@@ -206,9 +210,8 @@ public abstract class KafkaConsumerBase<TEvent>(
                         message.MessageId,
                         attempt);
 
-                    await DeadLetterAsync(result, exception, logger, options, cancellationToken);
-                    consumer.Commit(result);
-                    return;
+                    await DeadLetterAsync(key, value, exception, logger, options, cancellationToken);
+                    return MessageOutcome.DeadLettered;
                 }
 
                 logger.LogWarning(
@@ -229,22 +232,23 @@ public abstract class KafkaConsumerBase<TEvent>(
     // Publishes the original message to the dead-letter topic. If that publish
     // fails the exception propagates so the caller does not commit the offset.
     private async Task DeadLetterAsync(
-        ConsumeResult<string, string> result,
+        string? key,
+        string value,
         Exception exception,
         ILogger logger,
         KafkaOptions options,
         CancellationToken cancellationToken)
     {
         var deadLetterTopic = $"{Topic}{options.DeadLetterSuffix}";
-        var key = result.Message.Key ?? Guid.NewGuid().ToString();
+        var messageKey = key ?? Guid.NewGuid().ToString();
 
-        await producer.PublishAsync(deadLetterTopic, key, result.Message.Value, cancellationToken);
+        await producer.PublishAsync(deadLetterTopic, messageKey, value, cancellationToken);
 
         logger.LogError(
             exception,
             "Consumer {Consumer} sent message {Key} to dead letter topic {DeadLetterTopic}.",
             ConsumerName,
-            key,
+            messageKey,
             deadLetterTopic);
     }
 }
