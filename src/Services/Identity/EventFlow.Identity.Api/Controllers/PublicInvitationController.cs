@@ -1,7 +1,7 @@
 using EventFlow.Contracts.Common;
-using EventFlow.Identity.Api.Contracts.Request.PhotographerInvitations;
-using EventFlow.Identity.Application.Features.PhotographerInvitations.Commands.AcceptPhotographerInvitation;
-using EventFlow.Identity.Application.Features.PhotographerInvitations.Queries.GetPhotographerInvitation;
+using EventFlow.Identity.Api.Contracts.Request.EventInvitations;
+using EventFlow.Identity.Application.Features.EventInvitations.Commands.AcceptEventInvitation;
+using EventFlow.Identity.Application.Features.EventInvitations.Queries.GetEventInvitation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,10 +20,10 @@ public sealed class PublicInvitationController(ISender sender) : ControllerBase
         CancellationToken cancellationToken)
     {
         var invitation = await sender.Send(
-            new GetPhotographerInvitationQuery(token),
+            new GetEventInvitationQuery(token),
             cancellationToken);
 
-        return Ok(ApiResponse<GetPhotographerInvitationResponse>.Success(
+        return Ok(ApiResponse<GetEventInvitationResponse>.Success(
             invitation,
             "Invitation retrieved successfully."));
     }
@@ -35,7 +35,7 @@ public sealed class PublicInvitationController(ISender sender) : ControllerBase
         CancellationToken cancellationToken)
     {
         var response = await sender.Send(
-            new AcceptPhotographerInvitationCommand(
+            new AcceptEventInvitationCommand(
                 token,
                 request.Password,
                 request.UserName,
@@ -43,6 +43,6 @@ public sealed class PublicInvitationController(ISender sender) : ControllerBase
                 request.LastName),
             cancellationToken);
 
-        return Ok(ApiResponse<AcceptPhotographerInvitationResponse>.Success(response, "Invitation accepted successfully."));
+        return Ok(ApiResponse<AcceptEventInvitationResponse>.Success(response, "Invitation accepted successfully."));
     }
 }

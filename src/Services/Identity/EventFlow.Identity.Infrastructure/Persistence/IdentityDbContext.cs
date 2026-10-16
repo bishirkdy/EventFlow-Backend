@@ -13,7 +13,7 @@ namespace EventFlow.Identity.Infrastructure.Persistence
         public DbSet<Permission> Permissions => Set<Permission>();
         public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
         public DbSet<UserEventRole> UserEventRoles => Set<UserEventRole>();
-        public DbSet<PhotographerInvitation> PhotographerInvitations => Set<PhotographerInvitation>();
+        public DbSet<EventInvitation> EventInvitations => Set<EventInvitation>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

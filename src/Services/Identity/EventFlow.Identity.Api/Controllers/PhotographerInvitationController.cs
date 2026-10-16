@@ -1,8 +1,9 @@
 using EventFlow.Contracts.Common;
-using EventFlow.Identity.Api.Contracts.Request.PhotographerInvitations;
-using EventFlow.Identity.Application.Features.PhotographerInvitations.Commands.CreatePhotographerInvitation;
-using EventFlow.Identity.Application.Features.PhotographerInvitations.Commands.RevokePhotographerInvitation;
-using EventFlow.Identity.Application.Features.PhotographerInvitations.Queries.GetEventPhotographerInvitations;
+using EventFlow.Identity.Api.Contracts.Request.EventInvitations;
+using EventFlow.Identity.Application.Features.EventInvitations.Commands.CreateEventInvitation;
+using EventFlow.Identity.Application.Features.EventInvitations.Commands.RevokeEventInvitation;
+using EventFlow.Identity.Application.Features.EventInvitations.Queries.GetEventInvitations;
+using EventFlow.Identity.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,10 +20,15 @@ public sealed class PhotographerInvitationController(ISender sender) : Controlle
         CancellationToken cancellationToken)
     {
         var response = await sender.Send(
-            new CreatePhotographerInvitationCommand(eventId, request.Email),
+            new CreateEventInvitationCommand(
+                eventId,
+                request.Email,
+                EventInvitationType.Photographer,
+                null,
+                null),
             cancellationToken);
 
-        return Ok(ApiResponse<CreatePhotographerInvitationResponse>.Success(
+        return Ok(ApiResponse<CreateEventInvitationResponse>.Success(
             response, "Photographer invitation created successfully."));
     }
 
@@ -32,10 +38,10 @@ public sealed class PhotographerInvitationController(ISender sender) : Controlle
         CancellationToken cancellationToken)
     {
         var invitations = await sender.Send(
-            new GetEventPhotographerInvitationsQuery(eventId),
+            new GetEventInvitationsQuery(eventId, EventInvitationType.Photographer),
             cancellationToken);
 
-        return Ok(ApiResponse<IReadOnlyList<GetEventPhotographerInvitationsResponse>>.Success(
+        return Ok(ApiResponse<IReadOnlyList<GetEventInvitationsResponse>>.Success(
             invitations,
             "Photographer invitations retrieved successfully."));
     }
@@ -47,7 +53,7 @@ public sealed class PhotographerInvitationController(ISender sender) : Controlle
         CancellationToken cancellationToken)
     {
         await sender.Send(
-            new RevokePhotographerInvitationCommand(eventId, invitationId),
+            new RevokeEventInvitationCommand(eventId, invitationId),
             cancellationToken);
 
         return Ok(ApiResponse<object?>.Success(

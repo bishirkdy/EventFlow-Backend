@@ -32,7 +32,7 @@ public static class DependencyInjection
         services.AddScoped<IIdentityClient, IdentityClient>();
 
         services.AddHostedService<NotificationWorker>();
-        services.AddHostedService<PhotographerInvitationCreatedConsumer>();
+        services.AddHostedService<EventInvitationCreatedConsumer>();
 
         services.AddScoped<INotificationQueueProcessor, NotificationQueueProcessor>();
 
