@@ -1,4 +1,5 @@
 using EventFlow.Identity.Application.Abstractions.Services;
+using EventFlow.Security.Authorization;
 using EventFlow.Security.Configuration;
 using EventFlow.Identity.Domain.Entities;
 using Microsoft.Extensions.Options;
@@ -30,6 +31,12 @@ namespace EventFlow.Identity.Infrastructure.Services
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(ClaimTypes.Name, user.UserName)
         };
+
+            // Only platform administrators receive the admin claim.
+            if (user.IsPlatformAdmin)
+            {
+                claims.Add(new Claim(PlatformClaims.IsPlatformAdmin, "true"));
+            }
 
             // Convert the secret into a signing key.
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SecretKey));

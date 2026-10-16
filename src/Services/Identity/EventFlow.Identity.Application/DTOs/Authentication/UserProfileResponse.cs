@@ -7,6 +7,7 @@ namespace EventFlow.Identity.Application.DTOs.Authentication
         string UserName,
         string Email,
         string FirstName,
-        string LastName
+        string LastName,
+        bool IsPlatformAdmin
     );
 }

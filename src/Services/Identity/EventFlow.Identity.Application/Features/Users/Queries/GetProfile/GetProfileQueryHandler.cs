@@ -20,7 +20,8 @@ namespace EventFlow.Identity.Application.Features.Users.Queries.GetProfile
                 user.UserName,
                 user.Email,
                 user.FirstName,
-                user.LastName
+                user.LastName,
+                user.IsPlatformAdmin
             );
         }
     }
