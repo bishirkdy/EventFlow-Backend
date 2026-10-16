@@ -1,4 +1,6 @@
 using EventFlow.Api.Middleware;
+using EventFlow.Api.Services;
+using EventFlow.Messaging.Correlation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -23,6 +25,9 @@ public static class ApiApplicationExtensions
         services.AddControllers();
         services.AddHealthChecks();
         services.AddEndpointsApiExplorer();
+
+        services.AddHttpContextAccessor();
+        services.AddSingleton<ICorrelationIdProvider, HttpCorrelationIdProvider>();
 
         var allowedOrigins = configuration?.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
 

@@ -16,6 +16,8 @@ public sealed class CorrelationIdMiddleware(RequestDelegate next, ILogger<Correl
 
         context.Response.Headers["X-Correlation-ID"] = correlationId;
 
+        context.Items[CorrelationIdKey] = correlationId;
+
         using (logger.BeginScope(new Dictionary<string, object>
         {
             ["CorrelationId"] = correlationId
@@ -24,4 +26,6 @@ public sealed class CorrelationIdMiddleware(RequestDelegate next, ILogger<Correl
             await next(context);
         }
     }
+
+    public const string CorrelationIdKey = "CorrelationId";
 }

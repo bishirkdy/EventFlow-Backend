@@ -9,6 +9,7 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="..\EventFlow.Contracts\EventFlow.Contracts.csproj" />
     <ProjectReference Include="..\EventFlow.SharedKernel\EventFlow.SharedKernel.csproj" />
+    <ProjectReference Include="..\EventFlow.Messaging\EventFlow.Messaging.csproj" />
     <PackageReference Include="FluentValidation" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />

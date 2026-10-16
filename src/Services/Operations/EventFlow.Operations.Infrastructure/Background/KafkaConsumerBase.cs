@@ -144,6 +144,13 @@ public abstract class KafkaConsumerBase<TEvent>(
             return;
         }
 
+        using var logScope = logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["MessageId"] = message.MessageId,
+            ["CorrelationId"] = message.CorrelationId,
+            ["EventId"] = message.EventId
+        });
+
         for (var attempt = 1; ; attempt++)
         {
             try

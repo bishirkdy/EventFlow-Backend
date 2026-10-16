@@ -1,8 +1,10 @@
-﻿using EventFlow.Messaging.Kafka;
+﻿using EventFlow.Messaging.Correlation;
+using EventFlow.Messaging.Kafka;
 using EventFlow.Messaging.Outbox;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
 namespace EventFlow.Messaging
@@ -13,6 +15,7 @@ namespace EventFlow.Messaging
         {
             services.Configure<KafkaOptions>(configuration.GetSection("Kafka"));
             services.AddSingleton<IKafkaProducer, KafkaProducer>();
+            services.TryAddSingleton<ICorrelationIdProvider, NullCorrelationIdProvider>();
             return services;
         }
 
