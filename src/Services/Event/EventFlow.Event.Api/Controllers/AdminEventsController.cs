@@ -1,9 +1,12 @@
+using System.Net;
 using AutoMapper;
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.Admin;
 using EventFlow.Event.Api.Responses.Admin;
+using EventFlow.Event.Api.Responses.Events;
 using EventFlow.Event.Application.Features.Admin.Queries.GetAdminEvents;
 using EventFlow.Event.Application.Features.Admin.Queries.GetAdminEventStats;
+using EventFlow.Event.Application.Features.Events.Queries.GetEventById;
 using EventFlow.Security.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -38,6 +41,26 @@ public sealed class AdminEventsController(ISender sender, IMapper mapper) : Cont
         return Ok(ApiResponse<PaginatedResponse<AdminEventListItemResponse>>.Success(
             response,
             "Events retrieved successfully."));
+    }
+
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<GetEventResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetEventById(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(new GetEventByIdQuery(id), cancellationToken);
+
+        if (result is null)
+        {
+            return NotFound(ApiResponse<GetEventResponse>.Fail(
+                ["Event not found."],
+                "Event not found.",
+                HttpStatusCode.NotFound));
+        }
+
+        return Ok(ApiResponse<GetEventResponse>.Success(
+            mapper.Map<GetEventResponse>(result),
+            "Event retrieved successfully."));
     }
 
     [HttpGet("stats")]

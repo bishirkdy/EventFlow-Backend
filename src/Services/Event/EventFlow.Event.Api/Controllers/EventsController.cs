@@ -100,7 +100,6 @@ public sealed class EventsController(
             "Published event retrieved successfully."));
     }
 
-    [AllowAnonymous]
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<GetEventResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
