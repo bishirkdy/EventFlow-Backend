@@ -200,6 +200,8 @@ services:
         condition: service_started
       registration:
         condition: service_started
+      kafka:
+        condition: service_started
     environment:
       ASPNETCORE_ENVIRONMENT: "${ASPNETCORE_ENVIRONMENT:-Development}"
 
