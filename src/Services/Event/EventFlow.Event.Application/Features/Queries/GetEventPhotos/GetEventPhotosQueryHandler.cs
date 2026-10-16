@@ -16,9 +16,9 @@ namespace EventFlow.Event.Application.Features.Queries.GetEventPhotos
             CancellationToken cancellationToken)
         {
             // Anonymous callers may only ever see visible photos; authenticated callers may request hidden ones.
-            var visibleOnly = currentUser.UserId == Guid.Empty
-                ? true
-                : request.VisibleOnly;
+            var visibleOnly = currentUser.IsAuthenticated
+                ? request.VisibleOnly
+                : true;
 
             var paged = await photoRepository.GetPagedByEventIdAsync(
                 request.EventId,
