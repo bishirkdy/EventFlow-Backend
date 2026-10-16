@@ -36,7 +36,7 @@ namespace EventFlow.Event.Api.Mappings
             CreateMap<CreateEventResult, CreateEventResponse>();
 
             CreateMap<
-                EventFlow.Event.Application.Features.Events.Queries.GetEvents.GetEventResponse,
+                EventFlow.Event.Application.Features.Events.Common.GetEventResponse,
                 EventFlow.Event.Api.Responses.Events.GetEventResponse>();
 
             CreateMap<UpdateEventRequest, UpdateEventCommand>();

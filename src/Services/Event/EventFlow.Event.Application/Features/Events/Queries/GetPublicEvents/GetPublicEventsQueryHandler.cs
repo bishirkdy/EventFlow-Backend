@@ -1,6 +1,6 @@
 using AutoMapper;
 using EventFlow.Event.Application.Abstractions.Persistence;
-using EventFlow.Event.Application.Features.Events.Queries.GetEvents;
+using EventFlow.Event.Application.Features.Events.Common;
 using MediatR;
 
 namespace EventFlow.Event.Application.Features.Events.Queries.GetPublicEvents;

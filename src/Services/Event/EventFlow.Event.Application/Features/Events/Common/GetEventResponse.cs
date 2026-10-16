@@ -1,6 +1,4 @@
-using EventFlow.Event.Application.Features.Events.Common;
-
-namespace EventFlow.Event.Application.Features.Events.Queries.GetEvents
+namespace EventFlow.Event.Application.Features.Events.Common
 {
     public sealed class GetEventResponse
     {

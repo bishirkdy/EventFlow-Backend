@@ -2,6 +2,7 @@ using AutoMapper;
 using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.Event.Application.Abstractions.Services;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace EventFlow.Event.Application.Features.Events.Queries.GetMyEvents;
 
@@ -9,7 +10,8 @@ public sealed class GetMyEventsQueryHandler(
     IEventRepository eventRepository,
     IMapper mapper,
     IUserDirectoryClient userDirectoryClient,
-    IRegistrationClient registrationClient)
+    IRegistrationClient registrationClient,
+    ILogger<GetMyEventsQueryHandler> logger)
     : IRequestHandler<GetMyEventsQuery, IReadOnlyList<GetMyEventsResponse>>
 {
     public async Task<IReadOnlyList<GetMyEventsResponse>> Handle(
@@ -31,8 +33,14 @@ public sealed class GetMyEventsQueryHandler(
                 request.UserId,
                 cancellationToken);
         }
-        catch
+        catch (Exception ex)
         {
+            // Registration data is optional here; the event list still loads without it.
+            logger.LogWarning(
+                ex,
+                "Failed to load registered event ids for user {UserId}.",
+                request.UserId);
+
             registeredEventIds = [];
         }
 
