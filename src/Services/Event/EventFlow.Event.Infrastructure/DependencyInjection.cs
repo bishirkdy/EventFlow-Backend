@@ -28,7 +28,6 @@ namespace EventFlow.Event.Infrastructure
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IEventRepository, EventRepository>();
-            services.AddScoped<IEventSettingsRepository, EventSettingsRepository>();
             services.AddScoped<ISectionRepository, SectionRepository>();
             services.AddScoped<ISessionRepository, SessionRepository>();
             services.AddScoped<ISpeakerRepository, SpeakerRepository>();

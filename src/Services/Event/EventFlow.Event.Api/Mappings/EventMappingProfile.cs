@@ -1,7 +1,6 @@
 using AutoMapper;
 using EventFlow.Event.Api.Requests.EventPages;
 using EventFlow.Event.Api.Requests.Events;
-using EventFlow.Event.Api.Requests.EventSettings;
 using EventFlow.Event.Api.Requests.PageSection;
 using EventFlow.Event.Api.Requests.Sections;
 using EventFlow.Event.Api.Responses.Events;
@@ -10,7 +9,6 @@ using EventFlow.Event.Application.Features.EventPages.Commands.CreateEventPage;
 using EventFlow.Event.Application.Features.Events.Commands.CreateEvent;
 using EventFlow.Event.Application.Features.Events.Commands.UpdateEvent;
 using EventFlow.Event.Application.Features.Events.Queries.GetEventById;
-using EventFlow.Event.Application.Features.EventSettings.Commands.UpdateEventSettings;
 using EventFlow.Event.Application.Features.PageSection.Commands.CreatePageSection;
 using EventFlow.Event.Application.Features.PageSection.Commands.UpdatePageSection;
 using EventFlow.Event.Application.Features.Sections.Commands.CreateSection;
@@ -40,9 +38,6 @@ namespace EventFlow.Event.Api.Mappings
                 EventFlow.Event.Api.Responses.Events.GetEventResponse>();
 
             CreateMap<UpdateEventRequest, UpdateEventCommand>();
-
-            //Event settings
-            CreateMap<UpdateEventSettingsRequest, UpdateEventSettingsCommand>();
 
             //Event Features
             CreateMap<EventFeature, GetEventFeaturesResponse>()

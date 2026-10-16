@@ -270,49 +270,6 @@ namespace EventFlow.Event.Infrastructure.Migrations
                     b.ToTable("EventPhotos", (string)null);
                 });
 
-            modelBuilder.Entity("EventFlow.Event.Domain.Entities.EventSettings", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("AttendanceEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("CertificateEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("DefaultLanguage")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
-
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("FeedbackEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("GalleryEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("RegistrationEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventId")
-                        .IsUnique();
-
-                    b.ToTable("EventSettings", (string)null);
-                });
-
             modelBuilder.Entity("EventFlow.Event.Domain.Entities.EventType", b =>
                 {
                     b.Property<Guid>("Id")
