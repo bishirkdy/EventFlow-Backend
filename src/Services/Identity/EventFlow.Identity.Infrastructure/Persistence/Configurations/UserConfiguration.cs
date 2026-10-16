@@ -31,6 +31,10 @@ namespace EventFlow.Identity.Infrastructure.Persistence.Configurations
             builder.Property(x => x.IsActive)
                 .IsRequired();
 
+            builder.Property(x => x.IsPlatformAdmin)
+                .IsRequired()
+                .HasDefaultValue(false);
+
             builder.Property(x => x.CreatedAt)
                 .IsRequired();
 

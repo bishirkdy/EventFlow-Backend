@@ -30,6 +30,9 @@ namespace EventFlow.Identity.Domain.Entities
         public string LastName { get; private set; } = null!;
         public bool IsActive { get; private set; }
 
+        // Platform administrators can oversee every event and user in the system.
+        public bool IsPlatformAdmin { get; private set; }
+
         // Navigation property for refresh tokens belonging to this user
         public ICollection<RefreshToken> RefreshTokens { get; private set; } = new List<RefreshToken>();
         public ICollection<UserEventRole> UserEventRoles { get; private set; }= new List<UserEventRole>();
@@ -51,6 +54,12 @@ namespace EventFlow.Identity.Domain.Entities
         public void Activate()
         {
             IsActive = true;
+            SetUpdatedAt();
+        }
+
+        public void GrantPlatformAdmin()
+        {
+            IsPlatformAdmin = true;
             SetUpdatedAt();
         }
     }
