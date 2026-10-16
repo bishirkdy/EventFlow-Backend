@@ -17,6 +17,14 @@ public sealed class EventPermissionMiddleware(RequestDelegate next, EventAuthori
             return;
         }
 
+        // Platform-admin endpoints (e.g. the read-only admin console) are already
+        // gated by the PlatformAdmin policy, so they must not require event roles.
+        if (RequiresPlatformAdmin(context))
+        {
+            await next(context);
+            return;
+        }
+
         // Claim ownership is authorized by the command handler,
         // which verifies that the authenticated user created the event.
         if (IsClaimOwnerRequest(context))
@@ -62,6 +70,15 @@ public sealed class EventPermissionMiddleware(RequestDelegate next, EventAuthori
         }
 
         await next(context);
+    }
+
+    private static bool RequiresPlatformAdmin(HttpContext context)
+    {
+        var authorizeData = context.GetEndpoint()?.Metadata.GetOrderedMetadata<IAuthorizeData>();
+
+        return authorizeData is not null &&
+               authorizeData.Any(data =>
+                   string.Equals(data.Policy, PlatformAdminPolicy.Name, StringComparison.Ordinal));
     }
 
     private static string[] ResolveRequiredPermissions(HttpRequest request)
