@@ -1,3 +1,5 @@
+using EventFlow.Contracts.Common;
+using EventFlow.Identity.Application.Abstractions.ReadModels;
 using EventFlow.Identity.Application.Abstractions.Repositories;
 using EventFlow.Identity.Domain.Entities;
 using EventFlow.Identity.Infrastructure.Persistence;
@@ -43,6 +45,57 @@ namespace EventFlow.Identity.Infrastructure.Persistence.Repositories
         public async Task<bool> ExistsByUserNameAsync(string userName, CancellationToken cancellationToken)
         {
             return await context.Users.AnyAsync(x => x.UserName == userName,cancellationToken);
+        }
+
+        // Get users by pagination for the admin console.
+        public async Task<PaginatedResponse<User>> GetPagedAsync(
+            int page,
+            int pageSize,
+            string? search,
+            CancellationToken cancellationToken)
+        {
+            var query = context.Users.AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var term = search.Trim();
+                query = query.Where(x =>
+                    EF.Functions.ILike(x.Email, $"%{term}%") ||
+                    EF.Functions.ILike(x.UserName, $"%{term}%") ||
+                    EF.Functions.ILike(x.FirstName, $"%{term}%") ||
+                    EF.Functions.ILike(x.LastName, $"%{term}%"));
+            }
+
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            var items = await query
+                .OrderByDescending(x => x.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return new PaginatedResponse<User>
+            {
+                Items = items,
+                PageNumber = page,
+                PageSize = pageSize,
+                TotalCount = totalCount
+            };
+        }
+
+        // Get aggregate user counts in a single query.
+        public async Task<UserCountStats> GetCountsAsync(CancellationToken cancellationToken)
+        {
+            var counts = await context.Users
+                .AsNoTracking()
+                .GroupBy(_ => 1)
+                .Select(group => new UserCountStats(
+                    group.Count(),
+                    group.Count(x => x.IsActive),
+                    group.Count(x => x.IsPlatformAdmin)))
+                .FirstOrDefaultAsync(cancellationToken);
+
+            return counts ?? new UserCountStats(0, 0, 0);
         }
     }
 }

@@ -1,3 +1,4 @@
+using EventFlow.Contracts.Common;
 using EventFlow.Identity.Domain.Entities;
 
 namespace EventFlow.Identity.Application.Abstractions.Repositories
@@ -14,6 +15,12 @@ namespace EventFlow.Identity.Application.Abstractions.Repositories
 
         Task<bool> ExistsByEmailAsync(string email,CancellationToken cancellationToken);
         Task<bool> ExistsByUserNameAsync(string userName,CancellationToken cancellationToken);
+
+        // Get users by pagination for the admin console.
+        Task<PaginatedResponse<User>> GetPagedAsync(int page, int pageSize, string? search, CancellationToken cancellationToken);
+
+        // Get aggregate user counts in a single query.
+        Task<Abstractions.ReadModels.UserCountStats> GetCountsAsync(CancellationToken cancellationToken);
 
     }
 }
