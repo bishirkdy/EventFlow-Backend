@@ -166,6 +166,37 @@ namespace EventFlow.Operations.Infrastructure.Persistence.Migrations
 
                     b.ToTable("Notifications");
                 });
+
+            modelBuilder.Entity("EventFlow.Operations.Domain.Entities.ProcessedMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Consumer")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ProcessedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Consumer", "MessageId")
+                        .IsUnique();
+
+                    b.ToTable("ProcessedMessages");
+                });
 #pragma warning restore 612, 618
         }
     }

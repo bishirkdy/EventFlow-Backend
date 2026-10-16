@@ -1,142 +1,55 @@
-using Confluent.Kafka;
 using EventFlow.Messaging.Events;
 using EventFlow.Messaging.Kafka;
 using EventFlow.Operations.Application.Abstractions;
 using EventFlow.Operations.Domain.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Text.Json;
 
 namespace EventFlow.Operations.Infrastructure.Background;
 
-public sealed class EventInvitationCreatedConsumer(IServiceScopeFactory scopeFactory, IOptions<KafkaOptions> kafkaOptions,
-    IConfiguration configuration , ILogger<EventInvitationCreatedConsumer> logger): BackgroundService
+// Turns an invitation-created event into a queued notification email.
+public sealed class EventInvitationCreatedConsumer : KafkaConsumerBase<EventInvitationCreatedEvent>
 {
-    private const string Topic = "event-invitation-created";
-    private const string GroupId = "operations-event-invitation";
-
     private const int PhotographerType = 1;
     private const int OrganizerType = 2;
     private const int AttendanceStaffType = 3;
 
-    private readonly string _frontendBaseUrl = configuration["Frontend:BaseUrl"] ?? throw new InvalidOperationException("Frontend:BaseUrl is not configured.");
+    private readonly string _frontendBaseUrl;
 
-    protected override async Task ExecuteAsync( CancellationToken stoppingToken)
+    public EventInvitationCreatedConsumer(
+        IServiceScopeFactory scopeFactory,
+        IOptions<KafkaOptions> kafkaOptions,
+        IKafkaProducer producer,
+        ILoggerFactory loggerFactory,
+        IConfiguration configuration)
+        : base(scopeFactory, kafkaOptions, producer, loggerFactory)
     {
-        var config = new ConsumerConfig
-        {
-            BootstrapServers = kafkaOptions.Value.BootstrapServers,
-            GroupId = GroupId,
-            AutoOffsetReset = AutoOffsetReset.Earliest,
-            EnableAutoCommit = false
-        };
+        _frontendBaseUrl = configuration["Frontend:BaseUrl"]
+            ?? throw new InvalidOperationException("Frontend:BaseUrl is not configured.");
+    }
 
-        using var consumer =
-            new ConsumerBuilder<string, string>(config)
-                .SetErrorHandler((_, error) =>
-                {
-                    logger.LogError(
-                        "Kafka consumer error: {Reason}",
-                        error.Reason);
-                })
-                .SetPartitionsAssignedHandler((_, partitions) =>
-                {
-                    logger.LogInformation(
-                        "Kafka partitions assigned: {Partitions}",
-                        string.Join(", ", partitions));
-                })
-                .SetPartitionsRevokedHandler((_, partitions) =>
-                {
-                    logger.LogWarning(
-                        "Kafka partitions revoked: {Partitions}",
-                        string.Join(", ", partitions));
-                })
-                .Build();
+    protected override string Topic => "event-invitation-created";
 
-        consumer.Subscribe(Topic);
+    protected override string GroupId => "operations-event-invitation";
 
-        try
-        {
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                logger.LogInformation(
-                    "Waiting for event invitation Kafka message...");
+    protected override string ConsumerName => "operations-event-invitation";
 
-                var result = consumer.Consume(stoppingToken);
+    protected override Task HandleMessageAsync(
+        EventInvitationCreatedEvent message,
+        IOperationsDbContext db,
+        CancellationToken cancellationToken)
+    {
+        db.Notifications.Add(new Notification(
+            message.EventId,
+            null,
+            message.Email,
+            BuildSubject(message),
+            BuildEmailBody(message),
+            DateTime.UtcNow));
 
-                if (result?.Message?.Value is null)
-                {
-                    logger.LogWarning(
-                        "Received Kafka message with empty value.");
-
-                    continue;
-                }
-
-                EventInvitationCreatedEvent? message;
-
-                try
-                {
-                    message =
-                        JsonSerializer.Deserialize<EventInvitationCreatedEvent>(
-                            result.Message.Value);
-                }
-                catch (JsonException exception)
-                {
-                    logger.LogError(
-                        exception,
-                        "Failed to deserialize event invitation Kafka message.");
-
-                    continue;
-                }
-
-                if (message is null)
-                {
-                    logger.LogWarning(
-                        "Received invalid event invitation event.");
-
-                    continue;
-                }
-
-                using var scope = scopeFactory.CreateScope();
-
-                var db = scope.ServiceProvider
-                    .GetRequiredService<IOperationsDbContext>();
-
-                db.Notifications.Add(new Notification(
-                    message.EventId,
-                    null,
-                    message.Email,
-                    BuildSubject(message),
-                    BuildEmailBody(message),
-                    DateTime.UtcNow));
-
-                await db.SaveChangesAsync(stoppingToken);
-
-                consumer.Commit(result);
-            }
-        }
-        catch (OperationCanceledException)
-            when (stoppingToken.IsCancellationRequested)
-        {
-            logger.LogInformation(
-                "Event invitation Kafka consumer stopped.");
-        }
-        catch (Exception exception)
-        {
-            logger.LogError(
-                exception,
-                "Event invitation Kafka consumer stopped because of an unexpected error.");
-        }
-        finally
-        {
-            consumer.Close();
-
-            logger.LogInformation(
-                "Event invitation Kafka consumer closed.");
-        }
+        return Task.CompletedTask;
     }
 
     private static string BuildSubject(EventInvitationCreatedEvent message) =>

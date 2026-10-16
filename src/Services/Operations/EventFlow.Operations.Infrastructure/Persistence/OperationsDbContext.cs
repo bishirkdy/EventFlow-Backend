@@ -9,6 +9,7 @@ public sealed class OperationsDbContext(DbContextOptions<OperationsDbContext> op
     public DbSet<AttendanceStaffAssignment> AttendanceStaffAssignments => Set<AttendanceStaffAssignment>();
     public DbSet<AttendanceRecord> AttendanceRecords => Set<AttendanceRecord>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<ProcessedMessage> ProcessedMessages => Set<ProcessedMessage>();
 
     protected override void OnModelCreating(ModelBuilder m)
     {
@@ -78,6 +79,28 @@ public sealed class OperationsDbContext(DbContextOptions<OperationsDbContext> op
             b.Property(x => x.Subject)
                 .HasMaxLength(300)
                 .IsRequired();
+
+            // Audit fields from the base entity.
+            b.Property(x => x.CreatedAt)
+                .IsRequired();
+
+            b.Property(x => x.UpdatedAt);
+        });
+
+        m.Entity<ProcessedMessage>(b =>
+        {
+            b.HasKey(x => x.Id);
+
+            b.Property(x => x.Consumer)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            b.HasIndex(x => new
+            {
+                x.Consumer,
+                x.MessageId
+            })
+            .IsUnique();
 
             // Audit fields from the base entity.
             b.Property(x => x.CreatedAt)
