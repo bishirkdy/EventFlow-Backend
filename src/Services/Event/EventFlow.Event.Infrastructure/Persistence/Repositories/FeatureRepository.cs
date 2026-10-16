@@ -10,6 +10,7 @@ namespace EventFlow.Event.Infrastructure.Persistence.Repositories
         public async Task<IReadOnlyList<Feature>> GetActiveAsync(CancellationToken cancellationToken = default)
         {
             return await Context.Features
+                .AsNoTracking()
                 .Where(x => x.IsActive)
                 .OrderBy(x => x.Name)
                 .ToListAsync(cancellationToken);
@@ -17,7 +18,7 @@ namespace EventFlow.Event.Infrastructure.Persistence.Repositories
 
         public Task<Feature?> GetByCodeAsync(string code, CancellationToken cancellationToken = default)
         {
-            return Context.Features.FirstOrDefaultAsync(x => x.Code == code && x.IsActive, cancellationToken);
+            return Context.Features.AsNoTracking().FirstOrDefaultAsync(x => x.Code == code && x.IsActive, cancellationToken);
         }
     }
 }

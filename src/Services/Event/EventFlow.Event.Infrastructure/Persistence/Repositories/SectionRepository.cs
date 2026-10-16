@@ -10,6 +10,7 @@ namespace EventFlow.Event.Infrastructure.Persistence.Repositories
         public async Task<IReadOnlyList<Section>> GetByEventIdAsync(Guid eventId, CancellationToken cancellationToken = default)
         {
             return await Context.Set<Section>()
+                .AsNoTracking()
                 .Where(x => x.EventId == eventId)
                 .OrderBy(x => x.DisplayOrder)
                 .ToListAsync(cancellationToken);

@@ -15,6 +15,7 @@ public sealed class EventTypeFeatureRepository : GenericRepository<EventTypeFeat
         Guid eventTypeId, CancellationToken cancellationToken = default)
     {
         return await Context.EventTypeFeatures
+            .AsNoTracking()
             .Where(x => x.EventTypeId == eventTypeId)
             .ToListAsync(cancellationToken);
     }

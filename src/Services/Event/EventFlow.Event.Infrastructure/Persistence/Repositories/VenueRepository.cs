@@ -11,6 +11,7 @@ namespace EventFlow.Event.Infrastructure.Persistence.Repositories
         {
             // Get venues belonging to event
             return await Context.Venues
+                .AsNoTracking()
                 .Where(x => x.EventId == eventId)
                 .OrderBy(x => x.Name)
                 .ToListAsync(cancellationToken);

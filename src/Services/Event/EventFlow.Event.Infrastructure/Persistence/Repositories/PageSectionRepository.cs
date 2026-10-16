@@ -20,7 +20,7 @@ public sealed class PageSectionRepository(EventCoreDbContext context)
         bool includeUnpublished,
         CancellationToken cancellationToken = default)
     {
-        var query = Context.PageSections.Where(x => x.PageId == pageId);
+        var query = Context.PageSections.AsNoTracking().Where(x => x.PageId == pageId);
 
         if (!includeUnpublished)
         {
@@ -42,7 +42,7 @@ public sealed class PageSectionRepository(EventCoreDbContext context)
         bool includeUnpublished = false,
         CancellationToken cancellationToken = default)
     {
-        var query = Context.PageSections.Where(section =>
+        var query = Context.PageSections.AsNoTracking().Where(section =>
             Context.EventPages.Any(page => page.Id == section.PageId && page.EventId == eventId));
 
         if (!includeUnpublished)

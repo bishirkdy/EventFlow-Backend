@@ -16,6 +16,7 @@ public sealed class EventTypeRepository : GenericRepository<EventType>, IEventTy
         EventTypeCode code, CancellationToken cancellationToken)
     {
         return await Context.EventTypes
+            .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Code == code, cancellationToken);
     }
 
@@ -23,6 +24,7 @@ public sealed class EventTypeRepository : GenericRepository<EventType>, IEventTy
         CancellationToken cancellationToken)
     {
         return await Context.EventTypes
+            .AsNoTracking()
             .Where(x => x.IsActive)
             .OrderBy(x => x.Name)
             .ToListAsync(cancellationToken);
