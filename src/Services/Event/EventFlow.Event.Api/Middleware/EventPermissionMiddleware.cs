@@ -1,4 +1,5 @@
 using EventFlow.Security.Authentication;
+using EventFlow.Security.Authorization;
 using EventAuthorizationService =
     EventFlow.Event.Application.Abstractions.Authorization.IAuthorizationService;
 using Microsoft.AspNetCore.Authorization;
@@ -69,7 +70,7 @@ public sealed class EventPermissionMiddleware(RequestDelegate next, EventAuthori
 
         if (path.Contains("/feedback", StringComparison.OrdinalIgnoreCase))
         {
-            return ["event.view"];
+            return [PermissionConstants.Event.View];
         }
 
         var isPhotoRequest = path.Contains(
@@ -79,22 +80,22 @@ public sealed class EventPermissionMiddleware(RequestDelegate next, EventAuthori
         if (isPhotoRequest)
         {
             if (HttpMethods.IsGet(request.Method))
-                return ["event.view", "photo.view"];
+                return [PermissionConstants.Event.View, PermissionConstants.Photo.View];
 
             if (HttpMethods.IsPost(request.Method))
-                return ["photo.upload", "event.update"];
+                return [PermissionConstants.Photo.Upload, PermissionConstants.Event.Update];
 
             if (HttpMethods.IsDelete(request.Method))
-                return ["photo.manage", "event.update"];
+                return [PermissionConstants.Photo.Manage, PermissionConstants.Event.Update];
 
             // Visibility moderation is organizer-only.
             if (HttpMethods.IsPatch(request.Method) || HttpMethods.IsPut(request.Method))
-                return ["event.update"];
+                return [PermissionConstants.Event.Update];
         }
 
         return HttpMethods.IsGet(request.Method)
-            ? ["event.view"]
-            : ["event.update"];
+            ? [PermissionConstants.Event.View]
+            : [PermissionConstants.Event.Update];
     }
 
     private static bool IsClaimOwnerRequest(HttpContext context)

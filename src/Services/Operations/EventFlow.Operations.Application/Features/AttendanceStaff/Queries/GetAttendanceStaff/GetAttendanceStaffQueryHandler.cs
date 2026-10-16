@@ -3,6 +3,7 @@ using EventFlow.Operations.Application.Abstractions;
 using EventFlow.Operations.Application.Contracts;
 using EventFlow.Operations.Domain.Entities;
 using EventFlow.Security.Authentication;
+using EventFlow.Security.Authorization;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +25,7 @@ public sealed class GetAttendanceStaffQueryHandler(
         if (!await authorization.HasPermissionAsync(
                 currentUser.UserId,
                 query.EventId,
-                "event.view",
+                PermissionConstants.Event.View,
                 cancellationToken))
         {
             throw new ForbiddenException("You do not have permission to view attendance staff.");

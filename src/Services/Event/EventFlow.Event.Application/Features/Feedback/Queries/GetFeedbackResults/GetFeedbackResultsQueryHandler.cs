@@ -2,6 +2,7 @@ using EventFlow.Event.Application.Abstractions.Authorization;
 using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.Event.Application.Common;
 using EventFlow.Event.Domain.Enums;
+using EventFlow.Security.Authorization;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
@@ -26,7 +27,7 @@ public sealed class GetFeedbackResultsQueryHandler(
         var canViewResults = await authorizationService.HasPermissionAsync(
             request.RequestedBy,
             request.EventId,
-            "event.update",
+            PermissionConstants.Event.Update,
             cancellationToken);
 
         if (!canViewResults)

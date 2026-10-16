@@ -1,6 +1,7 @@
 using EventFlow.Event.Application.Abstractions.Authorization;
 using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.Event.Application.Abstractions.Storage;
+using EventFlow.Security.Authorization;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
@@ -39,7 +40,7 @@ namespace EventFlow.Event.Application.Features.Commands.DeleteEventPhoto
                 var canManageAnyPhoto = await _authorizationService.HasPermissionAsync(
                     request.RequestedBy,
                     photo.EventId,
-                    "event.update",
+                    PermissionConstants.Event.Update,
                     cancellationToken);
 
                 if (!canManageAnyPhoto)

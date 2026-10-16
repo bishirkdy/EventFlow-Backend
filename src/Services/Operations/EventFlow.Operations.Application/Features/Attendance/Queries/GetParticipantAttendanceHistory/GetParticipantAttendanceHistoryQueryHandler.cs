@@ -1,6 +1,7 @@
 using EventFlow.Operations.Application.Abstractions;
 using EventFlow.Operations.Application.Contracts;
 using EventFlow.Security.Authentication;
+using EventFlow.Security.Authorization;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +23,7 @@ public sealed class GetParticipantAttendanceHistoryQueryHandler(
 
         if (actorUserId != query.ParticipantUserId
             && !await authorization.HasPermissionAsync(
-                actorUserId, query.EventId, "event.view", cancellationToken))
+                actorUserId, query.EventId, PermissionConstants.Event.View, cancellationToken))
         {
             throw new ForbiddenException("You do not have access to this attendance history.");
         }

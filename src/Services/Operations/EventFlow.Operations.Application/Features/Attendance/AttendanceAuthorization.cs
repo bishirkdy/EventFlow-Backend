@@ -1,5 +1,6 @@
 using EventFlow.Operations.Application.Abstractions;
 using EventFlow.Operations.Domain.Enums;
+using EventFlow.Security.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventFlow.Operations.Application.Features.Attendance;
@@ -16,7 +17,7 @@ internal static class AttendanceAuthorization
         CancellationToken cancellationToken)
     {
         if (await authorization.HasPermissionAsync(
-                userId, eventId, "event.team.manage", cancellationToken))
+                userId, eventId, PermissionConstants.Event.TeamManage, cancellationToken))
         {
             return true;
         }

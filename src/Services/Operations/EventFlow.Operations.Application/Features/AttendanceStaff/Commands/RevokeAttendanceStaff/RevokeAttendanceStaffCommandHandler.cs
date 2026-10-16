@@ -1,5 +1,6 @@
 using EventFlow.Operations.Application.Abstractions;
 using EventFlow.Security.Authentication;
+using EventFlow.Security.Authorization;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +25,7 @@ public sealed class RevokeAttendanceStaffCommandHandler(
         if (!await authorization.HasPermissionAsync(
                 currentUser.UserId,
                 command.EventId,
-                "event.team.manage",
+                PermissionConstants.Event.TeamManage,
                 cancellationToken))
         {
             throw new ForbiddenException(

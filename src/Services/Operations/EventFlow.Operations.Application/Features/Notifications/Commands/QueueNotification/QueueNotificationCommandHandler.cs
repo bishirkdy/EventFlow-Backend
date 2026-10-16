@@ -3,6 +3,7 @@ using EventFlow.Operations.Application.Abstractions;
 using EventFlow.Operations.Application.Contracts;
 using EventFlow.Operations.Domain.Entities;
 using EventFlow.Security.Authentication;
+using EventFlow.Security.Authorization;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
@@ -22,7 +23,7 @@ public sealed class QueueNotificationCommandHandler(
         if (!await authorization.HasPermissionAsync(
                 currentUser.UserId,
                 command.EventId,
-                "event.update",
+                PermissionConstants.Event.Update,
                 cancellationToken))
         {
             throw new ForbiddenException(
