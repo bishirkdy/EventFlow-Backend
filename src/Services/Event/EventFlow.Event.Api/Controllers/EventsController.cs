@@ -100,15 +100,18 @@ public sealed class EventsController(
             "Published event retrieved successfully."));
     }
 
+    // Publicly readable: anonymous callers only ever see published events; authenticated callers see full detail.
+    [AllowAnonymous]
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<GetEventResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetById(
         Guid id,
         CancellationToken cancellationToken)
     {
-        var result = await sender.Send(new GetEventByIdQuery(id), cancellationToken);
+        var result = await sender.Send(
+            new GetEventByIdQuery(id, PublicOnly: !currentUserService.IsAuthenticated),
+            cancellationToken);
 
         if (result is null)
         {
