@@ -2,8 +2,7 @@ using EventFlow.Identity.Application.Abstractions.Repositories;
 using EventFlow.Identity.Application.Abstractions.Services;
 using EventFlow.Identity.Domain.Entities;
 using EventFlow.Identity.Domain.Enums;
-using EventFlow.Messaging.Events;
-using EventFlow.Messaging.Kafka;
+using EventFlow.Messaging.Outbox;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
@@ -15,20 +14,20 @@ namespace EventFlow.Identity.Application.Features.EventInvitations.Commands.Acce
         private readonly IUserRepository _userRepository;
         private readonly IUserEventRoleRepository _userEventRoleRepository;
         private readonly IPasswordHasher _passwordHasher;
-        private readonly IKafkaProducer _kafkaProducer;
+        private readonly IOutbox _outbox;
 
         public AcceptEventInvitationCommandHandler(
             IEventInvitationRepository invitationRepository,
             IUserRepository userRepository,
             IUserEventRoleRepository userEventRoleRepository,
             IPasswordHasher passwordHasher,
-            IKafkaProducer kafkaProducer)
+            IOutbox outbox)
         {
             _invitationRepository = invitationRepository;
             _userRepository = userRepository;
             _userEventRoleRepository = userEventRoleRepository;
             _passwordHasher = passwordHasher;
-            _kafkaProducer = kafkaProducer;
+            _outbox = outbox;
         }
 
         public async Task<AcceptEventInvitationResponse> Handle(AcceptEventInvitationCommand request, CancellationToken cancellationToken)
@@ -78,13 +77,8 @@ namespace EventFlow.Identity.Application.Features.EventInvitations.Commands.Acce
 
             // Mark invitation as accepted
             invitation.Accept(userId);
+            EventInvitationAcceptance.EnqueueAcceptedIfAttendance(_outbox, invitation, userId);
             await _invitationRepository.UpdateAsync(invitation, cancellationToken);
-
-            await EventInvitationAcceptance.PublishAcceptedIfAttendanceAsync(
-                _kafkaProducer,
-                invitation,
-                userId,
-                cancellationToken);
 
             return new AcceptEventInvitationResponse(userId, invitation.Id);
         }

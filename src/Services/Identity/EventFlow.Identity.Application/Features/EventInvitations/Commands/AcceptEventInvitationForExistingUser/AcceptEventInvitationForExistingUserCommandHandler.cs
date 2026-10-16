@@ -1,7 +1,7 @@
 using EventFlow.Identity.Application.Abstractions.Repositories;
 using EventFlow.Identity.Application.Features.EventInvitations.Commands.AcceptEventInvitation;
 using EventFlow.Identity.Domain.Enums;
-using EventFlow.Messaging.Kafka;
+using EventFlow.Messaging.Outbox;
 using EventFlow.Security.Authentication;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
@@ -13,7 +13,7 @@ public sealed class AcceptEventInvitationForExistingUserCommandHandler(
     IUserRepository userRepository,
     IUserEventRoleRepository userEventRoleRepository,
     ICurrentUserService currentUser,
-    IKafkaProducer kafkaProducer)
+    IOutbox outbox)
     : IRequestHandler<AcceptEventInvitationForExistingUserCommand, AcceptEventInvitationResponse>
 {
     public async Task<AcceptEventInvitationResponse> Handle(
@@ -56,13 +56,8 @@ public sealed class AcceptEventInvitationForExistingUserCommandHandler(
             cancellationToken);
 
         invitation.Accept(user.Id);
+        EventInvitationAcceptance.EnqueueAcceptedIfAttendance(outbox, invitation, user.Id);
         await invitationRepository.UpdateAsync(invitation, cancellationToken);
-
-        await EventInvitationAcceptance.PublishAcceptedIfAttendanceAsync(
-            kafkaProducer,
-            invitation,
-            user.Id,
-            cancellationToken);
 
         return new AcceptEventInvitationResponse(user.Id, invitation.Id);
     }

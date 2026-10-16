@@ -1,10 +1,11 @@
 using EventFlow.Identity.Domain.Entities;
+using EventFlow.Messaging.Outbox;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventFlow.Identity.Infrastructure.Persistence
 {
     // Represents the EF Core database context for the Identity service.
-    public class IdentityDbContext : DbContext
+    public class IdentityDbContext : DbContext, IOutboxDbContext
     {
         public IdentityDbContext(DbContextOptions<IdentityDbContext> dbContextOptions) : base(dbContextOptions) { }
         public DbSet<User> Users => Set<User>();
@@ -14,10 +15,12 @@ namespace EventFlow.Identity.Infrastructure.Persistence
         public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
         public DbSet<UserEventRole> UserEventRoles => Set<UserEventRole>();
         public DbSet<EventInvitation> EventInvitations => Set<EventInvitation>();
+        public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(IdentityDbContext).Assembly);
+            modelBuilder.ApplyOutbox();
             base.OnModelCreating(modelBuilder);
             IdentitySeedData.Seed(modelBuilder);
         }

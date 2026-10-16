@@ -24,6 +24,7 @@ namespace EventFlow.Identity.Infrastructure
             });
 
             services.AddEventFlowMessaging(configuration);
+            services.AddOutbox<IdentityDbContext>(configuration);
             // Bind Jwt configuration to JwtOptions.
             services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
 

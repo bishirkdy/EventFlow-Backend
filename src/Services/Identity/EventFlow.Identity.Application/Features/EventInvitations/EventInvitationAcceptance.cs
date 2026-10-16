@@ -2,7 +2,7 @@ using EventFlow.Identity.Application.Abstractions.Repositories;
 using EventFlow.Identity.Domain.Entities;
 using EventFlow.Identity.Domain.Enums;
 using EventFlow.Messaging.Events;
-using EventFlow.Messaging.Kafka;
+using EventFlow.Messaging.Outbox;
 
 namespace EventFlow.Identity.Application.Features.EventInvitations;
 
@@ -29,20 +29,20 @@ internal static class EventInvitationAcceptance
         }
     }
 
-    public static async Task PublishAcceptedIfAttendanceAsync(
-        IKafkaProducer kafkaProducer,
+    public static void EnqueueAcceptedIfAttendance(
+        IOutbox outbox,
         EventInvitation invitation,
-        Guid userId,
-        CancellationToken cancellationToken)
+        Guid userId)
     {
         if (invitation.Type != EventInvitationType.AttendanceStaff)
         {
             return;
         }
 
-        await kafkaProducer.PublishAsync("attendance-staff-invitation-accepted",
+        outbox.Enqueue("attendance-staff-invitation-accepted",
             new AttendanceStaffInvitationAcceptedEvent
             {
+                MessageId = Guid.NewGuid(),
                 EventId = invitation.EventId,
                 EventContextId = invitation.EventId,
                 InvitationId = invitation.Id,
@@ -50,7 +50,6 @@ internal static class EventInvitationAcceptance
                 ScopeType = invitation.ScopeType is null ? null : (int)invitation.ScopeType,
                 ScopeId = invitation.ScopeId,
                 OccurredAtUtc = DateTime.UtcNow
-            },
-            cancellationToken);
+            });
     }
 }

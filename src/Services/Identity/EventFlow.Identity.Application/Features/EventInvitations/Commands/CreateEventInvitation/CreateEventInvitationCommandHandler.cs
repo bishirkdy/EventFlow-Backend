@@ -3,7 +3,7 @@ using EventFlow.Identity.Application.Abstractions.Repositories;
 using EventFlow.Identity.Domain.Entities;
 using EventFlow.Identity.Domain.Enums;
 using EventFlow.Messaging.Events;
-using EventFlow.Messaging.Kafka;
+using EventFlow.Messaging.Outbox;
 using EventFlow.Security.Authentication;
 using EventFlow.Security.Authorization;
 using EventFlow.SharedKernel.Exceptions;
@@ -16,7 +16,7 @@ public sealed class CreateEventInvitationCommandHandler(
     IRoleRepository roleRepository,
     IPermissionService permissions,
     ICurrentUserService currentUser,
-    IKafkaProducer kafkaProducer)
+    IOutbox outbox)
     : IRequestHandler<CreateEventInvitationCommand, CreateEventInvitationResponse>
 {
     public async Task<CreateEventInvitationResponse> Handle(
@@ -59,11 +59,10 @@ public sealed class CreateEventInvitationCommandHandler(
             request.ScopeType,
             request.ScopeId);
 
-        await invitationRepository.AddAsync(invitation, cancellationToken);
-
-        await kafkaProducer.PublishAsync("event-invitation-created",
+        outbox.Enqueue("event-invitation-created",
             new EventInvitationCreatedEvent
             {
+                MessageId = Guid.NewGuid(),
                 EventId = invitation.EventId,
                 EventContextId = invitation.EventId,
                 InvitationId = invitation.Id,
@@ -74,8 +73,9 @@ public sealed class CreateEventInvitationCommandHandler(
                 Token = invitation.Token,
                 ExpiresAt = invitation.ExpiresAt,
                 OccurredAtUtc = DateTime.UtcNow
-            },
-            cancellationToken);
+            });
+
+        await invitationRepository.AddAsync(invitation, cancellationToken);
 
         return new CreateEventInvitationResponse(
             invitation.Id,
