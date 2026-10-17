@@ -1,6 +1,8 @@
 using EventFlow.Contracts.Common;
+using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Features.RegistrationForms.Commands.UpsertRegistrationForm;
 using EventFlow.Registration.Application.Features.RegistrationForms.Queries.GetRegistrationForm;
+using EventFlow.Security.Authentication;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,13 +11,32 @@ namespace EventFlow.Registration.Api.Controllers;
 //Controller for handling registration form
 [ApiController]
 [Route("api/v1/events/{eventId:guid}/registration-form")]
-public sealed class RegistrationFormsController(ISender sender)
+public sealed class RegistrationFormsController(
+    ISender sender,
+    IEventRegistrationAccessService eventAccess,
+    ICurrentUserService currentUser)
     : ControllerBase
 {
     [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> Get(Guid eventId, CancellationToken cancellationToken)
     {
+        // The public registration form is only available once the event is
+        // published; event members may still open it while preparing.
+        if (!await eventAccess.IsEventPublishedAsync(eventId, cancellationToken))
+        {
+            var canPreview = currentUser.IsAuthenticated &&
+                await eventAccess.CanPreviewEventAsync(eventId, currentUser.UserId, cancellationToken);
+
+            if (!canPreview)
+            {
+                return NotFound(ApiResponse<RegistrationFormDto>.Fail(
+                    ["Registration is not open for this event."],
+                    "Registration is not open for this event.",
+                    System.Net.HttpStatusCode.NotFound));
+            }
+        }
+
         var dto = await sender.Send(new GetRegistrationFormQuery(eventId), cancellationToken);
 
         return Ok(ApiResponse<RegistrationFormDto>.Success(dto));

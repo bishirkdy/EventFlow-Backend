@@ -20,6 +20,32 @@ public sealed class EventRegistrationAccessService(IHttpClientFactory factory, I
         return result?.Enabled == true;
     }
 
+    public async Task<bool> IsEventPublishedAsync(Guid eventId, CancellationToken ct = default)
+    {
+        // Publish state is always verified against the Event service; the
+        // dev-only AllowAll switch must not make unpublished events registerable.
+        var client = factory.CreateClient("EventService");
+        using var request = CreateInternalRequest(HttpMethod.Get, $"api/v1/events/{eventId}/public-status");
+        using var response = await client.SendAsync(request, ct);
+
+        if (!response.IsSuccessStatusCode) return false;
+
+        var result = await response.Content.ReadFromJsonAsync<Result>(cancellationToken: ct);
+        return result?.Published == true;
+    }
+
+    public async Task<bool> CanPreviewEventAsync(Guid eventId, Guid userId, CancellationToken ct = default)
+    {
+        var client = factory.CreateClient("EventService");
+        using var request = CreateInternalRequest(HttpMethod.Get, $"api/v1/events/{eventId}/preview-access?userId={userId}");
+        using var response = await client.SendAsync(request, ct);
+
+        if (!response.IsSuccessStatusCode) return false;
+
+        var result = await response.Content.ReadFromJsonAsync<Result>(cancellationToken: ct);
+        return result?.Allowed == true;
+    }
+
     public async Task<bool> CanManageRegistrationAsync(Guid eventId, Guid userId, CancellationToken ct = default)
     {
         if (cfg.GetValue<bool>("Registration:EventAccess:AllowAll")) return true;
@@ -50,5 +76,6 @@ public sealed class EventRegistrationAccessService(IHttpClientFactory factory, I
     {
         public bool Enabled { get; set; }
         public bool Allowed { get; set; }
+        public bool Published { get; set; }
     }
 }

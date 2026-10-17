@@ -1,5 +1,6 @@
 
 using EventFlow.Contracts.Common;
+using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Features.Registrations.Commands.ApproveRegistration;
 using EventFlow.Registration.Application.Features.Registrations.Commands.CancelRegistration;
 using EventFlow.Registration.Application.Features.Registrations.Commands.CreateRegistration;
@@ -21,12 +22,21 @@ namespace EventFlow.Registration.Api.Controllers;
 //Controller for registrations
 [ApiController]
 [Route("api/v1/events/{eventId:guid}/registrations")]
-public sealed class RegistrationsController(ISender sender) : ControllerBase
+public sealed class RegistrationsController(ISender sender, IEventRegistrationAccessService eventAccess) : ControllerBase
 {
     [Authorize]
     [HttpPost]
     public async Task<IActionResult> Create(Guid eventId, CreateRegistrationRequest request, CancellationToken cancellationToken)
     {
+        // Registration only opens once the event is published.
+        if (!await eventAccess.IsEventPublishedAsync(eventId, cancellationToken))
+        {
+            return NotFound(ApiResponse<RegistrationDto>.Fail(
+                ["Registration is not open for this event."],
+                "Registration is not open for this event.",
+                System.Net.HttpStatusCode.NotFound));
+        }
+
         var dto = await sender.Send(new CreateRegistrationCommand(eventId,request), cancellationToken);
 
         return Ok(ApiResponse<RegistrationDto>.Success(
