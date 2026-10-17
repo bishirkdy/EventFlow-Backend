@@ -32,128 +32,185 @@ public abstract class KafkaConsumerBase<TEvent>(
         IOperationsDbContext db,
         CancellationToken cancellationToken);
 
+    // How long a single poll waits before the loop checks its liveness again.
+    private static readonly TimeSpan PollInterval = TimeSpan.FromMilliseconds(500);
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var logger = loggerFactory.CreateLogger(GetType());
         var options = kafkaOptions.Value;
         var retryDelay = TimeSpan.FromSeconds(options.ConsumerRetryBackoffSeconds);
+        var rebuildDelay = TimeSpan.FromSeconds(options.ConsumerRebuildBackoffSeconds);
+        var unassignedTimeout = TimeSpan.FromSeconds(options.ConsumerUnassignedRebuildSeconds);
 
-        var config = new ConsumerConfig
+        // A consumer that loses its partitions (for example when the broker
+        // restarts) can stay revoked forever without rejoining the group. Each
+        // outer iteration owns a consumer; when it is torn down - because it
+        // stayed unassigned for too long or failed unexpectedly - a fresh one is
+        // built so group membership is re-established and lagged messages are
+        // consumed again.
+        while (!stoppingToken.IsCancellationRequested)
         {
-            BootstrapServers = options.BootstrapServers,
-            GroupId = GroupId,
-            AutoOffsetReset = AutoOffsetReset.Earliest,
-            EnableAutoCommit = false
-        };
+            IConsumer<string, string>? consumer = null;
 
-        using var consumer = new ConsumerBuilder<string, string>(config)
-            .SetErrorHandler((_, error) =>
-                logger.LogError("Kafka consumer {Consumer} error: {Reason}", ConsumerName, error.Reason))
-            .SetPartitionsAssignedHandler((_, partitions) =>
-                logger.LogInformation(
-                    "Kafka consumer {Consumer} assigned: {Partitions}",
-                    ConsumerName,
-                    string.Join(", ", partitions)))
-            .SetPartitionsRevokedHandler((_, partitions) =>
-                logger.LogWarning(
-                    "Kafka consumer {Consumer} revoked: {Partitions}",
-                    ConsumerName,
-                    string.Join(", ", partitions)))
-            .Build();
+            var isAssigned = false;
+            var unassignedSince = DateTime.UtcNow;
 
-        consumer.Subscribe(Topic);
-
-        logger.LogInformation("Kafka consumer {Consumer} started on {Topic}.", ConsumerName, Topic);
-
-        try
-        {
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
-                ConsumeResult<string, string>? result;
+                var config = new ConsumerConfig
+                {
+                    BootstrapServers = options.BootstrapServers,
+                    GroupId = GroupId,
+                    AutoOffsetReset = AutoOffsetReset.Earliest,
+                    EnableAutoCommit = false
+                };
 
-                try
-                {
-                    result = consumer.Consume(stoppingToken);
-                }
-                catch (OperationCanceledException)
-                    when (stoppingToken.IsCancellationRequested)
-                {
-                    break;
-                }
-                catch (ConsumeException exception)
-                {
-                    // The broker or a subscribed topic may not be ready yet (for
-                    // example a topic that has not been created). Keep the
-                    // consumer alive and retry instead of stopping the service.
-                    logger.LogWarning(
-                        "Consumer {Consumer} could not consume from {Topic}: {Reason}",
-                        ConsumerName,
-                        Topic,
-                        exception.Error.Reason);
-
-                    await DelayBeforeRetryAsync(retryDelay, stoppingToken);
-                    continue;
-                }
-                catch (KafkaException exception)
-                {
-                    if (exception.Error.IsFatal)
+                consumer = new ConsumerBuilder<string, string>(config)
+                    .SetErrorHandler((_, error) =>
+                        logger.LogError("Kafka consumer {Consumer} error: {Reason}", ConsumerName, error.Reason))
+                    .SetPartitionsAssignedHandler((_, partitions) =>
                     {
-                        throw;
+                        isAssigned = true;
+
+                        logger.LogInformation(
+                            "Kafka consumer {Consumer} assigned: {Partitions}",
+                            ConsumerName,
+                            string.Join(", ", partitions));
+                    })
+                    .SetPartitionsRevokedHandler((_, partitions) =>
+                    {
+                        isAssigned = false;
+                        unassignedSince = DateTime.UtcNow;
+
+                        logger.LogWarning(
+                            "Kafka consumer {Consumer} revoked: {Partitions}",
+                            ConsumerName,
+                            string.Join(", ", partitions));
+                    })
+                    .Build();
+
+                consumer.Subscribe(Topic);
+
+                logger.LogInformation("Kafka consumer {Consumer} started on {Topic}.", ConsumerName, Topic);
+
+                while (!stoppingToken.IsCancellationRequested)
+                {
+                    ConsumeResult<string, string>? result;
+
+                    try
+                    {
+                        result = consumer.Consume(PollInterval);
+                    }
+                    catch (ConsumeException exception)
+                    {
+                        // The broker or a subscribed topic may not be ready yet
+                        // (for example a topic that has not been created). Keep
+                        // the consumer alive and retry instead of stopping it.
+                        logger.LogWarning(
+                            "Consumer {Consumer} could not consume from {Topic}: {Reason}",
+                            ConsumerName,
+                            Topic,
+                            exception.Error.Reason);
+
+                        await DelayBeforeRetryAsync(retryDelay, stoppingToken);
+                        continue;
+                    }
+                    catch (KafkaException exception)
+                    {
+                        if (exception.Error.IsFatal)
+                        {
+                            throw;
+                        }
+
+                        logger.LogWarning(
+                            exception,
+                            "Consumer {Consumer} encountered a transient Kafka error while consuming.",
+                            ConsumerName);
+
+                        await DelayBeforeRetryAsync(retryDelay, stoppingToken);
+                        continue;
                     }
 
-                    logger.LogWarning(
-                        exception,
-                        "Consumer {Consumer} encountered a transient Kafka error while consuming.",
-                        ConsumerName);
+                    if (result?.Message?.Value is null)
+                    {
+                        // No message within the poll window. If the consumer has
+                        // no partition assignment after a grace period it is
+                        // stuck and needs to be rebuilt.
+                        if (!isAssigned && DateTime.UtcNow - unassignedSince >= unassignedTimeout)
+                        {
+                            logger.LogWarning(
+                                "Consumer {Consumer} has been without an assignment for {Seconds}s; rebuilding.",
+                                ConsumerName,
+                                unassignedTimeout.TotalSeconds);
 
-                    await DelayBeforeRetryAsync(retryDelay, stoppingToken);
-                    continue;
-                }
+                            break;
+                        }
 
-                if (result?.Message?.Value is null)
-                {
-                    logger.LogWarning("Consumer {Consumer} received a message with an empty value.", ConsumerName);
-                    continue;
-                }
+                        continue;
+                    }
 
-                await ProcessMessageAsync(
-                    result.Message.Key,
-                    result.Message.Value,
-                    logger,
-                    options,
-                    stoppingToken);
+                    await ProcessMessageAsync(
+                        result.Message.Key,
+                        result.Message.Value,
+                        logger,
+                        options,
+                        stoppingToken);
 
-                // The message is only committed once processing finished or it
-                // was parked in the dead-letter topic. A commit failure is not
-                // fatal: the message may simply be reprocessed and is guarded
-                // by the processed-message check.
-                try
-                {
-                    consumer.Commit(result);
-                }
-                catch (KafkaException exception)
-                {
-                    logger.LogWarning(
-                        exception,
-                        "Consumer {Consumer} failed to commit an offset; the message may be reprocessed.",
-                        ConsumerName);
+                    // The message is only committed once processing finished or
+                    // it was parked in the dead-letter topic. A commit failure is
+                    // not fatal: the message may simply be reprocessed and is
+                    // guarded by the processed-message check.
+                    try
+                    {
+                        consumer.Commit(result);
+                    }
+                    catch (KafkaException exception)
+                    {
+                        logger.LogWarning(
+                            exception,
+                            "Consumer {Consumer} failed to commit an offset; the message may be reprocessed.",
+                            ConsumerName);
+                    }
                 }
             }
-        }
-        catch (OperationCanceledException)
-            when (stoppingToken.IsCancellationRequested)
-        {
-            logger.LogInformation("Kafka consumer {Consumer} stopped.", ConsumerName);
-        }
-        catch (Exception exception)
-        {
-            logger.LogError(exception, "Kafka consumer {Consumer} stopped because of an unexpected error.", ConsumerName);
-        }
-        finally
-        {
-            consumer.Close();
+            catch (OperationCanceledException)
+                when (stoppingToken.IsCancellationRequested)
+            {
+                logger.LogInformation("Kafka consumer {Consumer} stopped.", ConsumerName);
+            }
+            catch (Exception exception)
+            {
+                logger.LogError(
+                    exception,
+                    "Kafka consumer {Consumer} stopped because of an unexpected error; rebuilding.",
+                    ConsumerName);
+            }
+            finally
+            {
+                if (consumer is not null)
+                {
+                    try
+                    {
+                        consumer.Close();
+                    }
+                    catch (Exception exception)
+                    {
+                        logger.LogWarning(exception, "Kafka consumer {Consumer} failed to close cleanly.", ConsumerName);
+                    }
 
-            logger.LogInformation("Kafka consumer {Consumer} closed.", ConsumerName);
+                    consumer.Dispose();
+
+                    logger.LogInformation("Kafka consumer {Consumer} closed.", ConsumerName);
+                }
+            }
+
+            if (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+
+            await DelayBeforeRetryAsync(rebuildDelay, stoppingToken);
         }
     }
 
