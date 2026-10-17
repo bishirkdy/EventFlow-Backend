@@ -28,6 +28,19 @@ namespace EventFlow.Identity.Infrastructure.Persistence.Repositories
                 .ToListAsync(cancellationToken);
         }
 
+        public async Task<List<string>> GetPermissionNamesAsync(Guid userId,Guid eventId,CancellationToken cancellationToken = default)
+        {
+            return await context.UserEventRoles
+                .AsNoTracking()
+                .Where(x =>
+                    x.UserId == userId &&
+                    x.EventId == eventId)
+                .SelectMany(x => x.Role.RolePermissions)
+                .Select(x => x.Permission.Name)
+                .Distinct()
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<List<UserEventRole>> GetByUserAndEventForUpdateAsync(Guid userId,Guid eventId,CancellationToken cancellationToken = default)
         {
             return await context.UserEventRoles
