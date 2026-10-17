@@ -9,22 +9,47 @@ using EventFlow.Event.Application.Features.PageSection.Commands.UpdatePageSectio
 using EventFlow.Event.Application.Features.PageSection.Queries.GetPageSections;
 using EventFlow.Event.Application.Features.PageSection.Queries.GetPageSectionsByEvent;
 using EventFlow.Infrastructure.Storage.Cloudinary;
+using EventFlow.Security.Authentication;
+using EventFlow.Security.Authorization;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using EventAuthorizationService =
+    EventFlow.Event.Application.Abstractions.Authorization.IAuthorizationService;
 
 namespace EventFlow.Event.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/page-section")]
     [Authorize]
-    public class PageSectionController(ISender sender, ICloudinaryStorage cloudinaryStorage, IEventPreviewAccess previewAccess) : ControllerBase
+    public class PageSectionController(ISender sender, ICloudinaryStorage cloudinaryStorage, IEventPreviewAccess previewAccess, EventAuthorizationService authorizationService, ICurrentUserService currentUserService) : ControllerBase
     {
+        // Page-section routes only carry a page id, so the event permission
+        // middleware cannot resolve the owning event. Every mutating action
+        // resolves the page's event and requires event.update.
+        private async Task EnsureCanManagePageAsync(Guid pageId, CancellationToken cancellationToken)
+        {
+            var eventId = await sender.Send(new GetEventIdByPageQuery(pageId), cancellationToken);
+
+            if (!eventId.HasValue ||
+                !await authorizationService.HasPermissionAsync(
+                    currentUserService.UserId,
+                    eventId.Value,
+                    PermissionConstants.Event.Update,
+                    cancellationToken))
+            {
+                throw new ForbiddenException("You do not have permission to manage this event.");
+            }
+        }
+
+
         //Create event sections
         [HttpPost("{pageId:guid}/sections")]
         public async Task<IActionResult> CreatePageSection(Guid pageId,[FromForm] CreatePageSectionRequest request,CancellationToken cancellationToken)
         {
+            await EnsureCanManagePageAsync(pageId, cancellationToken);
+
             string? imageUrl = null;
             string? imagePublicId = null;
 
@@ -151,6 +176,8 @@ namespace EventFlow.Event.Api.Controllers
         public async Task<IActionResult> UpdatePageSection(Guid pageId, Guid id,
            [FromForm] UpdatePageSectionRequest request,CancellationToken cancellationToken)
         {
+            await EnsureCanManagePageAsync(pageId, cancellationToken);
+
             string? imageUrl = null;
             string? imagePublicId = null;
 
@@ -201,6 +228,8 @@ namespace EventFlow.Event.Api.Controllers
         [HttpDelete("{pageId:guid}/sections/{id:guid}")]
         public async Task<IActionResult> DeletePageSection(Guid pageId,Guid id,CancellationToken cancellationToken)
         {
+            await EnsureCanManagePageAsync(pageId, cancellationToken);
+
             var imagePublicId = await sender.Send(new DeletePageSectionCommand(pageId, id),cancellationToken);
 
             if (!string.IsNullOrWhiteSpace(imagePublicId))
@@ -221,6 +250,8 @@ namespace EventFlow.Event.Api.Controllers
         [HttpPut("{pageId:guid}/sections/reorder")]
         public async Task<IActionResult> ReorderPageSections(Guid pageId, [FromBody] IReadOnlyList<Guid> sectionIds, CancellationToken cancellationToken)
         {
+            await EnsureCanManagePageAsync(pageId, cancellationToken);
+
             var command = new ReorderPageSectionsCommand(pageId , sectionIds);
 
             // Send command

@@ -33,6 +33,15 @@ public sealed class EventPermissionMiddleware(RequestDelegate next, EventAuthori
             return;
         }
 
+        // Page-section routes carry a page id, not an event id, so they cannot
+        // be checked here. Their controller resolves the owning event and
+        // enforces event.update itself.
+        if (context.Request.Path.StartsWithSegments("/api/v1/page-section"))
+        {
+            await next(context);
+            return;
+        }
+
         if (!TryGetEventId(context, out var eventId))
         {
             await next(context);

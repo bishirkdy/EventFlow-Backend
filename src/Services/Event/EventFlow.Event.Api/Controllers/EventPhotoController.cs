@@ -37,6 +37,9 @@ public sealed class EventPhotoController(ISender sender, ICurrentUserService cur
         return Ok(ApiResponse<UploadEventPhotoResponse>.Success(response, "Photo uploaded successfully."));
     }
 
+    // Public gallery: the handler only returns content the caller may read,
+    // so anonymous and authenticated non-members get the same empty result.
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> GetPhotos(Guid eventId,[FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] bool? visibleOnly = null,
         CancellationToken cancellationToken = default)
