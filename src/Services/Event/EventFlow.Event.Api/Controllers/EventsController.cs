@@ -3,6 +3,7 @@ using AutoMapper;
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.Events;
 using EventFlow.Event.Api.Responses.Events;
+using EventFlow.Event.Api.Services;
 using EventFlow.Event.Application.Abstractions.Storage;
 using EventFlow.Event.Application.Features.Events.Commands.CancelEvent;
 using EventFlow.Event.Application.Features.Events.Commands.ClaimEventOwner;
@@ -25,7 +26,8 @@ namespace EventFlow.Event.Api.Controllers;
 public sealed class EventsController(
     ISender sender,
     IMapper mapper,
-    ICurrentUserService currentUserService) : ControllerBase
+    ICurrentUserService currentUserService,
+    IEventPreviewAccess previewAccess) : ControllerBase
 {
     [HttpPost("create")]
     [Consumes("multipart/form-data")]
@@ -100,7 +102,8 @@ public sealed class EventsController(
             "Published event retrieved successfully."));
     }
 
-    // Publicly readable: anonymous callers only ever see published events; authenticated callers see full detail.
+    // Publicly readable: only published events are visible unless the caller
+    // is an event member who may preview the website before it goes public.
     [AllowAnonymous]
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<GetEventResponse>), StatusCodes.Status200OK)]
@@ -109,8 +112,10 @@ public sealed class EventsController(
         Guid id,
         CancellationToken cancellationToken)
     {
+        var canPreview = await previewAccess.CanPreviewAsync(id, cancellationToken);
+
         var result = await sender.Send(
-            new GetEventByIdQuery(id, PublicOnly: !currentUserService.IsAuthenticated),
+            new GetEventByIdQuery(id, PublicOnly: !canPreview),
             cancellationToken);
 
         if (result is null)

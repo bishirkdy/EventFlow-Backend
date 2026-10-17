@@ -1,6 +1,8 @@
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.NavigationItem;
 using EventFlow.Event.Api.Requests.NavigationItems;
+using EventFlow.Event.Api.Services;
+using EventFlow.Event.Application.Features.EventPages.Queries.GetEventIdByPage;
 using EventFlow.Event.Application.Features.NavigationItem.Commands.CreateNavigationItem;
 using EventFlow.Event.Application.Features.NavigationItem.Commands.DeleteNavigationItem;
 using EventFlow.Event.Application.Features.NavigationItem.Commands.NavigationItemVisibility;
@@ -17,7 +19,7 @@ namespace EventFlow.Event.Api.Controllers
     [ApiController]
     [Route("api/v1/navigation-items")]
     [Authorize]
-    public class NavigationItemsController(ISender sender) : ControllerBase
+    public class NavigationItemsController(ISender sender, IEventPreviewAccess previewAccess) : ControllerBase
     {
         // Create navigation item
         [HttpPost("{eventId:guid}")]
@@ -45,7 +47,11 @@ namespace EventFlow.Event.Api.Controllers
         [HttpGet("{eventId:guid}")]
         public async Task<IActionResult> GetNavigationItems(Guid eventId,CancellationToken cancellationToken)
         {
-            var items = await sender.Send(new GetNavigationItemsQuery(eventId), cancellationToken);
+            var includeUnpublished = await previewAccess.CanPreviewAsync(eventId, cancellationToken);
+
+            var items = await sender.Send(
+                new GetNavigationItemsQuery(eventId, includeUnpublished),
+                cancellationToken);
 
             return Ok(
                 new ApiResponse<IReadOnlyList<GetNavigationItemsResponse>>
@@ -149,7 +155,16 @@ namespace EventFlow.Event.Api.Controllers
         [HttpGet("page/{pageId:guid}")]
         public async Task<IActionResult> GetNavigationItemByPage(Guid pageId, CancellationToken cancellationToken)
         {
-            var item = await sender.Send(new GetNavigationItemByPageQuery(pageId), cancellationToken);
+            var eventId = await sender.Send(
+                new GetEventIdByPageQuery(pageId),
+                cancellationToken);
+
+            var includeUnpublished = eventId.HasValue &&
+                await previewAccess.CanPreviewAsync(eventId.Value, cancellationToken);
+
+            var item = await sender.Send(
+                new GetNavigationItemByPageQuery(pageId, includeUnpublished),
+                cancellationToken);
 
             return Ok(new ApiResponse<GetNavigationItemByPageResponse?>
             {

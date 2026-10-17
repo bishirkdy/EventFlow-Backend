@@ -1,5 +1,6 @@
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.Sessions;
+using EventFlow.Event.Api.Services;
 using EventFlow.Event.Application.Abstractions.Storage;
 using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Event.Application.Features.Sessions.Commands.CreateSession;
@@ -16,7 +17,7 @@ namespace EventFlow.Event.Api.Controllers
     [ApiController]
     [Route("api/v1/session")]
     [Authorize]
-    public sealed class SessionController(ISender sender) : ControllerBase
+    public sealed class SessionController(ISender sender, IEventPreviewAccess previewAccess) : ControllerBase
     {
         [HttpPost("{eventId:guid}/sessions")]
         [Consumes("multipart/form-data")]
@@ -37,6 +38,11 @@ namespace EventFlow.Event.Api.Controllers
         [HttpGet("{eventId:guid}/sessions")]
         public async Task<IActionResult> GetSessionsByEvent(Guid eventId, CancellationToken cancellationToken)
         {
+            if (!await previewAccess.CanReadAsync(eventId, cancellationToken))
+            {
+                return Ok(new ApiResponse<IReadOnlyList<GetSessionsByEventResponse>> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Sessions retrieved successfully.", Data = [] });
+            }
+
             var sessions = await sender.Send(new GetSessionsByEventQuery(eventId), cancellationToken);
             return Ok(new ApiResponse<IReadOnlyList<GetSessionsByEventResponse>> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Sessions retrieved successfully.", Data = sessions });
         }
@@ -45,6 +51,9 @@ namespace EventFlow.Event.Api.Controllers
         [HttpGet("{eventId:guid}/sessions/{id:guid}")]
         public async Task<IActionResult> GetSessionById(Guid eventId, Guid id, CancellationToken cancellationToken)
         {
+            if (!await previewAccess.CanReadAsync(eventId, cancellationToken))
+                throw new NotFoundException("Session not found.");
+
             var session = await sender.Send(new GetSessionByIdQuery(id, eventId), cancellationToken);
             if (session is null) throw new NotFoundException("Session not found.");
             return Ok(new ApiResponse<GetSessionByIdResponse> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Session retrieved successfully.", Data = session });

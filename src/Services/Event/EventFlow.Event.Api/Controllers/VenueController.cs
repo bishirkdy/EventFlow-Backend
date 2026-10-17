@@ -1,5 +1,6 @@
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.Venues;
+using EventFlow.Event.Api.Services;
 using EventFlow.Event.Application.Abstractions.Storage;
 using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Event.Application.Features.Venues.Commands.CreateVenue;
@@ -17,7 +18,7 @@ namespace EventFlow.Event.Api.Controllers
     [ApiController]
     [Route("api/v1/events")]
     [Authorize]
-    public sealed class VenueController(ISender sender) : ControllerBase
+    public sealed class VenueController(ISender sender, IEventPreviewAccess previewAccess) : ControllerBase
     {
         [HttpPost("{eventId:guid}/venues")]
         [Consumes("multipart/form-data")]
@@ -38,6 +39,11 @@ namespace EventFlow.Event.Api.Controllers
         [HttpGet("{eventId:guid}/venues")]
         public async Task<IActionResult> GetVenuesByEvent(Guid eventId, CancellationToken cancellationToken)
         {
+            if (!await previewAccess.CanReadAsync(eventId, cancellationToken))
+            {
+                return Ok(new ApiResponse<IReadOnlyList<GetVenuesByEventResponse>> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Venues retrieved successfully.", Data = [] });
+            }
+
             var venues = await sender.Send(new GetVenuesByEventQuery(eventId), cancellationToken);
             return Ok(new ApiResponse<IReadOnlyList<GetVenuesByEventResponse>> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Venues retrieved successfully.", Data = venues });
         }
@@ -46,6 +52,9 @@ namespace EventFlow.Event.Api.Controllers
         [HttpGet("{eventId:guid}/venues/{id:guid}")]
         public async Task<IActionResult> GetVenueById(Guid eventId, Guid id, CancellationToken cancellationToken)
         {
+            if (!await previewAccess.CanReadAsync(eventId, cancellationToken))
+                throw new NotFoundException("Venue not found.");
+
             var venue = await sender.Send(new GetVenueByIdQuery(id, eventId), cancellationToken);
             if (venue is null) throw new NotFoundException("Venue not found.");
             return Ok(new ApiResponse<GetVenueByIdResponse> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Venue retrieved successfully.", Data = venue });

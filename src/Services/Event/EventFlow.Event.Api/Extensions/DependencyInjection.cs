@@ -16,6 +16,7 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
 
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<IEventPreviewAccess, EventPreviewAccess>();
 
         services.AddHttpClient<IAuthorizationService, AuthorizationService>(client =>
         {

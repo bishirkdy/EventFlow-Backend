@@ -1,5 +1,7 @@
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.PageSection;
+using EventFlow.Event.Api.Services;
+using EventFlow.Event.Application.Features.EventPages.Queries.GetEventIdByPage;
 using EventFlow.Event.Application.Features.PageSection.Commands.CreatePageSection;
 using EventFlow.Event.Application.Features.PageSection.Commands.DeletePageSection;
 using EventFlow.Event.Application.Features.PageSection.Commands.ReorderPageSections;
@@ -7,6 +9,7 @@ using EventFlow.Event.Application.Features.PageSection.Commands.UpdatePageSectio
 using EventFlow.Event.Application.Features.PageSection.Queries.GetPageSections;
 using EventFlow.Event.Application.Features.PageSection.Queries.GetPageSectionsByEvent;
 using EventFlow.Infrastructure.Storage.Cloudinary;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +19,7 @@ namespace EventFlow.Event.Api.Controllers
     [ApiController]
     [Route("api/v1/page-section")]
     [Authorize]
-    public class PageSectionController(ISender sender, ICloudinaryStorage cloudinaryStorage) : ControllerBase
+    public class PageSectionController(ISender sender, ICloudinaryStorage cloudinaryStorage, IEventPreviewAccess previewAccess) : ControllerBase
     {
         //Create event sections
         [HttpPost("{pageId:guid}/sections")]
@@ -80,6 +83,11 @@ namespace EventFlow.Event.Api.Controllers
         [HttpGet("event/{eventId:guid}/preview-sections")]
         public async Task<IActionResult> GetPreviewPageSectionsByEvent(Guid eventId, CancellationToken cancellationToken)
         {
+            if (!await previewAccess.CanPreviewAsync(eventId, cancellationToken))
+            {
+                throw new ForbiddenException("You do not have permission to preview this event.");
+            }
+
             var sections = await sender.Send(
                 new GetPageSectionsByEventQuery(eventId, IncludeUnpublished: true),
                 cancellationToken);
@@ -115,6 +123,16 @@ namespace EventFlow.Event.Api.Controllers
         [HttpGet("{pageId:guid}/manage-sections")]
         public async Task<IActionResult> GetManagePageSections(Guid pageId, CancellationToken cancellationToken)
         {
+            var eventId = await sender.Send(
+                new GetEventIdByPageQuery(pageId),
+                cancellationToken);
+
+            if (!eventId.HasValue ||
+                !await previewAccess.CanPreviewAsync(eventId.Value, cancellationToken))
+            {
+                throw new ForbiddenException("You do not have permission to manage this event.");
+            }
+
             var sections = await sender.Send(
                 new GetPageSectionsQuery(pageId, IncludeUnpublished: true),
                 cancellationToken);

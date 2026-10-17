@@ -1,5 +1,6 @@
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.EventPages;
+using EventFlow.Event.Api.Services;
 using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Event.Application.Features.EventPages.Commands.CreateEventPage;
 using EventFlow.Event.Application.Features.EventPages.Commands.DeleteEventPage;
@@ -19,7 +20,7 @@ namespace EventFlow.Event.Api.Controllers
     [ApiController]
     [Route("api/v1/event-page")]
     [Authorize]
-    public class EventPageController(ISender sender) : ControllerBase
+    public class EventPageController(ISender sender, IEventPreviewAccess previewAccess) : ControllerBase
     {
         //Create event page
         [HttpPost("{eventId:guid}/pages")]
@@ -89,6 +90,8 @@ namespace EventFlow.Event.Api.Controllers
             Guid eventId,
             CancellationToken cancellationToken)
         {
+            await EnsureCanPreviewAsync(eventId, cancellationToken);
+
             var pages = await sender.Send(
                 new GetEventPagesByEventQuery(eventId, IncludeUnpublished: true),
                 cancellationToken);
@@ -107,6 +110,8 @@ namespace EventFlow.Event.Api.Controllers
             Guid eventId,
             CancellationToken cancellationToken)
         {
+            await EnsureCanPreviewAsync(eventId, cancellationToken);
+
             var pages = await sender.Send(
                 new GetEventPagesByEventQuery(eventId, IncludeUnpublished: true),
                 cancellationToken);
@@ -221,6 +226,8 @@ namespace EventFlow.Event.Api.Controllers
             Guid id,
             CancellationToken cancellationToken)
         {
+            await EnsureCanPreviewAsync(eventId, cancellationToken);
+
             var page = await sender.Send(
                 new GetEventPageByIdQuery(eventId, id, IncludeUnpublished: true),
                 cancellationToken);
@@ -260,5 +267,14 @@ namespace EventFlow.Event.Api.Controllers
             });
         }
 
+        // Preview endpoints are limited to the roles that manage the event
+        // (owner, organizer or event admin).
+        private async Task EnsureCanPreviewAsync(Guid eventId, CancellationToken cancellationToken)
+        {
+            if (!await previewAccess.CanPreviewAsync(eventId, cancellationToken))
+            {
+                throw new ForbiddenException("You do not have permission to preview this event.");
+            }
+        }
     }
 }

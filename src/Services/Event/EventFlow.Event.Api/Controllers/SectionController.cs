@@ -1,5 +1,6 @@
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.Sections;
+using EventFlow.Event.Api.Services;
 using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Event.Application.Features.Sections.Commands.CreateSection;
 using EventFlow.Event.Application.Features.Sections.Commands.DeleteSection;
@@ -15,7 +16,7 @@ namespace EventFlow.Event.Api.Controllers
     [ApiController]
     [Route("api/v1/section")]
     [Authorize]
-    public class SectionController(ISender sender) : ControllerBase
+    public class SectionController(ISender sender, IEventPreviewAccess previewAccess) : ControllerBase
     {
         [HttpPost("{eventId:guid}/sections")]
         public async Task<IActionResult> CreateSection(Guid eventId,CreateSectionRequest request, CancellationToken cancellationToken)
@@ -43,6 +44,17 @@ namespace EventFlow.Event.Api.Controllers
         [HttpGet("{eventId:guid}/sections")]
         public async Task<IActionResult> GetSectionsByEvent(Guid eventId, CancellationToken cancellationToken)
         {
+            if (!await previewAccess.CanReadAsync(eventId, cancellationToken))
+            {
+                return Ok(new ApiResponse<IReadOnlyList<GetSectionsByEventResponse>>
+                {
+                    IsSuccess = true,
+                    StatusCode = StatusCodes.Status200OK,
+                    Message = "Sections retrieved successfully.",
+                    Data = []
+                });
+            }
+
             var sections = await sender.Send(new GetSectionsByEventQuery(eventId),cancellationToken);
 
             var response =
@@ -67,7 +79,8 @@ namespace EventFlow.Event.Api.Controllers
                 new GetSectionByIdQuery(id),
                 cancellationToken);
 
-            if (section is null)
+            if (section is null ||
+                !await previewAccess.CanReadAsync(section.EventId, cancellationToken))
                 throw new NotFoundException("Section not found.");
 
             var response = new ApiResponse<GetSectionByIdResponse>

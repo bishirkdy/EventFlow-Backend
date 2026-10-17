@@ -1,5 +1,7 @@
+using EventFlow.Event.Application.Features.EventFeature.Queries.GetEventPreviewAccess;
 using EventFlow.Event.Application.Features.EventFeature.Queries.GetRegistrationAccess;
 using EventFlow.Event.Application.Features.EventFeature.Queries.GetRegistrationFeature;
+using EventFlow.Event.Application.Features.Events.Queries.GetEventIsPublished;
 using EventFlow.Security.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -27,5 +29,25 @@ public sealed class EventAccessController(ISender sender) : ControllerBase
             cancellationToken);
 
         return Ok(new { allowed });
+    }
+
+    [HttpGet("preview-access")]
+    public async Task<IActionResult> PreviewAccess(Guid eventId,[FromQuery] Guid userId,CancellationToken cancellationToken)
+    {
+        var allowed = await sender.Send(
+            new GetEventPreviewAccessQuery(eventId, userId),
+            cancellationToken);
+
+        return Ok(new { allowed });
+    }
+
+    [HttpGet("public-status")]
+    public async Task<IActionResult> PublicStatus(Guid eventId, CancellationToken cancellationToken)
+    {
+        var published = await sender.Send(
+            new GetEventIsPublishedQuery(eventId),
+            cancellationToken);
+
+        return Ok(new { published });
     }
 }

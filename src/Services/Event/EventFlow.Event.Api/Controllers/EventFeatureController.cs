@@ -1,5 +1,6 @@
 using AutoMapper;
 using EventFlow.Contracts.Common;
+using EventFlow.Event.Api.Services;
 using EventFlow.Event.Application.Features.EventFeature.Commands.DisableEventFeature;
 using EventFlow.Event.Application.Features.EventFeature.Commands.EnableEventFeature;
 using EventFlow.Event.Application.Features.EventFeature.Commands.ResetEventFeatures;
@@ -13,7 +14,7 @@ namespace EventFlow.Event.Api.Controllers;
 [ApiController]
 [Route("api/v1/events")]
 [Authorize]
-public sealed class EventFeatureController(ISender sender) : ControllerBase
+public sealed class EventFeatureController(ISender sender, IEventPreviewAccess previewAccess) : ControllerBase
 {
     // Enable event feature
     [HttpPost("{eventId:guid}/features/{featureId:guid}/enable")]
@@ -56,6 +57,17 @@ public sealed class EventFeatureController(ISender sender) : ControllerBase
     [HttpGet("{eventId:guid}/features")]
     public async Task<IActionResult> GetEventFeatures(Guid eventId, CancellationToken cancellationToken)
     {
+        if (!await previewAccess.CanReadAsync(eventId, cancellationToken))
+        {
+            return Ok(new ApiResponse<IReadOnlyList<GetEventFeaturesResponse>>
+            {
+                IsSuccess = true,
+                StatusCode = StatusCodes.Status200OK,
+                Message = "Event features retrieved successfully.",
+                Data = []
+            });
+        }
+
         var features = await sender.Send(new GetEventFeaturesQuery(eventId),cancellationToken);
 
         var response = new ApiResponse<IReadOnlyList<GetEventFeaturesResponse>>

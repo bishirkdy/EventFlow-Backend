@@ -1,5 +1,6 @@
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.EventPhotos;
+using EventFlow.Event.Api.Services;
 using EventFlow.Event.Application.Abstractions.Storage;
 using EventFlow.Event.Application.Features.Commands.DeleteEventPhoto;
 using EventFlow.Event.Application.Features.Commands.UpdateEventPhotoVisibility;
@@ -14,7 +15,7 @@ namespace EventFlow.Event.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/events/{eventId:guid}/photos")]
-public sealed class EventPhotoController(ISender sender, ICurrentUserService currentUser) : ControllerBase
+public sealed class EventPhotoController(ISender sender, ICurrentUserService currentUser, IEventPreviewAccess previewAccess) : ControllerBase
 {
     //Upload photo (Photographer)
     [Authorize]
@@ -40,6 +41,19 @@ public sealed class EventPhotoController(ISender sender, ICurrentUserService cur
     public async Task<IActionResult> GetPhotos(Guid eventId,[FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] bool? visibleOnly = null,
         CancellationToken cancellationToken = default)
     {
+        if (!await previewAccess.CanReadAsync(eventId, cancellationToken))
+        {
+            return Ok(ApiResponse<PaginatedResponse<GetEventPhotosResponse>>.Success(
+                new PaginatedResponse<GetEventPhotosResponse>
+                {
+                    Items = [],
+                    PageNumber = page,
+                    PageSize = pageSize,
+                    TotalCount = 0
+                },
+                "Photos retrieved successfully."));
+        }
+
         var response = await sender.Send(
             new GetEventPhotosQuery(eventId, page, pageSize, visibleOnly),
             cancellationToken);

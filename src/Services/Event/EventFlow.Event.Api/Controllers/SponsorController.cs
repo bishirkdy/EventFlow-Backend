@@ -1,5 +1,6 @@
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.Sponsors;
+using EventFlow.Event.Api.Services;
 using EventFlow.Event.Application.Abstractions.Storage;
 using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Event.Application.Features.Sponsors.Commands.CreateSponsor;
@@ -16,7 +17,7 @@ namespace EventFlow.Event.Api.Controllers;
 [ApiController]
 [Route("api/v1/events")]
 [Authorize]
-public sealed class SponsorController(ISender sender) : ControllerBase
+public sealed class SponsorController(ISender sender, IEventPreviewAccess previewAccess) : ControllerBase
 {
     [HttpPost("{eventId:guid}/sponsors")]
     [Consumes("multipart/form-data")]
@@ -30,18 +31,26 @@ public sealed class SponsorController(ISender sender) : ControllerBase
 
     [AllowAnonymous]
     [HttpGet("{eventId:guid}/sponsors")]
-    public async Task<IActionResult> GetAll(Guid eventId, CancellationToken cancellationToken)
-    {
-        var result = await sender.Send(new GetSponsorsByEventQuery(eventId), cancellationToken);
-        return Ok(new ApiResponse<IReadOnlyList<GetSponsorsByEventResponse>> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Sponsors retrieved successfully.", Data = result });
-    }
+        public async Task<IActionResult> GetAll(Guid eventId, CancellationToken cancellationToken)
+        {
+            if (!await previewAccess.CanReadAsync(eventId, cancellationToken))
+            {
+                return Ok(new ApiResponse<IReadOnlyList<GetSponsorsByEventResponse>> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Sponsors retrieved successfully.", Data = [] });
+            }
+
+            var result = await sender.Send(new GetSponsorsByEventQuery(eventId), cancellationToken);
+            return Ok(new ApiResponse<IReadOnlyList<GetSponsorsByEventResponse>> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Sponsors retrieved successfully.", Data = result });
+        }
 
     [AllowAnonymous]
     [HttpGet("{eventId:guid}/sponsors/{id:guid}")]
     public async Task<IActionResult> GetById(Guid eventId, Guid id, CancellationToken cancellationToken)
     {
-        var result = await sender.Send(new GetSponsorByIdQuery(id, eventId), cancellationToken);
-        if (result is null) throw new NotFoundException("Sponsor not found.");
+            if (!await previewAccess.CanReadAsync(eventId, cancellationToken))
+                throw new NotFoundException("Sponsor not found.");
+
+            var result = await sender.Send(new GetSponsorByIdQuery(id, eventId), cancellationToken);
+            if (result is null) throw new NotFoundException("Sponsor not found.");
         return Ok(new ApiResponse<GetSponsorByIdResponse> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Sponsor retrieved successfully.", Data = result });
     }
 
