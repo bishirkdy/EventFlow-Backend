@@ -26,7 +26,7 @@ public sealed class RemoveUserRoleCommandHandler(
             throw new ForbiddenException("You do not have permission to manage the event team.");
         }
 
-        var roles = await userEventRoleRepository.GetByUserAndEventAsync(
+        var roles = await userEventRoleRepository.GetByUserAndEventForUpdateAsync(
             request.UserId,
             request.EventId,
             cancellationToken);

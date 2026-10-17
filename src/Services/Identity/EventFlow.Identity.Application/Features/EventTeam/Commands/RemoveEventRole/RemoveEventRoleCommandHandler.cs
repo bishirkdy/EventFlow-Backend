@@ -17,7 +17,7 @@ public sealed class RemoveEventRoleCommandHandler(
             return;
         }
 
-        var existingRoles = await userEventRoleRepository.GetByUserAndEventAsync(request.UserId,request.EventId, cancellationToken);
+        var existingRoles = await userEventRoleRepository.GetByUserAndEventForUpdateAsync(request.UserId,request.EventId, cancellationToken);
 
         var matches = existingRoles
             .Where(x => x.RoleId == role.Id)
