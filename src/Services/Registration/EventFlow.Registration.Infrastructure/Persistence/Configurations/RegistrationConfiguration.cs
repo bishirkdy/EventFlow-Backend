@@ -11,12 +11,20 @@ public sealed class RegistrationConfiguration : IEntityTypeConfiguration<Registr
         b.Property(x => x.RegistrationNumber).HasMaxLength(50).IsRequired();
         b.HasIndex(x => x.RegistrationNumber).IsUnique();
         b.Property(x => x.Status).HasConversion<int>();
+        b.Property(x => x.ScopeType).HasConversion<int>().IsRequired();
+        b.Property(x => x.ScopeId);
         b.HasIndex(x => new
         {
             x.EventId,
             x.UserId
         }
         );
+        b.HasIndex(x => new
+        {
+            x.EventId,
+            x.ScopeType,
+            x.ScopeId
+        });
 
         b.HasOne(x => x.Participant).WithOne(x => x.Registration)
             .HasForeignKey<Participant>(x => x.RegistrationId)

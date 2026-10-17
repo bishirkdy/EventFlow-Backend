@@ -1,3 +1,5 @@
+using EventFlow.Registration.Domain.Enums;
+
 namespace EventFlow.Registration.Application.Contracts.Registrations;
 
 public sealed class TicketDto
@@ -9,6 +11,10 @@ public sealed class TicketDto
     public Guid ParticipantId { get; set; }
 
     public Guid ParticipantUserId { get; set; }
+
+    public RegistrationScope ScopeType { get; set; }
+
+    public Guid? ScopeId { get; set; }
 
     public string TicketNumber { get; set; } = "";
 

@@ -47,7 +47,7 @@ public sealed class WaitlistPromotionService(IRegistrationRepository registratio
         return promoted;
     }
 
-    private static void Approve(
+    private void Approve(
         RegistrationEntity registration)
     {
         registration.Approve();
@@ -55,8 +55,14 @@ public sealed class WaitlistPromotionService(IRegistrationRepository registratio
         if (registration.Participant is not null &&
             registration.Ticket is null)
         {
-            registration.AttachTicket(
-                Ticket.Issue(registration.Id, registration.Participant.Id));
+            var ticket = Ticket.Issue(
+                registration.Id,
+                registration.Participant.Id,
+                registration.ScopeType,
+                registration.ScopeId);
+
+            registration.AttachTicket(ticket);
+            registrations.AddTicket(ticket);
         }
     }
 }

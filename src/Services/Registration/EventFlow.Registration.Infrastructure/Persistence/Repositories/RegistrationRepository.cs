@@ -132,13 +132,33 @@ public sealed class RegistrationRepository(RegistrationDbContext db)
     public Task<bool> HasActiveRegistrationAsync(
         Guid eventId,
         Guid userId,
+        RegistrationScope scopeType = RegistrationScope.Event,
+        Guid? scopeId = null,
         CancellationToken cancellationToken = default)
     {
         return db.Registrations.AnyAsync(
             x =>
                 x.EventId == eventId &&
                 x.UserId == userId &&
+                x.ScopeType == scopeType &&
+                x.ScopeId == scopeId &&
                 x.Status != RegistrationStatus.Cancelled,
+            cancellationToken);
+    }
+
+    public Task<int> CountByScopeAsync(
+        Guid eventId,
+        RegistrationScope scopeType,
+        Guid? scopeId,
+        RegistrationStatus status,
+        CancellationToken cancellationToken = default)
+    {
+        return db.Registrations.CountAsync(
+            x =>
+                x.EventId == eventId &&
+                x.ScopeType == scopeType &&
+                x.ScopeId == scopeId &&
+                x.Status == status,
             cancellationToken);
     }
 
@@ -221,6 +241,11 @@ public sealed class RegistrationRepository(RegistrationDbContext db)
     public void Add(RegistrationEntity registration)
     {
         db.Registrations.Add(registration);
+    }
+
+    public void AddTicket(Ticket ticket)
+    {
+        db.Tickets.Add(ticket);
     }
 
     public void RemoveAnswers(IEnumerable<RegistrationAnswer> answers)

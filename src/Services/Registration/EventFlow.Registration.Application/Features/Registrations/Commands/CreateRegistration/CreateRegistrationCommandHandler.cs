@@ -1,4 +1,5 @@
 using AutoMapper;
+using EventFlow.Registration.Application.Contracts.Events;
 using EventFlow.SharedKernel.Exceptions;
 using FluentValidation.Results;
 using RegistrationEntity = EventFlow.Registration.Domain.Entities.Registration;
@@ -30,6 +31,39 @@ public sealed class CreateRegistrationCommandHandler(
                 cancellationToken))
         {
             throw new ConflictException("Registration is not enabled for this event.");
+        }
+
+        var scopeType = command.Request.ScopeType;
+        var scopeId = command.Request.ScopeId;
+
+        SessionRegistrationInfo? sessionInfo = null;
+
+        if (scopeType == RegistrationScope.Session)
+        {
+            if (scopeId is null || scopeId == Guid.Empty)
+            {
+                throw new ValidationException(
+                [
+                    new ValidationFailure(
+                        nameof(command.Request.ScopeId),
+                        "A session is required for a session registration.")
+                ]);
+            }
+
+            sessionInfo = await access.GetSessionRegistrationInfoAsync(
+                command.EventId,
+                scopeId.Value,
+                cancellationToken);
+
+            if (sessionInfo is null || !sessionInfo.Exists)
+            {
+                throw new NotFoundException("Session not found.");
+            }
+
+            if (!sessionInfo.AllowRegistration)
+            {
+                throw new ConflictException("Registration is not enabled for this session.");
+            }
         }
 
         var form = await forms.GetByEventIdAsync(command.EventId,includeFields: true,asNoTracking: true, cancellationToken: cancellationToken);
@@ -70,37 +104,62 @@ public sealed class CreateRegistrationCommandHandler(
         if (await registrations.HasActiveRegistrationAsync(
                 command.EventId,
                 user.UserId,
+                scopeType,
+                scopeId,
                 cancellationToken))
         {
             throw new ConflictException(
-                "You already have an active registration for this event.");
+                scopeType == RegistrationScope.Session
+                    ? "You already have an active registration for this session."
+                    : "You already have an active registration for this event.");
         }
-
-        var approvedCount = await registrations.CountByStatusAsync(
-            command.EventId,
-            RegistrationStatus.Approved,
-            cancellationToken);
 
         var status = RegistrationStatus.Pending;
         int? waitlistPosition = null;
 
-        if (form?.CapacityMode == CapacityMode.Limited &&
-            form.Capacity.HasValue &&
-            approvedCount >= form.Capacity.Value)
+        if (scopeType == RegistrationScope.Session)
         {
-            if (!form.EnableWaitlist)
+            if (sessionInfo!.Capacity.HasValue &&
+                sessionInfo.Capacity.Value > 0)
             {
-                throw new ConflictException("Event capacity has been reached.");
+                var sessionApprovedCount = await registrations.CountByScopeAsync(
+                    command.EventId,
+                    RegistrationScope.Session,
+                    scopeId,
+                    RegistrationStatus.Approved,
+                    cancellationToken);
+
+                if (sessionApprovedCount >= sessionInfo.Capacity.Value)
+                {
+                    throw new ConflictException("Session capacity has been reached.");
+                }
             }
-
-            status = RegistrationStatus.Waitlisted;
-
-            var waitlistedCount = await registrations.CountByStatusAsync(
+        }
+        else
+        {
+            var approvedCount = await registrations.CountByStatusAsync(
                 command.EventId,
-                RegistrationStatus.Waitlisted,
+                RegistrationStatus.Approved,
                 cancellationToken);
 
-            waitlistPosition = waitlistedCount + 1;
+            if (form?.CapacityMode == CapacityMode.Limited &&
+                form.Capacity.HasValue &&
+                approvedCount >= form.Capacity.Value)
+            {
+                if (!form.EnableWaitlist)
+                {
+                    throw new ConflictException("Event capacity has been reached.");
+                }
+
+                status = RegistrationStatus.Waitlisted;
+
+                var waitlistedCount = await registrations.CountByStatusAsync(
+                    command.EventId,
+                    RegistrationStatus.Waitlisted,
+                    cancellationToken);
+
+                waitlistPosition = waitlistedCount + 1;
+            }
         }
 
         var registration = new RegistrationEntity(
@@ -108,7 +167,9 @@ public sealed class CreateRegistrationCommandHandler(
             user.UserId,
             $"REG-{now:yyyyMMdd}-{Random.Shared.Next(100000, 999999)}",
             status,
-            waitlistPosition);
+            waitlistPosition,
+            scopeType,
+            scopeId);
 
         var participant = new Participant(
             registration.Id,

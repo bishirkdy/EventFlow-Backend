@@ -7,6 +7,8 @@ public sealed class RegistrationDto
     public Guid Id { get; set; }
     public Guid EventId { get; set; }
     public Guid UserId { get; set; }
+    public RegistrationScope ScopeType { get; set; }
+    public Guid? ScopeId { get; set; }
     public string RegistrationNumber { get; set; } = "";
     public RegistrationStatus Status { get; set; }
     public DateTime RegisteredAtUtc { get; set; }

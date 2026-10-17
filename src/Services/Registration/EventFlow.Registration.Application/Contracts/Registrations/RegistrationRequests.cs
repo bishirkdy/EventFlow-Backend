@@ -1,7 +1,11 @@
+using EventFlow.Registration.Domain.Enums;
+
 namespace EventFlow.Registration.Application.Contracts.Registrations;
 
 public sealed class CreateRegistrationRequest
 {
+    public RegistrationScope ScopeType { get; set; } = RegistrationScope.Event;
+    public Guid? ScopeId { get; set; }
     public string FirstName { get; set; } = "";
     public string LastName { get; set; } = "";
     public string Email { get; set; } = "";

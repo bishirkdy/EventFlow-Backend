@@ -37,10 +37,19 @@ public interface IRegistrationRepository
     Task<bool> HasActiveRegistrationAsync(
         Guid eventId,
         Guid userId,
+        RegistrationScope scopeType = RegistrationScope.Event,
+        Guid? scopeId = null,
         CancellationToken cancellationToken = default);
 
     Task<int> CountByStatusAsync(
         Guid eventId,
+        RegistrationStatus status,
+        CancellationToken cancellationToken = default);
+
+    Task<int> CountByScopeAsync(
+        Guid eventId,
+        RegistrationScope scopeType,
+        Guid? scopeId,
         RegistrationStatus status,
         CancellationToken cancellationToken = default);
 
@@ -57,6 +66,8 @@ public interface IRegistrationRepository
         CancellationToken cancellationToken = default);
 
     void Add(RegistrationEntity registration);
+
+    void AddTicket(Ticket ticket);
 
     void RemoveAnswers(IEnumerable<RegistrationAnswer> answers);
 }

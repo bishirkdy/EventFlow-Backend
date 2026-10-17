@@ -62,8 +62,14 @@ public sealed class ApproveRegistrationCommandHandler(
         if (registration.Participant is not null &&
             registration.Ticket is null)
         {
-            registration.AttachTicket(
-                Ticket.Issue(registration.Id, registration.Participant.Id));
+            var ticket = Ticket.Issue(
+                registration.Id,
+                registration.Participant.Id,
+                registration.ScopeType,
+                registration.ScopeId);
+
+            registration.AttachTicket(ticket);
+            registrations.AddTicket(ticket);
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);

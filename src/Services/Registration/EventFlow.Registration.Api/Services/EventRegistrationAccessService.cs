@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using EventFlow.Registration.Application.Abstractions.Services;
+using EventFlow.Registration.Application.Contracts.Events;
 
 namespace EventFlow.Registration.Api.Services;
 
@@ -60,6 +61,28 @@ public sealed class EventRegistrationAccessService(IHttpClientFactory factory, I
         return result?.Allowed == true;
     }
 
+    public async Task<SessionRegistrationInfo?> GetSessionRegistrationInfoAsync(Guid eventId, Guid sessionId, CancellationToken ct = default)
+    {
+        var client = factory.CreateClient("EventService");
+        using var request = CreateInternalRequest(HttpMethod.Get, $"api/v1/events/{eventId}/sessions/{sessionId}/registration-info");
+        using var response = await client.SendAsync(request, ct);
+
+        if (!response.IsSuccessStatusCode) return null;
+
+        var result = await response.Content.ReadFromJsonAsync<SessionInfo>(cancellationToken: ct);
+
+        if (result is null) return null;
+
+        return new SessionRegistrationInfo(
+            result.Exists,
+            result.EventId,
+            result.SessionId,
+            result.SectionId,
+            result.AllowRegistration,
+            result.Capacity,
+            result.Status ?? string.Empty);
+    }
+
     // The Event Service exposes these endpoints to internal callers only, so the shared key must be attached.
     private HttpRequestMessage CreateInternalRequest(HttpMethod method, string url)
     {
@@ -78,4 +101,13 @@ public sealed class EventRegistrationAccessService(IHttpClientFactory factory, I
         public bool Allowed { get; set; }
         public bool Published { get; set; }
     }
+
+    sealed record SessionInfo(
+        bool Exists,
+        Guid EventId,
+        Guid SessionId,
+        Guid SectionId,
+        bool AllowRegistration,
+        int? Capacity,
+        string? Status);
 }

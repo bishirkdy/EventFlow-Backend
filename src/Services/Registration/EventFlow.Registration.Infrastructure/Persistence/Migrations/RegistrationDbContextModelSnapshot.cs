@@ -273,6 +273,12 @@ namespace EventFlow.Registration.Infrastructure.Persistence.Migrations
                     b.Property<string>("RejectionReason")
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("ScopeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("ScopeType")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
@@ -294,6 +300,8 @@ namespace EventFlow.Registration.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.HasIndex("EventId", "UserId");
+
+                    b.HasIndex("EventId", "ScopeType", "ScopeId");
 
                     b.ToTable("Registrations", (string)null);
                 });
@@ -457,6 +465,12 @@ namespace EventFlow.Registration.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTime?>("RevokedAtUtc")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ScopeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("ScopeType")
+                        .HasColumnType("integer");
 
                     b.Property<string>("TicketNumber")
                         .IsRequired()

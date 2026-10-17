@@ -15,12 +15,16 @@ public sealed class Registration : Entity
         Guid userId,
         string registrationNumber,
         RegistrationStatus status,
-        int? waitlistPosition = null)
+        int? waitlistPosition = null,
+        RegistrationScope scopeType = RegistrationScope.Event,
+        Guid? scopeId = null)
     {
         EventId = eventId;
         UserId = userId;
         RegistrationNumber = registrationNumber;
         Status = status;
+        ScopeType = scopeType;
+        ScopeId = scopeId;
         RegisteredAtUtc = DateTime.UtcNow;
 
         // Waitlisted registrations remember when and where they joined the queue.
@@ -34,6 +38,10 @@ public sealed class Registration : Entity
     public Guid EventId { get; private set; }
 
     public Guid UserId { get; private set; }
+
+    public RegistrationScope ScopeType { get; private set; } = RegistrationScope.Event;
+
+    public Guid? ScopeId { get; private set; }
 
     public string RegistrationNumber { get; private set; } = "";
 
