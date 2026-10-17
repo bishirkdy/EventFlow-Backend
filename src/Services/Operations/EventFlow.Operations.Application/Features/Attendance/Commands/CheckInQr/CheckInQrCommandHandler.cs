@@ -47,6 +47,14 @@ public sealed class CheckInQrCommandHandler(
             throw new ValidationException(verified?.Message ?? "Ticket verification failed.");
         }
 
+        // Session tickets are only valid at the session they were registered for.
+        if (verified.ScopeType == RegistrationScope.Session &&
+            command.SessionId != verified.ScopeId)
+        {
+            throw new ValidationException(
+                "This ticket is only valid for the session it was registered for.");
+        }
+
         var existing = await db.AttendanceRecords.SingleOrDefaultAsync(
             x => x.EventId == command.EventId
                  && x.RegistrationId == verified.RegistrationId

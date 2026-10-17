@@ -15,8 +15,9 @@ public sealed class RegistrationClient(HttpClient httpClient,IConfiguration conf
   if(response.StatusCode==HttpStatusCode.NotFound)return null;
   var result=await response.Content.ReadFromJsonAsync<VerifyResponse>(ct);
   if(result?.Data is null)return new VerifiedTicket(Guid.Empty,Guid.Empty,Guid.Empty,false,result?.Message??"Ticket verification failed.");
-  return new VerifiedTicket(result.Data.RegistrationId,result.Data.ParticipantId,result.Data.ParticipantUserId,result.IsSuccess&&result.Data.IsActive,result.Message);
+  var scopeType=Enum.IsDefined(typeof(RegistrationScope),result.Data.ScopeType)?(RegistrationScope)result.Data.ScopeType:RegistrationScope.Event;
+  return new VerifiedTicket(result.Data.RegistrationId,result.Data.ParticipantId,result.Data.ParticipantUserId,result.IsSuccess&&result.Data.IsActive,result.Message,scopeType,result.Data.ScopeId);
  }
  private sealed record VerifyResponse(bool IsSuccess,int StatusCode,string? Message,TicketData? Data);
- private sealed record TicketData(Guid Id,Guid RegistrationId,Guid ParticipantId,Guid ParticipantUserId,string TicketNumber,string QrCodeValue,DateTime IssuedAtUtc,DateTime? RevokedAtUtc,bool IsActive);
+ private sealed record TicketData(Guid Id,Guid RegistrationId,Guid ParticipantId,Guid ParticipantUserId,string TicketNumber,string QrCodeValue,DateTime IssuedAtUtc,DateTime? RevokedAtUtc,bool IsActive,int ScopeType,Guid? ScopeId);
 }

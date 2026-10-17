@@ -5,4 +5,6 @@ public sealed record VerifiedTicket(
     Guid ParticipantId,
     Guid ParticipantUserId,
     bool IsValid,
-    string? Message);
+    string? Message,
+    RegistrationScope ScopeType = RegistrationScope.Event,
+    Guid? ScopeId = null);
