@@ -12,6 +12,7 @@ namespace EventFlow.Event.Api.Requests.Sessions
         public DateTime? StartTime { get; set; }
         public DateTime? EndTime { get; set; }
         public Guid? VenueId { get; set; }
+        public bool AllowRegistration { get; set; }
         public IFormFile? Image { get; set; }
     }
 }

@@ -35,6 +35,10 @@ namespace EventFlow.Event.Infrastructure.Persistence.Configurations
             builder.Property(x => x.IsVisible)
                 .IsRequired();
 
+            builder.Property(x => x.ShowRegistrationForm)
+                .IsRequired()
+                .HasDefaultValue(false);
+
             builder.Property(x => x.Configuration)
                 .HasColumnType("jsonb");
 

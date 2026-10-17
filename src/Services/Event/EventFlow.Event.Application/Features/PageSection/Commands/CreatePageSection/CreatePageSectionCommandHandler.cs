@@ -29,7 +29,8 @@ namespace EventFlow.Event.Application.Features.PageSection.Commands.CreatePageSe
                 request.ImageUrl,
                 request.ImagePublicId,
                 displayOrder,
-                request.Configuration);
+                request.Configuration,
+                request.ShowRegistrationForm);
 
             await pageSectionRepository.AddAsync(section, cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);

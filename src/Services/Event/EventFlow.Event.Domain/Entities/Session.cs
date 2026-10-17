@@ -15,6 +15,7 @@ namespace EventFlow.Event.Domain.Entities
         public DateTime? EndTimeUtc { get; private set; }
         public Guid? VenueId { get; private set; }
         public string? ImageUrl { get; private set; }
+        public bool AllowRegistration { get; private set; }
         public string Status { get; private set; } = "Draft";
 
         private Session()
@@ -22,7 +23,7 @@ namespace EventFlow.Event.Domain.Entities
             // Required by EF Core
         }
 
-        public Session(Guid eventId,Guid sectionId,string title,string? description,string sessionType,int? capacity,DateTime? startTimeUtc,DateTime? endTimeUtc,Guid? venueId,string? imageUrl = null)
+        public Session(Guid eventId,Guid sectionId,string title,string? description,string sessionType,int? capacity,DateTime? startTimeUtc,DateTime? endTimeUtc,Guid? venueId,bool allowRegistration = false,string? imageUrl = null)
         {
             EventId = eventId;
             SectionId = sectionId;
@@ -33,11 +34,12 @@ namespace EventFlow.Event.Domain.Entities
             StartTimeUtc = startTimeUtc;
             EndTimeUtc = endTimeUtc;
             VenueId = venueId;
+            AllowRegistration = allowRegistration;
             ImageUrl = imageUrl;
             Status = "Draft";
         }
 
-        public void Update(string title,string? description,string sessionType,int? capacity,DateTime? startTimeUtc,DateTime? endTimeUtc,Guid? venueId,string? imageUrl = null)
+        public void Update(string title,string? description,string sessionType,int? capacity,DateTime? startTimeUtc,DateTime? endTimeUtc,Guid? venueId,bool allowRegistration = false,string? imageUrl = null)
         {
             Title = title;
             Description = description;
@@ -46,6 +48,7 @@ namespace EventFlow.Event.Domain.Entities
             StartTimeUtc = startTimeUtc;
             EndTimeUtc = endTimeUtc;
             VenueId = venueId;
+            AllowRegistration = allowRegistration;
             ImageUrl = imageUrl;
             UpdatedAt = DateTime.UtcNow;
         }

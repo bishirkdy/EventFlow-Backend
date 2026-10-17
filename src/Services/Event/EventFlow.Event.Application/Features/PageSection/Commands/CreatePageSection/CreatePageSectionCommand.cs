@@ -9,5 +9,6 @@ namespace EventFlow.Event.Application.Features.PageSection.Commands.CreatePageSe
         string? Content,
         string? ImageUrl,
         string? ImagePublicId,
+        bool ShowRegistrationForm,
         string? Configuration) : IRequest<Guid>;
 }

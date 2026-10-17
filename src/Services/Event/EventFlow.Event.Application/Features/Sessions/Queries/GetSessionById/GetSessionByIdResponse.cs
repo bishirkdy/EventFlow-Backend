@@ -14,6 +14,7 @@ namespace EventFlow.Event.Application.Features.Sessions.Queries.GetSessionById
         DateTime? EndTime,
         Guid? VenueId,
         string? ImageUrl,
+        bool AllowRegistration,
         string Status,
         DateTime CreatedAt,
         DateTime? UpdatedAt);

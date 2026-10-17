@@ -42,6 +42,11 @@ namespace EventFlow.Event.Infrastructure.Persistence.Configurations
 
             builder.Property(x => x.ImageUrl)
                 .HasMaxLength(1000);
+
+            builder.Property(x => x.AllowRegistration)
+                .IsRequired()
+                .HasDefaultValue(false);
+
             builder.HasIndex(x => x.VenueId);
 
             builder.HasOne<Venue>()

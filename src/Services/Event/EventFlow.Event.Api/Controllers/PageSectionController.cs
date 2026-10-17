@@ -75,6 +75,7 @@ namespace EventFlow.Event.Api.Controllers
                 request.Content,
                 imageUrl,
                 imagePublicId,
+                request.ShowRegistrationForm,
                 request.Configuration);
 
             var sectionId = await sender.Send(command, cancellationToken);
@@ -205,6 +206,7 @@ namespace EventFlow.Event.Api.Controllers
                 imageUrl,
                 imagePublicId,
                 request.IsVisible,
+                request.ShowRegistrationForm,
                 request.Configuration);
 
             var oldImagePublicId = await sender.Send(command,cancellationToken);

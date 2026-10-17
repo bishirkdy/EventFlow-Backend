@@ -28,6 +28,7 @@ namespace EventFlow.Event.Application.Features.Sessions.Queries.GetSessionsbyEve
            session.EndTimeUtc,
            session.VenueId,
            session.ImageUrl,
+           session.AllowRegistration,
            session.Status,
            session.CreatedAt,
            session.UpdatedAt))

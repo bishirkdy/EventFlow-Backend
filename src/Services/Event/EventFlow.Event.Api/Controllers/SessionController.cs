@@ -29,7 +29,7 @@ namespace EventFlow.Event.Api.Controllers
 
             var sessionId = await sender.Send(new CreateSessionCommand(
                 eventId, request.SectionId, request.Title, request.Description, request.SessionType,
-                request.Capacity, request.StartTime, request.EndTime, request.VenueId, image), cancellationToken);
+                request.Capacity, request.StartTime, request.EndTime, request.VenueId, request.AllowRegistration, image), cancellationToken);
 
             return Ok(new ApiResponse<Guid> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Session created successfully.", Data = sessionId });
         }
@@ -69,7 +69,7 @@ namespace EventFlow.Event.Api.Controllers
 
             await sender.Send(new UpdateSessionCommand(
                 id, eventId, request.Title, request.Description, request.SessionType, request.Capacity,
-                request.StartTime, request.EndTime, request.VenueId, image), cancellationToken);
+                request.StartTime, request.EndTime, request.VenueId, request.AllowRegistration, image), cancellationToken);
 
             return Ok(new ApiResponse<object?> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Session updated successfully.", Data = null });
         }

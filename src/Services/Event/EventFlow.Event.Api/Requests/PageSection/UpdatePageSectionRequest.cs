@@ -6,5 +6,6 @@ namespace EventFlow.Event.Api.Requests.PageSection
         string? Content,
         IFormFile? Image,
         bool IsVisible,
+        bool ShowRegistrationForm,
         string? Configuration);
 }

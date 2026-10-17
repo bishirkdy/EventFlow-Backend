@@ -11,5 +11,6 @@ namespace EventFlow.Event.Application.Features.PageSection.Commands.UpdatePageSe
         string? ImageUrl,
         string? ImagePublicId,
         bool IsVisible,
+        bool ShowRegistrationForm,
         string? Configuration) : IRequest<string?>;
 }

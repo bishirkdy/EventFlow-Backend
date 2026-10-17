@@ -84,7 +84,7 @@ namespace EventFlow.Event.Application.Features.Sessions.Commands.UpdateSession
                 imageUrl = stored.Url;
             }
 
-            session.Update(request.Title, request.Description, request.SessionType, request.Capacity, startUtc, endUtc, request.VenueId, imageUrl);
+            session.Update(request.Title, request.Description, request.SessionType, request.Capacity, startUtc, endUtc, request.VenueId, request.AllowRegistration, imageUrl);
             await unitOfWork.SaveChangesAsync(cancellationToken);
         }
 

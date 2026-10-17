@@ -11,6 +11,7 @@ namespace EventFlow.Event.Application.Features.PageSection.Queries.GetPageSectio
         string? ImageUrl,
         int DisplayOrder,
         bool IsVisible,
+        bool ShowRegistrationForm,
         string? Configuration,
         DateTime CreatedAt,
         DateTime? UpdatedAt);

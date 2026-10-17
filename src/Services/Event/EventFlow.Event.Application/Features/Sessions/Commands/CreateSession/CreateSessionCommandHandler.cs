@@ -60,7 +60,7 @@ namespace EventFlow.Event.Application.Features.Sessions.Commands.CreateSession
                 imageUrl = stored.Url;
             }
 
-            var session = new Session(request.EventId, request.SectionId, request.Title, request.Description, request.SessionType, request.Capacity, startUtc, endUtc, request.VenueId, imageUrl);
+            var session = new Session(request.EventId, request.SectionId, request.Title, request.Description, request.SessionType, request.Capacity, startUtc, endUtc, request.VenueId, request.AllowRegistration, imageUrl);
             await sessionRepository.AddAsync(session, cancellationToken);
             await unitOfWork.SaveChangesAsync(cancellationToken);
             await websiteProvisioningService.EnsureResourcePageAsync(request.EventId, "schedule", cancellationToken);

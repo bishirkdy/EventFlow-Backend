@@ -2,6 +2,7 @@ using EventFlow.Event.Application.Features.EventFeature.Queries.GetEventPreviewA
 using EventFlow.Event.Application.Features.EventFeature.Queries.GetRegistrationAccess;
 using EventFlow.Event.Application.Features.EventFeature.Queries.GetRegistrationFeature;
 using EventFlow.Event.Application.Features.Events.Queries.GetEventIsPublished;
+using EventFlow.Event.Application.Features.Sessions.Queries.GetSessionRegistrationInfo;
 using EventFlow.Security.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -49,5 +50,15 @@ public sealed class EventAccessController(ISender sender) : ControllerBase
             cancellationToken);
 
         return Ok(new { published });
+    }
+
+    [HttpGet("sessions/{sessionId:guid}/registration-info")]
+    public async Task<IActionResult> SessionRegistrationInfo(Guid eventId, Guid sessionId, CancellationToken cancellationToken)
+    {
+        var info = await sender.Send(
+            new GetSessionRegistrationInfoQuery(eventId, sessionId),
+            cancellationToken);
+
+        return Ok(info);
     }
 }
