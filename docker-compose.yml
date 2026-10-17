@@ -122,8 +122,13 @@ services:
   kafka:
     image: apache/kafka:latest
     container_name: eventflow-kafka
+    restart: unless-stopped
     ports:
       - "9092:9092"
+    extra_hosts:
+      - "kafka:127.0.0.1"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
     healthcheck:
       test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1 || exit 1"]
       interval: 5s
@@ -148,6 +153,9 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
 
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_HEAP_OPTS: "-Xms256m -Xmx512m"
 
   registration:
     build:
@@ -244,3 +252,4 @@ services:
 volumes:
   postgres-data:
   certificate-storage:
+  kafka-data:
