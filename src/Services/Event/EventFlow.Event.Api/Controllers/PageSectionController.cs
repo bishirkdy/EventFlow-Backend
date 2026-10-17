@@ -108,7 +108,7 @@ namespace EventFlow.Event.Api.Controllers
         [HttpGet("event/{eventId:guid}/preview-sections")]
         public async Task<IActionResult> GetPreviewPageSectionsByEvent(Guid eventId, CancellationToken cancellationToken)
         {
-            if (!await previewAccess.CanPreviewAsync(eventId, cancellationToken))
+            if (!await previewAccess.CanPreviewWebsiteAsync(eventId, cancellationToken))
             {
                 throw new ForbiddenException("You do not have permission to preview this event.");
             }

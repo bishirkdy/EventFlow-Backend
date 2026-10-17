@@ -31,6 +31,7 @@ namespace EventFlow.Identity.Infrastructure.Persistence
             var photoUploadId = Guid.Parse("20000000-0000-0000-0000-000000000009");
             var photoViewId = Guid.Parse("20000000-0000-0000-0000-000000000010");
             var photoManageId = Guid.Parse("20000000-0000-0000-0000-000000000011");
+            var eventPreviewId = Guid.Parse("20000000-0000-0000-0000-000000000012");
 
             modelBuilder.Entity<Role>().HasData(
            new
@@ -161,6 +162,13 @@ namespace EventFlow.Identity.Infrastructure.Persistence
                     Name = "photo.manage",
                     Description = "Manage photos",
                     CreatedAt = SeedDate
+                },
+                new
+                {
+                    Id = eventPreviewId,
+                    Name = "event.preview",
+                    Description = "Preview event website",
+                    CreatedAt = SeedDate
                 }
             );
 
@@ -205,6 +213,11 @@ namespace EventFlow.Identity.Infrastructure.Persistence
                 {
                     RoleId = organizerRoleId,
                     PermissionId = eventTeamManageId
+                },
+                new
+                {
+                    RoleId = organizerRoleId,
+                    PermissionId = eventPreviewId
                 },
 
                 // EventAdmin permissions

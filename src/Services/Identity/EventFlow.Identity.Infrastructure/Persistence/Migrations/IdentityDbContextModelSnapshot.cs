@@ -202,6 +202,13 @@ namespace EventFlow.Identity.Infrastructure.Migrations
                             CreatedAt = new DateTime(2026, 9, 7, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Manage photos",
                             Name = "photo.manage"
+                        },
+                        new
+                        {
+                            Id = new Guid("20000000-0000-0000-0000-000000000012"),
+                            CreatedAt = new DateTime(2026, 9, 7, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Preview event website",
+                            Name = "event.preview"
                         });
                 });
 
@@ -376,6 +383,11 @@ namespace EventFlow.Identity.Infrastructure.Migrations
                         {
                             RoleId = new Guid("10000000-0000-0000-0000-000000000001"),
                             PermissionId = new Guid("20000000-0000-0000-0000-000000000008")
+                        },
+                        new
+                        {
+                            RoleId = new Guid("10000000-0000-0000-0000-000000000001"),
+                            PermissionId = new Guid("20000000-0000-0000-0000-000000000012")
                         },
                         new
                         {

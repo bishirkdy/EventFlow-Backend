@@ -49,6 +49,27 @@ public sealed class EventPreviewAccess(
         return false;
     }
 
+    public async Task<bool> CanPreviewWebsiteAsync(
+        Guid eventId,
+        CancellationToken cancellationToken = default)
+    {
+        if (!currentUserService.IsAuthenticated)
+        {
+            return false;
+        }
+
+        if (currentUserService.IsPlatformAdmin)
+        {
+            return true;
+        }
+
+        return await authorizationService.HasPermissionAsync(
+            currentUserService.UserId,
+            eventId,
+            PermissionConstants.Event.Preview,
+            cancellationToken);
+    }
+
     public async Task<bool> CanReadAsync(
         Guid eventId,
         CancellationToken cancellationToken = default)

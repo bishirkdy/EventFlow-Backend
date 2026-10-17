@@ -110,7 +110,7 @@ namespace EventFlow.Event.Api.Controllers
             Guid eventId,
             CancellationToken cancellationToken)
         {
-            await EnsureCanPreviewAsync(eventId, cancellationToken);
+            await EnsureCanPreviewWebsiteAsync(eventId, cancellationToken);
 
             var pages = await sender.Send(
                 new GetEventPagesByEventQuery(eventId, IncludeUnpublished: true),
@@ -272,6 +272,15 @@ namespace EventFlow.Event.Api.Controllers
         private async Task EnsureCanPreviewAsync(Guid eventId, CancellationToken cancellationToken)
         {
             if (!await previewAccess.CanPreviewAsync(eventId, cancellationToken))
+            {
+                throw new ForbiddenException("You do not have permission to preview this event.");
+            }
+        }
+
+        // The website preview is limited to the organizer.
+        private async Task EnsureCanPreviewWebsiteAsync(Guid eventId, CancellationToken cancellationToken)
+        {
+            if (!await previewAccess.CanPreviewWebsiteAsync(eventId, cancellationToken))
             {
                 throw new ForbiddenException("You do not have permission to preview this event.");
             }

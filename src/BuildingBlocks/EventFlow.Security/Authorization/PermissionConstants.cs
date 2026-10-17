@@ -8,6 +8,7 @@ public static class PermissionConstants
         public const string View = "event.view";
         public const string Update = "event.update";
         public const string TeamManage = "event.team.manage";
+        public const string Preview = "event.preview";
     }
 
     public static class Participant

@@ -7,6 +7,10 @@ public interface IEventPreviewAccess
     // manage the event (owner, organizer or event admin).
     Task<bool> CanPreviewAsync(Guid eventId, CancellationToken cancellationToken = default);
 
+    // True when the caller is a platform admin or holds event.preview, the
+    // organizer-only permission for the website preview.
+    Task<bool> CanPreviewWebsiteAsync(Guid eventId, CancellationToken cancellationToken = default);
+
     // True when the event is published, or the caller can preview it.
     Task<bool> CanReadAsync(Guid eventId, CancellationToken cancellationToken = default);
 }
