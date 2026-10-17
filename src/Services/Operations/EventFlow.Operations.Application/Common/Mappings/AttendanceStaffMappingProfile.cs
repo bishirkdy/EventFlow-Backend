@@ -10,8 +10,8 @@ public sealed class AttendanceStaffMappingProfile : Profile
     {
         // Email is resolved from Identity, not the domain entity.
         CreateMap<AttendanceStaffAssignment, AttendanceStaffDto>()
-            .ForMember(
-                dest => dest.Email,
-                opt => opt.Ignore());
+            .ForCtorParam(
+                nameof(AttendanceStaffDto.Email),
+                opt => opt.MapFrom(_ => string.Empty));
     }
 }
