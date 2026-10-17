@@ -11,11 +11,11 @@ namespace EventFlow.Event.Application.Common.Mappings
         public SessionMappingProfile()
         {
             CreateMap<Session, GetSessionsByEventResponse>()
-                .ForMember(d => d.StartTime, o => o.MapFrom(s => s.StartTimeUtc))
-                .ForMember(d => d.EndTime, o => o.MapFrom(s => s.EndTimeUtc));
+                .ForCtorParam(nameof(GetSessionsByEventResponse.StartTime), o => o.MapFrom(s => s.StartTimeUtc))
+                .ForCtorParam(nameof(GetSessionsByEventResponse.EndTime), o => o.MapFrom(s => s.EndTimeUtc));
             CreateMap<Session, GetSessionByIdResponse>()
-                .ForMember(d => d.StartTime, o => o.MapFrom(s => s.StartTimeUtc))
-                .ForMember(d => d.EndTime, o => o.MapFrom(s => s.EndTimeUtc));
+                .ForCtorParam(nameof(GetSessionByIdResponse.StartTime), o => o.MapFrom(s => s.StartTimeUtc))
+                .ForCtorParam(nameof(GetSessionByIdResponse.EndTime), o => o.MapFrom(s => s.EndTimeUtc));
         }
     }
 }
