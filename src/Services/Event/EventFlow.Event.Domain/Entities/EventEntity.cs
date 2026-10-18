@@ -42,6 +42,8 @@ namespace EventFlow.Event.Domain.Entities
             string timeZone,
             Guid createdBy)
         {
+            ValidateDates(startDate, endDate);
+
             Id = Guid.NewGuid();
 
             Name = name;

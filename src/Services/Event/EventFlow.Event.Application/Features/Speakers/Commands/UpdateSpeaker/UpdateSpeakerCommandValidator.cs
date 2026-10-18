@@ -1,4 +1,5 @@
 using EventFlow.Event.Application.Abstractions.Storage;
+using EventFlow.SharedKernel.Validation;
 using FluentValidation;
 
 namespace EventFlow.Event.Application.Features.Speakers.Commands.UpdateSpeaker;
@@ -34,11 +35,11 @@ public sealed class UpdateSpeakerCommandValidator : AbstractValidator<UpdateSpea
             .WithMessage("Speaker organization cannot exceed 200 characters.");
 
         RuleFor(x => x.Email)
-            .EmailAddress()
-            .When(x => !string.IsNullOrEmpty(x.Email))
-            .WithMessage("Invalid email format.")
             .MaximumLength(320)
-            .WithMessage("Speaker email cannot exceed 320 characters.");
+            .WithMessage("Speaker email cannot exceed 320 characters.")
+            .Must(ValidationRules.IsValidEmail)
+            .WithMessage("Invalid email format.")
+            .When(x => !string.IsNullOrEmpty(x.Email));
 
         RuleFor(x => x.DisplayOrder)
             .GreaterThanOrEqualTo(0)
