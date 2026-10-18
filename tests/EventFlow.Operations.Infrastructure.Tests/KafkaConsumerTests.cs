@@ -1,4 +1,3 @@
-using System.Text.Json;
 using EventFlow.Messaging.Kafka;
 using EventFlow.Operations.Application.Abstractions;
 using EventFlow.Operations.Domain.Entities;
@@ -8,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 namespace EventFlow.Operations.Infrastructure.Tests;
 

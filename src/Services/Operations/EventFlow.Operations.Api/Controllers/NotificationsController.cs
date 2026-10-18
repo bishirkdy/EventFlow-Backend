@@ -16,7 +16,7 @@ public sealed class NotificationsController(ISender sender) : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<NotificationDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> List(Guid eventId,CancellationToken cancellationToken = default)
+    public async Task<IActionResult> List(Guid eventId, CancellationToken cancellationToken = default)
     {
         var result = await sender.Send(new GetNotificationsQuery(eventId), cancellationToken);
 
@@ -27,7 +27,7 @@ public sealed class NotificationsController(ISender sender) : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<NotificationDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<NotificationDto>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> Queue(Guid eventId,QueueNotificationRequest request,CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Queue(Guid eventId, QueueNotificationRequest request, CancellationToken cancellationToken = default)
     {
         var dto = await sender.Send(
             new QueueNotificationCommand(

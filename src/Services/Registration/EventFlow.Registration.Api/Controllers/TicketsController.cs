@@ -12,22 +12,22 @@ namespace EventFlow.Registration.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/events/{eventId:guid}/tickets")]
-public sealed class TicketsController(IMediator mediator): ControllerBase
+public sealed class TicketsController(IMediator mediator) : ControllerBase
 {
     [Authorize]
     [HttpGet("registration/{registrationId:guid}")]
     public async Task<IActionResult> Get(Guid eventId, Guid registrationId, CancellationToken cancellationToken)
     {
-        var dto = await mediator.Send(new GetTicketQuery(eventId,registrationId), cancellationToken);
+        var dto = await mediator.Send(new GetTicketQuery(eventId, registrationId), cancellationToken);
 
         return Ok(ApiResponse<TicketDto>.Success(dto));
     }
 
     [InternalServiceOnly]
     [HttpGet("verify-internal")]
-    public async Task<IActionResult> VerifyInternal(Guid eventId,string qrCode,CancellationToken cancellationToken)
+    public async Task<IActionResult> VerifyInternal(Guid eventId, string qrCode, CancellationToken cancellationToken)
     {
-        var dto = await mediator.Send(new VerifyQrInternalQuery(eventId,qrCode),cancellationToken);
+        var dto = await mediator.Send(new VerifyQrInternalQuery(eventId, qrCode), cancellationToken);
 
         return Ok(ApiResponse<TicketDto>.Success(dto, "Ticket is valid."));
     }

@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Confluent.Kafka;
 using EventFlow.Messaging.Events;
 using EventFlow.Messaging.Kafka;
@@ -9,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 namespace EventFlow.Operations.Infrastructure.Background;
 

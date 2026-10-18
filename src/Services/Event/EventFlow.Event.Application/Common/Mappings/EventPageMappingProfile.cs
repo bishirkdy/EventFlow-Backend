@@ -3,16 +3,14 @@ using EventFlow.Event.Application.Features.EventPages.Queries.GetEventPageById;
 using EventFlow.Event.Application.Features.EventPages.Queries.GetEventPagesByEvent;
 using EventFlow.Event.Domain.Entities;
 
+namespace EventFlow.Event.Application.Common.Mappings;
 
-namespace EventFlow.Event.Application.Common.Mappings
+public sealed class EventPageMappingProfile : Profile
 {
-    public sealed class EventPageMappingProfile : Profile
+    public EventPageMappingProfile()
     {
-        public EventPageMappingProfile()
-        {
-            CreateMap<EventPage, GetEventPagesByEventResponse>();
-            CreateMap<EventPage, GetEventPageByIdResponse>();
+        CreateMap<EventPage, GetEventPagesByEventResponse>();
+        CreateMap<EventPage, GetEventPageByIdResponse>();
 
-        }
     }
 }

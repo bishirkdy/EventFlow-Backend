@@ -12,7 +12,7 @@ public sealed class RemoveOrganizerCommandHandler(IRoleRepository roleRepository
 {
     public async Task Handle(RemoveOrganizerCommand request, CancellationToken cancellationToken)
     {
-        if (!await permissions.HasPermissionAsync(currentUser.UserId,request.EventId, PermissionConstants.Event.TeamManage, cancellationToken))
+        if (!await permissions.HasPermissionAsync(currentUser.UserId, request.EventId, PermissionConstants.Event.TeamManage, cancellationToken))
         {
             throw new ForbiddenException("You do not have permission to manage the event team.");
         }
@@ -24,7 +24,7 @@ public sealed class RemoveOrganizerCommandHandler(IRoleRepository roleRepository
             throw new ConflictException("The Organizer role is not configured.");
         }
 
-        var assignments = await userEventRoleRepository.GetByUserAndEventForUpdateAsync(request.UserId,request.EventId, cancellationToken);
+        var assignments = await userEventRoleRepository.GetByUserAndEventForUpdateAsync(request.UserId, request.EventId, cancellationToken);
         var assignment = assignments.FirstOrDefault(x => x.RoleId == organizerRole.Id);
 
         if (assignment is null)

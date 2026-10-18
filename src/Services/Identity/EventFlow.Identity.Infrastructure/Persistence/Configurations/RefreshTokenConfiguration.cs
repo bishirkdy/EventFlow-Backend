@@ -1,38 +1,35 @@
-﻿using EventFlow.Identity.Domain.Entities;
+using EventFlow.Identity.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
+namespace EventFlow.Identity.Infrastructure.Persistence.Configurations;
 
-namespace EventFlow.Identity.Infrastructure.Persistence.Configurations
+public sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
 {
-    public sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
+    public void Configure(
+        EntityTypeBuilder<RefreshToken> builder)
     {
-        public void Configure(
-            EntityTypeBuilder<RefreshToken> builder)
-        {
-            builder.ToTable("RefreshTokens");
+        builder.ToTable("RefreshTokens");
 
-            builder.HasKey(x => x.Id);
+        builder.HasKey(x => x.Id);
 
-            builder.Property(x => x.Token)
-                .IsRequired()
-                .HasMaxLength(500);
+        builder.Property(x => x.Token)
+            .IsRequired()
+            .HasMaxLength(500);
 
-            builder.Property(x => x.ExpiresAt)
-                .IsRequired();
+        builder.Property(x => x.ExpiresAt)
+            .IsRequired();
 
-            builder.Property(x => x.CreatedAt)
-                .IsRequired();
+        builder.Property(x => x.CreatedAt)
+            .IsRequired();
 
-            // A refresh token must be unique.
-            builder.HasIndex(x => x.Token)
-                .IsUnique();
+        // A refresh token must be unique.
+        builder.HasIndex(x => x.Token)
+            .IsUnique();
 
-            // User → RefreshTokens relationship.
-            builder.HasOne(x => x.User)
-                .WithMany(x => x.RefreshTokens)
-                .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-        }
+        builder.HasOne(x => x.User)
+            .WithMany(x => x.RefreshTokens)
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -6,17 +6,17 @@ using MediatR;
 
 namespace EventFlow.Registration.Application.Features.Tickets.Queries.VerifyQr;
 
-public sealed class VerifyQrQueryHandler(ITicketRepository tickets,EventFlow.Security.Authentication.ICurrentUserService user,IEventRegistrationAccessService access,IMapper mapper)
+public sealed class VerifyQrQueryHandler(ITicketRepository tickets, EventFlow.Security.Authentication.ICurrentUserService user, IEventRegistrationAccessService access, IMapper mapper)
     : IRequestHandler<VerifyQrQuery, TicketDto>
 {
     public async Task<TicketDto> Handle(VerifyQrQuery query, CancellationToken cancellationToken)
     {
-        if (!await access.CanManageRegistrationAsync(query.EventId,user.UserId, cancellationToken))
+        if (!await access.CanManageRegistrationAsync(query.EventId, user.UserId, cancellationToken))
         {
             throw new ForbiddenException("You do not have permission.");
         }
 
-        var ticket = await tickets.GetByQrCodeAsync(query.EventId,query.QrCodeValue,cancellationToken);
+        var ticket = await tickets.GetByQrCodeAsync(query.EventId, query.QrCodeValue, cancellationToken);
 
         if (ticket is null)
         {

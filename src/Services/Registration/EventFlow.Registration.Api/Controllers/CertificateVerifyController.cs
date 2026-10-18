@@ -13,7 +13,7 @@ public sealed class CertificateVerifyController(ISender sender) : ControllerBase
 {
     [AllowAnonymous]
     [HttpGet("{certificateNumber}/verify")]
-    public async Task<IActionResult> Verify(string certificateNumber,CancellationToken cancellationToken)
+    public async Task<IActionResult> Verify(string certificateNumber, CancellationToken cancellationToken)
     {
         var dto = await sender.Send(
             new VerifyCertificateQuery(certificateNumber), cancellationToken);

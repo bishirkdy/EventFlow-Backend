@@ -8,7 +8,6 @@ public sealed class AttendanceMappingProfile : Profile
 {
     public AttendanceMappingProfile()
     {
-        // Attendance record -> read model.
         CreateMap<AttendanceRecord, AttendanceDto>();
     }
 }

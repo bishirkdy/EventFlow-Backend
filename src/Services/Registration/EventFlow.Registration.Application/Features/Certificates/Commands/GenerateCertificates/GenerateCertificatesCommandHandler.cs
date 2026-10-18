@@ -1,9 +1,9 @@
-using System.Security.Cryptography;
 using AutoMapper;
 using EventFlow.Registration.Application.Common.Certificates;
-using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Security.Authentication;
+using EventFlow.SharedKernel.Exceptions;
 using Microsoft.Extensions.Logging;
+using System.Security.Cryptography;
 
 namespace EventFlow.Registration.Application.Features.Certificates.Commands.GenerateCertificates;
 
@@ -29,7 +29,7 @@ public sealed class GenerateCertificatesCommandHandler(
         GenerateCertificatesCommand command,
         CancellationToken cancellationToken)
     {
-        if (!await access.CanManageRegistrationAsync(command.EventId,user.UserId,cancellationToken))
+        if (!await access.CanManageRegistrationAsync(command.EventId, user.UserId, cancellationToken))
         {
             throw new ForbiddenException("You do not have permission.");
         }
@@ -46,7 +46,7 @@ public sealed class GenerateCertificatesCommandHandler(
             throw new NotFoundException("Event details could not be loaded.");
         }
 
-        var registrationRows = await registrations.GetWithParticipantsAsync(command.EventId,cancellationToken);
+        var registrationRows = await registrations.GetWithParticipantsAsync(command.EventId, cancellationToken);
 
         var issuedRegistrationIds = await certificates.GetIssuedRegistrationIdsAsync(command.EventId, cancellationToken);
 

@@ -1,8 +1,8 @@
 using EventFlow.Security.Authentication;
 using EventFlow.Security.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using EventAuthorizationService =
     EventFlow.Event.Application.Abstractions.Authorization.IAuthorizationService;
-using Microsoft.AspNetCore.Authorization;
 
 namespace EventFlow.Event.Api.Middleware;
 

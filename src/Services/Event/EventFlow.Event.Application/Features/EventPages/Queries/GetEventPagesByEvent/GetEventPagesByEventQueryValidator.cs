@@ -1,15 +1,14 @@
 
 using FluentValidation;
 
-namespace EventFlow.Event.Application.Features.EventPages.Queries.GetEventPagesByEvent
+namespace EventFlow.Event.Application.Features.EventPages.Queries.GetEventPagesByEvent;
+
+public sealed class GetEventPagesByEventQueryValidator : AbstractValidator<GetEventPagesByEventQuery>
 {
-    public sealed class GetEventPagesByEventQueryValidator: AbstractValidator<GetEventPagesByEventQuery>
+    public GetEventPagesByEventQueryValidator()
     {
-        public GetEventPagesByEventQueryValidator()
-        {
-            RuleFor(x => x.EventId)
-                .NotEmpty()
-                .WithMessage("Event ID is required.");
-        }
+        RuleFor(x => x.EventId)
+            .NotEmpty()
+            .WithMessage("Event ID is required.");
     }
 }

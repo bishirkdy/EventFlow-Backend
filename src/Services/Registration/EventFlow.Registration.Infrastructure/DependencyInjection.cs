@@ -1,9 +1,9 @@
+using EventFlow.Infrastructure.Storage.Cloudinary;
 using EventFlow.Registration.Application.Abstractions.Persistence;
 using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Infrastructure.Persistence;
 using EventFlow.Registration.Infrastructure.Persistence.Repositories;
 using EventFlow.Registration.Infrastructure.Services;
-using EventFlow.Infrastructure.Storage.Cloudinary;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

@@ -32,10 +32,10 @@ public sealed class AttendanceStaffController(ISender sender) : ControllerBase
     public async Task<IActionResult> Assign(Guid eventId, AssignAttendanceStaffRequest request, CancellationToken cancellationToken = default)
     {
         var dto = await sender.Send(
-            new AssignAttendanceStaffCommand(eventId,request.Email,request.ScopeType,request.ScopeId),cancellationToken);
+            new AssignAttendanceStaffCommand(eventId, request.Email, request.ScopeType, request.ScopeId), cancellationToken);
 
         return Ok(ApiResponse<AttendanceStaffDto>.Success(
-            dto,"Attendance staff assigned successfully."));
+            dto, "Attendance staff assigned successfully."));
     }
 
     [HttpDelete("{assignmentId:guid}")]

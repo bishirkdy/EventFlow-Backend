@@ -1,16 +1,14 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using System.Security.Cryptography;
 using EventFlow.Security.Configuration;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using System.Security.Cryptography;
 
 namespace EventFlow.Security.Authorization;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-//Attribute = Allows you to use it as: [InternalServiceOnly]
-//IAsyncAuthorizationFilter = Run this authorization logic before executing the controller action.
 public sealed class InternalServiceOnlyAttribute : Attribute, IAsyncAuthorizationFilter
 {
     public Task OnAuthorizationAsync(AuthorizationFilterContext context)

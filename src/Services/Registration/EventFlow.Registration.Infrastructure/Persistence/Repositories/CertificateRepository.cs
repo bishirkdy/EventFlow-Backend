@@ -24,7 +24,7 @@ public sealed class CertificateRepository(RegistrationDbContext db)
             .ToListAsync(cancellationToken);
     }
 
-    public Task<Certificate?> GetByIdAsync(Guid eventId,Guid certificateId,CancellationToken cancellationToken = default)
+    public Task<Certificate?> GetByIdAsync(Guid eventId, Guid certificateId, CancellationToken cancellationToken = default)
     {
         return db.Certificates
             .AsNoTracking()

@@ -5,22 +5,19 @@ using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.Event.Application.Common;
 using MediatR;
 
-namespace EventFlow.Event.Application.Features.Venues.Queries.GetVenuesByEvent
+namespace EventFlow.Event.Application.Features.Venues.Queries.GetVenuesByEvent;
+
+public sealed class GetVenuesByEventQueryHandler(IVenueRepository venueRepository, IMapper mapper, IEventFeatureRepository featureRepository)
+    : IRequestHandler<GetVenuesByEventQuery, IReadOnlyList<GetVenuesByEventResponse>>
 {
-    public sealed class GetVenuesByEventQueryHandler(IVenueRepository venueRepository,IMapper mapper, IEventFeatureRepository featureRepository)
-        : IRequestHandler<GetVenuesByEventQuery,IReadOnlyList<GetVenuesByEventResponse>>
+    public async Task<IReadOnlyList<GetVenuesByEventResponse>> Handle(
+        GetVenuesByEventQuery request,
+        CancellationToken cancellationToken)
     {
-        public async Task<IReadOnlyList<GetVenuesByEventResponse>> Handle(
-            GetVenuesByEventQuery request,
-            CancellationToken cancellationToken)
-        {
-            await EventFeatureGuard.EnsureEnabledAsync(featureRepository, request.EventId, FeatureIds.Venues, "venues", cancellationToken);
+        await EventFeatureGuard.EnsureEnabledAsync(featureRepository, request.EventId, FeatureIds.Venues, "venues", cancellationToken);
 
-            // Get venues belonging to event
-            var venues = await venueRepository.GetByEventIdAsync(request.EventId,cancellationToken);
+        var venues = await venueRepository.GetByEventIdAsync(request.EventId, cancellationToken);
 
-            // Map entities to responses
-            return mapper.Map<IReadOnlyList<GetVenuesByEventResponse>>(venues);
-        }
+        return mapper.Map<IReadOnlyList<GetVenuesByEventResponse>>(venues);
     }
 }

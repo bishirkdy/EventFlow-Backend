@@ -1,116 +1,113 @@
-using EventFlow.SharedKernel.Domain;
 using EventFlow.Event.Domain.Enums;
+using EventFlow.SharedKernel.Domain;
 
+namespace EventFlow.Event.Domain.Entities;
 
-namespace EventFlow.Event.Domain.Entities
+public sealed class EventEntity : Entity
 {
-    public sealed class EventEntity : Entity
+    public string Name { get; private set; } = string.Empty;
+    public string? Description { get; private set; }
+    public Guid EventTypeId { get; private set; }
+    public EventType EventType { get; private set; } = null!;
+    public string? SubType { get; private set; }
+
+    public DateTime StartDate { get; private set; }
+    public DateTime EndDate { get; private set; }
+    public string TimeZone { get; private set; } = string.Empty;
+
+    public EventStatus Status { get; private set; }
+
+    public string? Subdomain { get; private set; }
+
+    public Guid CreatedBy { get; private set; }
+
+    // Domain-only collection.
+    // EF relationship is configured through EventImage.EventId.
+    public ICollection<EventImage> Images { get; private set; }
+        = new List<EventImage>();
+
+    private EventEntity()
     {
-        public string Name { get; private set; } = string.Empty;
-        public string? Description { get; private set; }
-        //Navigation to event type
-        public Guid EventTypeId { get; private set; }
-        public EventType EventType { get; private set; } = null!;
-        public string? SubType { get; private set; }
+    }
 
-        public DateTime StartDate { get; private set; }
-        public DateTime EndDate { get; private set; }
-        public string TimeZone { get; private set; } = string.Empty;
+    public EventEntity(
+        string name,
+        string? description,
+        Guid eventTypeId,
+        string? subType,
+        DateTime startDate,
+        DateTime endDate,
+        string timeZone,
+        Guid createdBy)
+    {
+        ValidateDates(startDate, endDate);
 
-        public EventStatus Status { get; private set; }
+        Id = Guid.NewGuid();
 
-        public string? Subdomain { get; private set; }
+        Name = name;
+        Description = description;
+        EventTypeId = eventTypeId;
+        SubType = subType;
+        Status = EventStatus.Draft;
+        StartDate = startDate;
+        EndDate = endDate;
+        TimeZone = timeZone;
+        CreatedBy = createdBy;
+    }
 
-        public Guid CreatedBy { get; private set; }
+    public void AddImage(EventImage image)
+    {
+        ArgumentNullException.ThrowIfNull(image);
 
-        // Domain-only collection.
-        // EF relationship is configured through EventImage.EventId.
-        public ICollection<EventImage> Images { get; private set; }
-            = new List<EventImage>();
-
-        private EventEntity()
+        if (image.EventId != Id)
         {
+            throw new InvalidOperationException("Image does not belong to this event.");
         }
 
-        public EventEntity(
-            string name,
-            string? description,
-            Guid eventTypeId,
-            string? subType,
-            DateTime startDate,
-            DateTime endDate,
-            string timeZone,
-            Guid createdBy)
+        Images.Add(image);
+    }
+
+    private static void ValidateDates(DateTime startDate, DateTime endDate)
+    {
+        if (endDate <= startDate)
         {
-            ValidateDates(startDate, endDate);
+            throw new ArgumentException("Event end date must be greater than start date.");
+        }
+    }
 
-            Id = Guid.NewGuid();
+    public void Update(string name, string? description, Guid eventTypeId, string? subType, DateTime startDate, DateTime endDate, string timeZone)
+    {
+        ValidateDates(startDate, endDate);
 
-            Name = name;
-            Description = description;
-            EventTypeId = eventTypeId;
-            SubType = subType;
-            Status = EventStatus.Draft;
-            StartDate = startDate;
-            EndDate = endDate;
-            TimeZone = timeZone;
-            CreatedBy = createdBy;
+        Name = name;
+        Description = description;
+        EventTypeId = eventTypeId;
+        SubType = subType;
+        StartDate = startDate;
+        EndDate = endDate;
+        TimeZone = timeZone;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Publish()
+    {
+        if (Status != EventStatus.Draft)
+        {
+            throw new InvalidOperationException("Only draft events can be published.");
         }
 
-        public void AddImage(EventImage image)
+        Status = EventStatus.Published;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Cancel()
+    {
+        if (Status == EventStatus.Completed)
         {
-            ArgumentNullException.ThrowIfNull(image);
-
-            if (image.EventId != Id)
-            {
-                throw new InvalidOperationException("Image does not belong to this event.");
-            }
-
-            Images.Add(image);
+            throw new InvalidOperationException("A completed event cannot be cancelled.");
         }
 
-        private static void ValidateDates(DateTime startDate, DateTime endDate)
-        {
-            if (endDate <= startDate)
-            {
-                throw new ArgumentException("Event end date must be greater than start date.");
-            }
-        }
-
-        public void Update(string name,string? description, Guid eventTypeId, string? subType,DateTime startDate,DateTime endDate,string timeZone)
-        {
-            ValidateDates(startDate, endDate);
-
-            Name = name;
-            Description = description;
-            EventTypeId = eventTypeId;
-            SubType = subType;
-            StartDate = startDate;
-            EndDate = endDate;
-            TimeZone = timeZone;
-            UpdatedAt = DateTime.UtcNow;
-        }
-
-        public void Publish()
-        {
-            if (Status != EventStatus.Draft)
-            {
-                throw new InvalidOperationException("Only draft events can be published.");
-            }
-
-            Status = EventStatus.Published;
-            UpdatedAt = DateTime.UtcNow;
-        }
-
-        public void Cancel()
-        {
-            if (Status == EventStatus.Completed)
-            {
-                throw new InvalidOperationException("A completed event cannot be cancelled.");
-            }
-
-            Status = EventStatus.Cancelled;
-            UpdatedAt = DateTime.UtcNow;
-        }
+        Status = EventStatus.Cancelled;
+        UpdatedAt = DateTime.UtcNow;
     }
 }

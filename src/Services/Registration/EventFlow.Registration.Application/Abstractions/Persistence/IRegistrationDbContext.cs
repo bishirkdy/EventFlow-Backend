@@ -1,5 +1,5 @@
-using Microsoft.EntityFrameworkCore;
 using EventFlow.Registration.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 using RegistrationEntity = EventFlow.Registration.Domain.Entities.Registration;
 
 namespace EventFlow.Registration.Application.Abstractions.Persistence;

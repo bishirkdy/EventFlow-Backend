@@ -1,8 +1,7 @@
 
-namespace EventFlow.Event.Application.Abstractions.Persistence
+namespace EventFlow.Event.Application.Abstractions.Persistence;
+
+public interface IUnitOfWork
 {
-    public interface IUnitOfWork
-    {
-        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
-    }
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

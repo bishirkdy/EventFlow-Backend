@@ -1,6 +1,6 @@
-using System.Text.Json;
 using EventFlow.Messaging.Events;
 using EventFlow.Messaging.Kafka;
+using System.Text.Json;
 
 namespace EventFlow.Messaging.Tests;
 

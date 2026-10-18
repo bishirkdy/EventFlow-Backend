@@ -4,25 +4,24 @@ using EventFlow.Identity.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace EventFlow.Identity.Infrastructure.Persistence.Configurations
+namespace EventFlow.Identity.Infrastructure.Persistence.Configurations;
+
+public sealed class PermissionConfiguration : IEntityTypeConfiguration<Permission>
 {
-    public sealed class PermissionConfiguration: IEntityTypeConfiguration<Permission>
+    public void Configure(EntityTypeBuilder<Permission> builder)
     {
-        public void Configure(EntityTypeBuilder<Permission> builder)
-        {
-            builder.ToTable("Permissions");
+        builder.ToTable("Permissions");
 
-            builder.HasKey(x => x.Id);
+        builder.HasKey(x => x.Id);
 
-            builder.Property(x => x.Name)
-                .IsRequired()
-                .HasMaxLength(150);
+        builder.Property(x => x.Name)
+            .IsRequired()
+            .HasMaxLength(150);
 
-            builder.Property(x => x.Description)
-                .HasMaxLength(500);
+        builder.Property(x => x.Description)
+            .HasMaxLength(500);
 
-            builder.HasIndex(x => x.Name)
-                .IsUnique();
-        }
+        builder.HasIndex(x => x.Name)
+            .IsUnique();
     }
 }

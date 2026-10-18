@@ -6,81 +6,75 @@ using EventFlow.Messaging.Outbox;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
-namespace EventFlow.Identity.Application.Features.EventInvitations.Commands.AcceptEventInvitation
+namespace EventFlow.Identity.Application.Features.EventInvitations.Commands.AcceptEventInvitation;
+
+public class AcceptEventInvitationCommandHandler : IRequestHandler<AcceptEventInvitationCommand, AcceptEventInvitationResponse>
 {
-    public class AcceptEventInvitationCommandHandler : IRequestHandler<AcceptEventInvitationCommand, AcceptEventInvitationResponse>
+    private readonly IEventInvitationRepository _invitationRepository;
+    private readonly IUserRepository _userRepository;
+    private readonly IUserEventRoleRepository _userEventRoleRepository;
+    private readonly IPasswordHasher _passwordHasher;
+    private readonly IOutbox _outbox;
+
+    public AcceptEventInvitationCommandHandler(
+        IEventInvitationRepository invitationRepository,
+        IUserRepository userRepository,
+        IUserEventRoleRepository userEventRoleRepository,
+        IPasswordHasher passwordHasher,
+        IOutbox outbox)
     {
-        private readonly IEventInvitationRepository _invitationRepository;
-        private readonly IUserRepository _userRepository;
-        private readonly IUserEventRoleRepository _userEventRoleRepository;
-        private readonly IPasswordHasher _passwordHasher;
-        private readonly IOutbox _outbox;
+        _invitationRepository = invitationRepository;
+        _userRepository = userRepository;
+        _userEventRoleRepository = userEventRoleRepository;
+        _passwordHasher = passwordHasher;
+        _outbox = outbox;
+    }
 
-        public AcceptEventInvitationCommandHandler(
-            IEventInvitationRepository invitationRepository,
-            IUserRepository userRepository,
-            IUserEventRoleRepository userEventRoleRepository,
-            IPasswordHasher passwordHasher,
-            IOutbox outbox)
+    public async Task<AcceptEventInvitationResponse> Handle(AcceptEventInvitationCommand request, CancellationToken cancellationToken)
+    {
+        var invitation = await _invitationRepository.GetByTokenAsync(request.Token, cancellationToken);
+        if (invitation is null)
         {
-            _invitationRepository = invitationRepository;
-            _userRepository = userRepository;
-            _userEventRoleRepository = userEventRoleRepository;
-            _passwordHasher = passwordHasher;
-            _outbox = outbox;
+            throw new NotFoundException("Invalid invitation token.");
         }
 
-        public async Task<AcceptEventInvitationResponse> Handle(AcceptEventInvitationCommand request, CancellationToken cancellationToken)
+        if (invitation.Status != InvitationStatus.Pending)
         {
-            // Get and validate invitation
-            var invitation = await _invitationRepository.GetByTokenAsync(request.Token, cancellationToken);
-            if (invitation is null)
-            {
-                throw new NotFoundException("Invalid invitation token.");
-            }
-
-            if (invitation.Status != InvitationStatus.Pending)
-            {
-                throw new ConflictException("Invitation has already been processed or revoked.");
-            }
-
-            if (invitation.IsExpired)
-            {
-                throw new ConflictException("Invitation has expired.");
-            }
-
-            // Check if user already exists with this email
-            var user = await _userRepository.GetByEmailAsync(invitation.Email, cancellationToken);
-            Guid userId;
-
-            if (user is null)
-            {
-                // Create new user
-                var passwordHash = _passwordHasher.Hash(request.Password);
-                user = new User(request.UserName, invitation.Email, request.FirstName, request.LastName, passwordHash);
-                await _userRepository.AddAsync(user, cancellationToken);
-                userId = user.Id;
-            }
-            else
-            {
-                userId = user.Id;
-                // Update user profile if provided
-                user.UpdateName(request.FirstName, request.LastName);
-                await _userRepository.UpdateAsync(user, cancellationToken);
-            }
-
-            await EventInvitationAcceptance.AssignRoleAsync(
-                _userEventRoleRepository,
-                invitation,
-                userId,
-                cancellationToken);
-
-            // Mark invitation as accepted
-            invitation.Accept(userId);
-            EventInvitationAcceptance.EnqueueAcceptedIfAttendance(_outbox, invitation, userId);
-            await _invitationRepository.UpdateAsync(invitation, cancellationToken);
-
-            return new AcceptEventInvitationResponse(userId, invitation.Id);
+            throw new ConflictException("Invitation has already been processed or revoked.");
         }
+
+        if (invitation.IsExpired)
+        {
+            throw new ConflictException("Invitation has expired.");
+        }
+
+        var user = await _userRepository.GetByEmailAsync(invitation.Email, cancellationToken);
+        Guid userId;
+
+        if (user is null)
+        {
+            var passwordHash = _passwordHasher.Hash(request.Password);
+            user = new User(request.UserName, invitation.Email, request.FirstName, request.LastName, passwordHash);
+            await _userRepository.AddAsync(user, cancellationToken);
+            userId = user.Id;
+        }
+        else
+        {
+            userId = user.Id;
+            user.UpdateName(request.FirstName, request.LastName);
+            await _userRepository.UpdateAsync(user, cancellationToken);
+        }
+
+        await EventInvitationAcceptance.AssignRoleAsync(
+            _userEventRoleRepository,
+            invitation,
+            userId,
+            cancellationToken);
+
+        invitation.Accept(userId);
+        EventInvitationAcceptance.EnqueueAcceptedIfAttendance(_outbox, invitation, userId);
+        await _invitationRepository.UpdateAsync(invitation, cancellationToken);
+
+        return new AcceptEventInvitationResponse(userId, invitation.Id);
     }
 }

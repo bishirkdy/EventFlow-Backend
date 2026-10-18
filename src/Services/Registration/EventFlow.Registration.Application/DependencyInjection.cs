@@ -1,37 +1,35 @@
-﻿
+
 using EventFlow.Registration.Application.Behaviors;
 using EventFlow.Registration.Application.Services;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace EventFlow.Registration.Application
+namespace EventFlow.Registration.Application;
+
+public static class DependencyInjection
 {
-    public static class DependencyInjection
+    public static IServiceCollection AddRegistrationApplication(this IServiceCollection services)
     {
-        public static IServiceCollection AddRegistrationApplication(this IServiceCollection services)
-        {
-            services.AddScoped<IWaitlistPromotionService, WaitlistPromotionService>();
-            services.AddScoped<ICertificateTemplateBackgroundResolver, CertificateTemplateBackgroundResolver>();
+        services.AddScoped<IWaitlistPromotionService, WaitlistPromotionService>();
+        services.AddScoped<ICertificateTemplateBackgroundResolver, CertificateTemplateBackgroundResolver>();
 
-            services.AddMediatR(
-                options =>
-                {
-                    options.RegisterServicesFromAssembly(
-                        typeof(DependencyInjection).Assembly);
+        services.AddMediatR(
+            options =>
+            {
+                options.RegisterServicesFromAssembly(
+                    typeof(DependencyInjection).Assembly);
 
-                    options.AddOpenBehavior(
-                        typeof(ValidationBehavior<,>));
-                  
-                });
+                options.AddOpenBehavior(
+                    typeof(ValidationBehavior<,>));
 
-            services.AddValidatorsFromAssembly(
-                typeof(DependencyInjection).Assembly);
+            });
 
-            // Register AutoMapper profiles.
-            services.AddAutoMapper(
-                cfg => { },
-                typeof(DependencyInjection).Assembly);
+        services.AddValidatorsFromAssembly(
+            typeof(DependencyInjection).Assembly);
 
-            return services;
-        }
+        services.AddAutoMapper(
+            cfg => { },
+            typeof(DependencyInjection).Assembly);
+
+        return services;
     }
 }

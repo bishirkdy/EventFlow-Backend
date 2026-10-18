@@ -8,7 +8,7 @@ public sealed class RemoveEventRoleCommandHandler(
     IUserEventRoleRepository userEventRoleRepository)
     : IRequestHandler<RemoveEventRoleCommand>
 {
-    public async Task Handle(RemoveEventRoleCommand request,CancellationToken cancellationToken)
+    public async Task Handle(RemoveEventRoleCommand request, CancellationToken cancellationToken)
     {
         var role = await roleRepository.GetByNameAsync(request.RoleName, cancellationToken);
 
@@ -17,7 +17,7 @@ public sealed class RemoveEventRoleCommandHandler(
             return;
         }
 
-        var existingRoles = await userEventRoleRepository.GetByUserAndEventForUpdateAsync(request.UserId,request.EventId, cancellationToken);
+        var existingRoles = await userEventRoleRepository.GetByUserAndEventForUpdateAsync(request.UserId, request.EventId, cancellationToken);
 
         var matches = existingRoles
             .Where(x => x.RoleId == role.Id)

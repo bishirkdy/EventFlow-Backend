@@ -1,8 +1,7 @@
 ﻿
-namespace EventFlow.SharedKernel.Domain
+namespace EventFlow.SharedKernel.Domain;
+
+public interface IDomainEvent
 {
-    public interface IDomainEvent
-    {
-        DateTime OccurredOnUtc { get; }
-    }
+    DateTime OccurredOnUtc { get; }
 }

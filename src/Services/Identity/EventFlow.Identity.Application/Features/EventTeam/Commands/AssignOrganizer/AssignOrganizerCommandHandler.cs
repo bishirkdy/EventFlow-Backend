@@ -18,7 +18,7 @@ public sealed class AssignOrganizerCommandHandler(
 {
     public async Task<Guid> Handle(AssignOrganizerCommand request, CancellationToken cancellationToken)
     {
-        if (!await permissions.HasPermissionAsync(currentUser.UserId,request.EventId,PermissionConstants.Event.TeamManage, cancellationToken))
+        if (!await permissions.HasPermissionAsync(currentUser.UserId, request.EventId, PermissionConstants.Event.TeamManage, cancellationToken))
         {
             throw new ForbiddenException("You do not have permission to manage the event team.");
         }
@@ -43,7 +43,7 @@ public sealed class AssignOrganizerCommandHandler(
             throw new ConflictException("The event owner cannot be assigned as a separate organizer");
         }
 
-        var alreadyAssigned = await userEventRoleRepository.ExistsAsync(user.Id,request.EventId,organizerRole.Id,cancellationToken);
+        var alreadyAssigned = await userEventRoleRepository.ExistsAsync(user.Id, request.EventId, organizerRole.Id, cancellationToken);
 
         if (alreadyAssigned)
         {

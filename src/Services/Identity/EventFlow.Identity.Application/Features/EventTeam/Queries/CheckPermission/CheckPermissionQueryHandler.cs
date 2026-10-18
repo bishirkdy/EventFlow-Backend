@@ -6,7 +6,7 @@ namespace EventFlow.Identity.Application.Features.EventTeam.Queries.CheckPermiss
 public sealed class CheckPermissionQueryHandler(IPermissionService permissions)
     : IRequestHandler<CheckPermissionQuery, bool>
 {
-    public async Task<bool> Handle(CheckPermissionQuery request,CancellationToken cancellationToken)
+    public async Task<bool> Handle(CheckPermissionQuery request, CancellationToken cancellationToken)
     {
         return await permissions.HasPermissionAsync(
             request.UserId,

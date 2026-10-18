@@ -1,15 +1,13 @@
 using FluentValidation;
 
+namespace EventFlow.Event.Application.Features.Sections.Queries.GetSectionById;
 
-namespace EventFlow.Event.Application.Features.Sections.Queries.GetSectionById
+public sealed class GetSectionByIdQueryValidator : AbstractValidator<GetSectionByIdQuery>
 {
-    public sealed class GetSectionByIdQueryValidator: AbstractValidator<GetSectionByIdQuery>
+    public GetSectionByIdQueryValidator()
     {
-        public GetSectionByIdQueryValidator()
-        {
-            RuleFor(x => x.Id)
-                .NotEmpty()
-                .WithMessage("Section ID is required.");
-        }
+        RuleFor(x => x.Id)
+            .NotEmpty()
+            .WithMessage("Section ID is required.");
     }
 }

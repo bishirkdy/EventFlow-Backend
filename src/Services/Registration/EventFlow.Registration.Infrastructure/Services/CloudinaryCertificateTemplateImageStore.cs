@@ -1,5 +1,5 @@
-using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Infrastructure.Storage.Cloudinary;
+using EventFlow.Registration.Application.Abstractions.Services;
 using FluentValidation;
 
 namespace EventFlow.Registration.Infrastructure.Services;

@@ -1,11 +1,8 @@
 using EventFlow.Identity.Domain.Entities;
 
+namespace EventFlow.Identity.Application.Abstractions.Repositories;
 
-namespace EventFlow.Identity.Application.Abstractions.Repositories
+public interface IPermissionRepository
 {
-    //Interface for get permission
-    public interface IPermissionRepository
-    {
-        Task<Permission?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
-    }
+    Task<Permission?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 }

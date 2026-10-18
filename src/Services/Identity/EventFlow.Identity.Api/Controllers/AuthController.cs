@@ -1,4 +1,3 @@
-using System.Net;
 using EventFlow.Contracts.Common;
 using EventFlow.Identity.Api.Common;
 using EventFlow.Identity.Api.Contracts.Authentication;
@@ -12,6 +11,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Net;
 
 namespace EventFlow.Identity.Api.Controllers;
 

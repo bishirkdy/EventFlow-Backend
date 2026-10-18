@@ -1,30 +1,22 @@
-using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Event.Application.Abstractions.Persistence;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
+namespace EventFlow.Event.Application.Features.Events.Commands.PublishEvent;
 
-namespace EventFlow.Event.Application.Features.Events.Commands.PublishEvent
+public sealed class PublishEventCommandHandler(IEventRepository eventRepository, IUnitOfWork unitOfWork) : IRequestHandler<PublishEventCommand>
 {
-    // Command Handler
-    public sealed class PublishEventCommandHandler(IEventRepository eventRepository,IUnitOfWork unitOfWork) : IRequestHandler<PublishEventCommand>
+    public async Task Handle(PublishEventCommand request, CancellationToken cancellationToken)
     {
-        public async Task Handle(PublishEventCommand request,CancellationToken cancellationToken)
-        {
-            // Get the event
-            var eventEntity = await eventRepository.GetByIdAsync(request.Id,cancellationToken);
+        var eventEntity = await eventRepository.GetByIdAsync(request.Id, cancellationToken);
 
-            // Check whether the event exists
-            if (eventEntity is null)
-                throw new NotFoundException("Event not found.");
+        if (eventEntity is null)
+            throw new NotFoundException("Event not found.");
 
-            // Apply the publish business rule
-            eventEntity.Publish();
+        eventEntity.Publish();
 
-            // Mark the entity as updated
-            eventRepository.Update(eventEntity);
+        eventRepository.Update(eventEntity);
 
-            // Save changes to the database
-            await unitOfWork.SaveChangesAsync(cancellationToken);
-        }
+        await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

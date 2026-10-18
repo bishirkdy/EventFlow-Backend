@@ -1,12 +1,12 @@
-using System.Net.Http.Json;
 using EventFlow.Event.Application.Abstractions.Services;
 using Microsoft.Extensions.Configuration;
 using System.Net;
+using System.Net.Http.Json;
 namespace EventFlow.Event.Infrastructure.Services.Identity;
 
 public sealed class UserDirectoryClient(HttpClient httpClient, IConfiguration configuration) : IUserDirectoryClient
 {
-    private readonly string _serviceKey =configuration["InternalService:Key"]
+    private readonly string _serviceKey = configuration["InternalService:Key"]
         ?? throw new InvalidOperationException("InternalService Key is not configured.");
 
     public async Task<string?> GetDisplayNameAsync(Guid userId, CancellationToken cancellationToken = default)
@@ -34,7 +34,7 @@ public sealed class UserDirectoryClient(HttpClient httpClient, IConfiguration co
         return envelope.Data?.DisplayName;
     }
 
-    public async Task AssignOwnerAsync(Guid userId,Guid eventId,CancellationToken cancellationToken = default)
+    public async Task AssignOwnerAsync(Guid userId, Guid eventId, CancellationToken cancellationToken = default)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "api/authorization/v1/assign-owner")
         {

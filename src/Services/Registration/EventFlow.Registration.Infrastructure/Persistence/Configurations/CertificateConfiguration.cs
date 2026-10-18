@@ -18,7 +18,6 @@ public sealed class CertificateConfiguration : IEntityTypeConfiguration<Certific
         b.HasIndex(x => x.EventId);
         b.HasIndex(x => x.UserId);
 
-        // Audit fields from the base entity.
         b.Property(x => x.CreatedAt).IsRequired();
         b.Property(x => x.UpdatedAt);
     }

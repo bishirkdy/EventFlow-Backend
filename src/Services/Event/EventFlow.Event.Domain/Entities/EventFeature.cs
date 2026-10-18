@@ -2,37 +2,36 @@
 
 using EventFlow.SharedKernel.Domain;
 
-namespace EventFlow.Event.Domain.Entities
+namespace EventFlow.Event.Domain.Entities;
+
+public sealed class EventFeature : Entity
 {
-    public sealed class EventFeature : Entity
+    public Guid EventId { get; private set; }
+    public Guid FeatureId { get; private set; }
+    public Feature Feature { get; private set; } = null!;
+    public bool IsEnabled { get; private set; }
+
+    private EventFeature()
     {
-        public Guid EventId { get; private set; }
-        public Guid FeatureId { get; private set; }
-        public Feature Feature { get; private set; } = null!;
-        public bool IsEnabled { get; private set; }
+        // Required by EF Core
+    }
 
-        private EventFeature()
-        {
-            // Required by EF Core
-        }
+    public EventFeature(Guid eventId, Guid featureId, bool isEnabled = true)
+    {
+        EventId = eventId;
+        FeatureId = featureId;
+        IsEnabled = isEnabled;
+    }
 
-        public EventFeature(Guid eventId,Guid featureId,bool isEnabled = true)
-        {
-            EventId = eventId;
-            FeatureId = featureId;
-            IsEnabled = isEnabled;
-        }
+    public void Enable()
+    {
+        IsEnabled = true;
+        UpdatedAt = DateTime.UtcNow;
+    }
 
-        public void Enable()
-        {
-            IsEnabled = true;
-            UpdatedAt = DateTime.UtcNow;
-        }
-
-        public void Disable()
-        {
-            IsEnabled = false;
-            UpdatedAt = DateTime.UtcNow;
-        }
+    public void Disable()
+    {
+        IsEnabled = false;
+        UpdatedAt = DateTime.UtcNow;
     }
 }

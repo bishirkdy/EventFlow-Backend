@@ -1,11 +1,12 @@
 using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.Event.Application.Common;
-using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Event.Domain.Entities;
+using EventFlow.SharedKernel.Exceptions;
 using FluentValidation;
 using FluentValidation.Results;
 using MediatR;
 namespace EventFlow.Event.Application.Features.SessionSpeakers.Commands.AssignSpeaker;
+
 public sealed class AssignSpeakerCommandHandler(ISessionRepository sessionRepository, ISpeakerRepository speakerRepository, ISessionSpeakerRepository linkRepository, IEventFeatureRepository featureRepository, IUnitOfWork unitOfWork) : IRequestHandler<AssignSpeakerCommand>
 {
     public async Task Handle(AssignSpeakerCommand request, CancellationToken cancellationToken)

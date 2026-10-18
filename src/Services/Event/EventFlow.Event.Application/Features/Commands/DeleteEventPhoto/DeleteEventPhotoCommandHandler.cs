@@ -6,68 +6,67 @@ using EventFlow.Security.Authorization;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
-namespace EventFlow.Event.Application.Features.Commands.DeleteEventPhoto
-{
-    public class DeleteEventPhotoCommandHandler : IRequestHandler<DeleteEventPhotoCommand>
-    {
-        private readonly IEventPhotoRepository _photoRepository;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IAuthorizationService _authorizationService;
-        private readonly IFileStorage _fileStorage;
-        private readonly IEventFeatureRepository _featureRepository;
+namespace EventFlow.Event.Application.Features.Commands.DeleteEventPhoto;
 
-        public DeleteEventPhotoCommandHandler(
-            IEventPhotoRepository photoRepository,
-            IUnitOfWork unitOfWork,
-            IAuthorizationService authorizationService,
-            IFileStorage fileStorage,
-            IEventFeatureRepository featureRepository)
+public class DeleteEventPhotoCommandHandler : IRequestHandler<DeleteEventPhotoCommand>
+{
+    private readonly IEventPhotoRepository _photoRepository;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuthorizationService _authorizationService;
+    private readonly IFileStorage _fileStorage;
+    private readonly IEventFeatureRepository _featureRepository;
+
+    public DeleteEventPhotoCommandHandler(
+        IEventPhotoRepository photoRepository,
+        IUnitOfWork unitOfWork,
+        IAuthorizationService authorizationService,
+        IFileStorage fileStorage,
+        IEventFeatureRepository featureRepository)
+    {
+        _photoRepository = photoRepository;
+        _unitOfWork = unitOfWork;
+        _authorizationService = authorizationService;
+        _fileStorage = fileStorage;
+        _featureRepository = featureRepository;
+    }
+
+    public async Task Handle(DeleteEventPhotoCommand request, CancellationToken cancellationToken)
+    {
+        var photo = await _photoRepository.GetByIdAsync(request.PhotoId, cancellationToken);
+        if (photo is null)
         {
-            _photoRepository = photoRepository;
-            _unitOfWork = unitOfWork;
-            _authorizationService = authorizationService;
-            _fileStorage = fileStorage;
-            _featureRepository = featureRepository;
+            throw new NotFoundException("Photo not found.");
         }
 
-        public async Task Handle(DeleteEventPhotoCommand request, CancellationToken cancellationToken)
+        await EventFeatureGuard.EnsureEnabledAsync(_featureRepository, photo.EventId, FeatureIds.Gallery, "gallery", cancellationToken);
+
+        if (photo.PhotographerId != request.RequestedBy)
         {
-            var photo = await _photoRepository.GetByIdAsync(request.PhotoId, cancellationToken);
-            if (photo is null)
+            // Organizers/owners (event.update) may delete any photo of the event.
+            var canManageAnyPhoto = await _authorizationService.HasPermissionAsync(
+                request.RequestedBy,
+                photo.EventId,
+                PermissionConstants.Event.Update,
+                cancellationToken);
+
+            if (!canManageAnyPhoto)
             {
-                throw new NotFoundException("Photo not found.");
+                throw new ForbiddenException("You can only delete your own photos.");
             }
+        }
 
-            await EventFeatureGuard.EnsureEnabledAsync(_featureRepository, photo.EventId, FeatureIds.Gallery, "gallery", cancellationToken);
+        _photoRepository.Remove(photo);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            if (photo.PhotographerId != request.RequestedBy)
+        if (!string.IsNullOrWhiteSpace(photo.PublicId))
+        {
+            try
             {
-                // Organizers/owners (event.update) may delete any photo of the event.
-                var canManageAnyPhoto = await _authorizationService.HasPermissionAsync(
-                    request.RequestedBy,
-                    photo.EventId,
-                    PermissionConstants.Event.Update,
-                    cancellationToken);
-
-                if (!canManageAnyPhoto)
-                {
-                    throw new ForbiddenException("You can only delete your own photos.");
-                }
+                await _fileStorage.DeleteAsync(photo.PublicId, cancellationToken);
             }
-
-            _photoRepository.Remove(photo);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            if (!string.IsNullOrWhiteSpace(photo.PublicId))
+            catch
             {
-                try
-                {
-                    await _fileStorage.DeleteAsync(photo.PublicId, cancellationToken);
-                }
-                catch
-                {
-                    // Storage cleanup must not fail the deletion request.
-                }
+                // Storage cleanup must not fail the deletion request.
             }
         }
     }

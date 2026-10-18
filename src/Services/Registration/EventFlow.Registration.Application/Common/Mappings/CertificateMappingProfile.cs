@@ -7,7 +7,6 @@ public sealed class CertificateMappingProfile : Profile
 {
     public CertificateMappingProfile()
     {
-        // Certificate -> read model (status is exposed as its name).
         CreateMap<Certificate, CertificateDto>()
             .ForMember(
                 destination => destination.Status,

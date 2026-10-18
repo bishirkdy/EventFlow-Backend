@@ -8,7 +8,7 @@ public sealed class RefreshToken : Entity
     {
     }
 
-    public RefreshToken(Guid userId,string token,DateTime expiresAt)
+    public RefreshToken(Guid userId, string token, DateTime expiresAt)
     {
         Id = Guid.NewGuid();
         UserId = userId;
@@ -21,14 +21,13 @@ public sealed class RefreshToken : Entity
     public string Token { get; private set; } = null!;
     public DateTime ExpiresAt { get; private set; }
     public DateTime? RevokedAt { get; private set; }
-    
+
     public bool IsExpired => DateTime.UtcNow >= ExpiresAt;
     public bool IsRevoked => RevokedAt.HasValue;
     public bool IsActive => !IsExpired && !IsRevoked;
 
     public User User { get; private set; } = null!;
 
-    // Invalidate this refresh token.
     public void Revoke()
     {
         if (!IsRevoked)

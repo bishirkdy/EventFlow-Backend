@@ -4,8 +4,8 @@ builder.Services.AddHealthChecks();
 
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? ["http://localhost:4200", "https://localhost:4200"];
 
-//Register cors
-builder.Services.AddCors(option => {
+builder.Services.AddCors(option =>
+{
     option.AddPolicy("Frontend", policy =>
     {
         policy.WithOrigins(allowedOrigins)
@@ -25,7 +25,6 @@ builder.Services.Configure<Microsoft.AspNetCore.Builder.ForwardedHeadersOptions>
     options.KnownProxies.Clear();
 });
 
-//configure the reverse proxy
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 

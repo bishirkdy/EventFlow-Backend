@@ -1,37 +1,36 @@
 ﻿
 
-namespace EventFlow.SharedKernel.Domain
+namespace EventFlow.SharedKernel.Domain;
+
+public abstract class AggregateRoot : Entity
 {
-    public abstract class AggregateRoot : Entity
+    private readonly List<IDomainEvent> _domainEvents = [];
+
+    protected AggregateRoot()
     {
-        private readonly List<IDomainEvent> _domainEvents = [];
+    }
 
-        protected AggregateRoot()
-        {
-        }
+    protected AggregateRoot(Guid id)
+        : base(id)
+    {
+    }
 
-        protected AggregateRoot(Guid id)
-            : base(id)
-        {
-        }
+    public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
 
-        public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
+    protected void AddDomainEvent(IDomainEvent domainEvent)
+    {
+        ArgumentNullException.ThrowIfNull(domainEvent);
 
-        protected void AddDomainEvent(IDomainEvent domainEvent)
-        {
-            ArgumentNullException.ThrowIfNull(domainEvent);
+        _domainEvents.Add(domainEvent);
+    }
 
-            _domainEvents.Add(domainEvent);
-        }
+    public IReadOnlyCollection<IDomainEvent> GetDomainEvents()
+    {
+        return _domainEvents.AsReadOnly();
+    }
 
-        public IReadOnlyCollection<IDomainEvent> GetDomainEvents()
-        {
-            return _domainEvents.AsReadOnly();
-        }
-
-        public void ClearDomainEvents()
-        {
-            _domainEvents.Clear();
-        }
+    public void ClearDomainEvents()
+    {
+        _domainEvents.Clear();
     }
 }

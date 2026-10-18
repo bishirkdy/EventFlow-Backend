@@ -78,37 +78,37 @@ public sealed class SubmitFeedbackCommandHandler(
                 break;
 
             case FeedbackTargetType.Session:
-            {
-                var session = await sessionRepository.GetByIdAsync(targetId, cancellationToken);
-                if (session is null || session.EventId != eventId)
                 {
-                    throw new NotFoundException("Session not found.");
-                }
+                    var session = await sessionRepository.GetByIdAsync(targetId, cancellationToken);
+                    if (session is null || session.EventId != eventId)
+                    {
+                        throw new NotFoundException("Session not found.");
+                    }
 
-                break;
-            }
+                    break;
+                }
 
             case FeedbackTargetType.Speaker:
-            {
-                var speaker = await speakerRepository.GetByIdAsync(targetId, cancellationToken);
-                if (speaker is null || speaker.EventId != eventId)
                 {
-                    throw new NotFoundException("Speaker not found.");
-                }
+                    var speaker = await speakerRepository.GetByIdAsync(targetId, cancellationToken);
+                    if (speaker is null || speaker.EventId != eventId)
+                    {
+                        throw new NotFoundException("Speaker not found.");
+                    }
 
-                break;
-            }
+                    break;
+                }
 
             case FeedbackTargetType.Venue:
-            {
-                var venue = await venueRepository.GetByIdAsync(targetId, cancellationToken);
-                if (venue is null || venue.EventId != eventId)
                 {
-                    throw new NotFoundException("Venue not found.");
-                }
+                    var venue = await venueRepository.GetByIdAsync(targetId, cancellationToken);
+                    if (venue is null || venue.EventId != eventId)
+                    {
+                        throw new NotFoundException("Venue not found.");
+                    }
 
-                break;
-            }
+                    break;
+                }
 
             default:
                 throw new InvalidOperationException("Invalid feedback target.");

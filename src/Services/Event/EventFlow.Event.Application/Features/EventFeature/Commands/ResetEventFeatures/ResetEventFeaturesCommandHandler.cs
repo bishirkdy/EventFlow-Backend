@@ -1,8 +1,8 @@
 using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.Event.Application.Abstractions.Services;
-using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Event.Application.Features.EventFeature.Queries.GetEventFeatures;
 using EventFlow.Event.Domain.Entities;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
 namespace EventFlow.Event.Application.Features.EventFeature.Commands.ResetEventFeatures;

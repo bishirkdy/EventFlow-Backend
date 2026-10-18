@@ -3,6 +3,7 @@ using EventFlow.Event.Application.Common;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 namespace EventFlow.Event.Application.Features.Speakers.Queries.GetSpeakerById;
+
 public sealed class GetSpeakerByIdQueryHandler(ISpeakerRepository repository, IEventFeatureRepository featureRepository) : IRequestHandler<GetSpeakerByIdQuery, GetSpeakerByIdResponse?>
 {
     public async Task<GetSpeakerByIdResponse?> Handle(GetSpeakerByIdQuery request, CancellationToken cancellationToken)

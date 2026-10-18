@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 namespace EventFlow.Api.Middleware;
 
-//Middleware to take CorrelationId logging with each request
 public sealed class CorrelationIdMiddleware(RequestDelegate next, ILogger<CorrelationIdMiddleware> logger)
 {
     public async Task InvokeAsync(HttpContext context)

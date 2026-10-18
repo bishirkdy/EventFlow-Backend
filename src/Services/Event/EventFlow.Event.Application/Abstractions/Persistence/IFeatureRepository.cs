@@ -1,11 +1,10 @@
 ﻿
 using EventFlow.Event.Domain.Entities;
 
-namespace EventFlow.Event.Application.Abstractions.Persistence
+namespace EventFlow.Event.Application.Abstractions.Persistence;
+
+public interface IFeatureRepository : IRepository<Feature>
 {
-    public interface IFeatureRepository : IRepository<Feature>
-    {
-        Task<IReadOnlyList<Feature>> GetActiveAsync(CancellationToken cancellationToken = default);
-        Task<Feature?> GetByCodeAsync(string code, CancellationToken cancellationToken = default);
-    }
+    Task<IReadOnlyList<Feature>> GetActiveAsync(CancellationToken cancellationToken = default);
+    Task<Feature?> GetByCodeAsync(string code, CancellationToken cancellationToken = default);
 }

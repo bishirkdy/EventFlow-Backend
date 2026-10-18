@@ -7,12 +7,11 @@ using MimeKit;
 
 namespace EventFlow.Operations.Infrastructure.Services;
 
-public sealed class SmtpEmailSender(IConfiguration configuration,ILogger<SmtpEmailSender> logger) : IEmailSender
+public sealed class SmtpEmailSender(IConfiguration configuration, ILogger<SmtpEmailSender> logger) : IEmailSender
 {
-    public async Task SendAsync(string recipientEmail,string subject,string body, CancellationToken cancellationToken = default)
+    public async Task SendAsync(string recipientEmail, string subject, string body, CancellationToken cancellationToken = default)
     {
         var host = configuration["Smtp:Host"];
-
 
         if (string.IsNullOrWhiteSpace(host))
         {
@@ -28,7 +27,6 @@ public sealed class SmtpEmailSender(IConfiguration configuration,ILogger<SmtpEma
         var username = configuration["Smtp:Username"];
         var password = configuration["Smtp:Password"];
         var from = configuration["Smtp:From"];
-
 
         try
         {
@@ -47,7 +45,6 @@ public sealed class SmtpEmailSender(IConfiguration configuration,ILogger<SmtpEma
             var secureSocketOptions = useSsl
                 ? SecureSocketOptions.StartTlsWhenAvailable
                 : SecureSocketOptions.None;
-
 
             await client.ConnectAsync(
                 host,

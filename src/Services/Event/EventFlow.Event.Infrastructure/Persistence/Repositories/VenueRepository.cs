@@ -3,18 +3,16 @@ using EventFlow.Event.Domain.Entities;
 using EventFlow.Event.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace EventFlow.Event.Infrastructure.Persistence.Repositories
+namespace EventFlow.Event.Infrastructure.Persistence.Repositories;
+
+public sealed class VenueRepository(EventCoreDbContext context) : GenericRepository<Venue>(context), IVenueRepository
 {
-    public sealed class VenueRepository(EventCoreDbContext context): GenericRepository<Venue>(context), IVenueRepository
+    public async Task<IReadOnlyList<Venue>> GetByEventIdAsync(Guid eventId, CancellationToken cancellationToken = default)
     {
-        public async Task<IReadOnlyList<Venue>> GetByEventIdAsync(Guid eventId,CancellationToken cancellationToken = default)
-        {
-            // Get venues belonging to event
-            return await Context.Venues
-                .AsNoTracking()
-                .Where(x => x.EventId == eventId)
-                .OrderBy(x => x.Name)
-                .ToListAsync(cancellationToken);
-        }
+        return await Context.Venues
+            .AsNoTracking()
+            .Where(x => x.EventId == eventId)
+            .OrderBy(x => x.Name)
+            .ToListAsync(cancellationToken);
     }
 }

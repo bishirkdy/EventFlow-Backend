@@ -1,7 +1,6 @@
-﻿namespace EventFlow.Identity.Api.Contracts.UserEventRoles
+﻿namespace EventFlow.Identity.Api.Contracts.UserEventRoles;
+
+public sealed class AssignUserRoleRequest
 {
-    public sealed class AssignUserRoleRequest
-    {
-        public Guid RoleId { get; set; }
-    }
+    public Guid RoleId { get; set; }
 }

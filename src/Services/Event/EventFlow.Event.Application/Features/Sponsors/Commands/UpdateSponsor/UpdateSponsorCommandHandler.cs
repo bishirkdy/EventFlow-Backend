@@ -4,6 +4,7 @@ using EventFlow.Event.Application.Common;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 namespace EventFlow.Event.Application.Features.Sponsors.Commands.UpdateSponsor;
+
 public sealed class UpdateSponsorCommandHandler(ISponsorRepository repository, IEventFeatureRepository featureRepository, IFileStorage fileStorage, IUnitOfWork unitOfWork) : IRequestHandler<UpdateSponsorCommand>
 {
     public async Task Handle(UpdateSponsorCommand request, CancellationToken cancellationToken)

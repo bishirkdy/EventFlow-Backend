@@ -49,7 +49,7 @@ public sealed class CreateEventCommandHandler
         _logger = logger;
     }
 
-    public async Task<CreateEventResult> Handle(CreateEventCommand request,CancellationToken cancellationToken)
+    public async Task<CreateEventResult> Handle(CreateEventCommand request, CancellationToken cancellationToken)
     {
         var timeZone = TimeZoneHelper.GetTimeZone(request.TimeZone);
 
@@ -59,7 +59,6 @@ public sealed class CreateEventCommandHandler
         var endDate = TimeZoneInfo.ConvertTimeToUtc(
             DateTime.SpecifyKind(request.EndDate, DateTimeKind.Unspecified), timeZone);
 
-        // Validate event type
         var eventType = await _eventTypeRepository.GetByIdAsync(
             request.EventTypeId,
             cancellationToken);
@@ -69,7 +68,6 @@ public sealed class CreateEventCommandHandler
             throw new NotFoundException("Event type not found.");
         }
 
-        // Create event
         var eventEntity = new EventEntity(
             request.Name,
             request.Description,
@@ -80,13 +78,11 @@ public sealed class CreateEventCommandHandler
             request.TimeZone,
             _currentUserService.UserId);
 
-        // Get default features for this event type
         var eventTypeFeatures =
             await _eventTypeFeatureRepository.GetByEventTypeIdAsync(
                 request.EventTypeId,
                 cancellationToken);
 
-        // Create event feature records
         foreach (var defaultFeature in eventTypeFeatures)
         {
             var eventFeature = new Domain.Entities.EventFeature(
@@ -103,7 +99,6 @@ public sealed class CreateEventCommandHandler
 
         try
         {
-            // Store event images
             foreach (var (image, index) in request.Images.Select(
                 (image, index) => (image, index)))
             {
@@ -125,13 +120,11 @@ public sealed class CreateEventCommandHandler
                         index));
             }
 
-            // Add event and provision a complete starter website.
             await _eventRepository.AddAsync(eventEntity, cancellationToken);
             await _websiteProvisioningService.EnsureInitialWebsiteAsync(
                 eventEntity.Id,
                 cancellationToken);
 
-            // Save event + features + images.
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             // The creator becomes the Owner of this event.
@@ -141,7 +134,6 @@ public sealed class CreateEventCommandHandler
                 eventEntity.Id,
                 cancellationToken);
 
-            // Get creator display name
             var createdByName =
                 await _userDirectoryClient.GetDisplayNameAsync(eventEntity.CreatedBy, cancellationToken);
 

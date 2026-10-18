@@ -1,9 +1,9 @@
+using EventFlow.Registration.Domain.Entities;
+using EventFlow.Registration.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using EventFlow.Registration.Domain.Entities;
-using EventFlow.Registration.Domain.Enums;
 
 namespace EventFlow.Registration.Application.Features.Registrations;
 

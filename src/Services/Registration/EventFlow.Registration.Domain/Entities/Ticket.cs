@@ -1,6 +1,6 @@
-using System.Security.Cryptography;
 using EventFlow.Registration.Domain.Enums;
 using EventFlow.SharedKernel.Domain;
+using System.Security.Cryptography;
 
 namespace EventFlow.Registration.Domain.Entities;
 

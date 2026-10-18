@@ -1,6 +1,6 @@
-using System.Net.Http.Json;
 using EventFlow.Event.Application.Abstractions.Services;
 using Microsoft.Extensions.Configuration;
+using System.Net.Http.Json;
 
 namespace EventFlow.Event.Infrastructure.Services.Registration;
 

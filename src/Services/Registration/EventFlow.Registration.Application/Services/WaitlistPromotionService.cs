@@ -4,7 +4,7 @@ using RegistrationEntity = EventFlow.Registration.Domain.Entities.Registration;
 
 namespace EventFlow.Registration.Application.Services;
 
-public sealed class WaitlistPromotionService(IRegistrationRepository registrations,IRegistrationFormRepository forms,IUnitOfWork unitOfWork)
+public sealed class WaitlistPromotionService(IRegistrationRepository registrations, IRegistrationFormRepository forms, IUnitOfWork unitOfWork)
     : IWaitlistPromotionService
 {
     public async Task<int> PromoteWaitlistedUntilCapacityAsync(

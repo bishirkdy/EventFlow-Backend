@@ -1,39 +1,38 @@
 using System.Text.RegularExpressions;
 
-namespace EventFlow.SharedKernel.Validation
+namespace EventFlow.SharedKernel.Validation;
+
+public static class ValidationRules
 {
-    public static class ValidationRules
+    private static readonly Regex EmailRegex = new(
+        "^[A-Za-z][A-Za-z0-9._-]*@[A-Za-z0-9-]+\\.[A-Za-z]{2,}$",
+        RegexOptions.Compiled);
+
+    private static readonly Regex PhoneRegex = new(
+        "^\\+?[0-9\\s().-]+$",
+        RegexOptions.Compiled);
+
+    public static bool IsValidEmail(string? value)
     {
-        private static readonly Regex EmailRegex = new(
-            "^[A-Za-z][A-Za-z0-9._-]*@[A-Za-z0-9-]+\\.[A-Za-z]{2,}$",
-            RegexOptions.Compiled);
+        return !string.IsNullOrWhiteSpace(value) && EmailRegex.IsMatch(value.Trim());
+    }
 
-        private static readonly Regex PhoneRegex = new(
-            "^\\+?[0-9\\s().-]+$",
-            RegexOptions.Compiled);
-
-        public static bool IsValidEmail(string? value)
+    public static bool IsValidOptionalPhone(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
         {
-            return !string.IsNullOrWhiteSpace(value) && EmailRegex.IsMatch(value.Trim());
+            return true;
         }
 
-        public static bool IsValidOptionalPhone(string? value)
+        var trimmed = value.Trim();
+
+        if (!PhoneRegex.IsMatch(trimmed))
         {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return true;
-            }
-
-            var trimmed = value.Trim();
-
-            if (!PhoneRegex.IsMatch(trimmed))
-            {
-                return false;
-            }
-
-            var digits = trimmed.Count(char.IsDigit);
-
-            return digits is >= 7 and <= 15;
+            return false;
         }
+
+        var digits = trimmed.Count(char.IsDigit);
+
+        return digits is >= 7 and <= 15;
     }
 }

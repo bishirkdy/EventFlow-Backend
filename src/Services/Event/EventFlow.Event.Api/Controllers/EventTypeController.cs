@@ -14,14 +14,10 @@ public sealed class EventTypeController(ISender sender) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetEventTypes(CancellationToken cancellationToken)
     {
-        var eventTypes = await sender.Send(new GetActiveEventTypesQuery(),cancellationToken);
+        var eventTypes = await sender.Send(new GetActiveEventTypesQuery(), cancellationToken);
 
-        return Ok(new ApiResponse<IReadOnlyList<GetEventTypeResponse>>
-        {
-            IsSuccess = true,
-            StatusCode = StatusCodes.Status200OK,
-            Message = "Event types retrieved successfully.",
-            Data = eventTypes
-        });
+        return Ok(ApiResponse<IReadOnlyList<GetEventTypeResponse>>.Success(
+            eventTypes,
+            "Event types retrieved successfully."));
     }
 }

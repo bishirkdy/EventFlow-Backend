@@ -3,11 +3,11 @@ using EventFlow.SharedKernel.Exceptions;
 
 namespace EventFlow.Registration.Application.Features.Participants.Queries.GetParticipantById;
 
-public sealed class GetParticipantByIdQueryHandler(IParticipantRepository participants,EventFlow.Security.Authentication.ICurrentUserService user,IEventRegistrationAccessService access,IMapper mapper): IRequestHandler<GetParticipantByIdQuery, ParticipantDto>
+public sealed class GetParticipantByIdQueryHandler(IParticipantRepository participants, EventFlow.Security.Authentication.ICurrentUserService user, IEventRegistrationAccessService access, IMapper mapper) : IRequestHandler<GetParticipantByIdQuery, ParticipantDto>
 {
     public async Task<ParticipantDto> Handle(GetParticipantByIdQuery query, CancellationToken cancellationToken)
     {
-        if (!await access.CanManageRegistrationAsync(query.EventId,user.UserId, cancellationToken))
+        if (!await access.CanManageRegistrationAsync(query.EventId, user.UserId, cancellationToken))
         {
             throw new ForbiddenException("You do not have permission.");
         }

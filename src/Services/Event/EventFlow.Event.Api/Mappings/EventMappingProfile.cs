@@ -16,52 +16,46 @@ using EventFlow.Event.Application.Features.Sections.Commands.UpdateSection;
 
 using EventFlow.Event.Domain.Entities;
 
-namespace EventFlow.Event.Api.Mappings
+namespace EventFlow.Event.Api.Mappings;
+
+public sealed class EventMappingProfile : Profile
 {
-    public sealed class EventMappingProfile : Profile
+    public EventMappingProfile()
     {
-        public EventMappingProfile()
-        {
-            //Event
-            CreateMap<GetEventByIdResponse, GetEventResponse>()
-                .ForMember(
-                    dest => dest.TimeZone,
-                    opt => opt.MapFrom(src => src.TimeZone))
-                .ForMember(
-                    dest => dest.Images,
-                    opt => opt.MapFrom(src => src.Images));
+        CreateMap<GetEventByIdResponse, GetEventResponse>()
+            .ForMember(
+                dest => dest.TimeZone,
+                opt => opt.MapFrom(src => src.TimeZone))
+            .ForMember(
+                dest => dest.Images,
+                opt => opt.MapFrom(src => src.Images));
 
-            CreateMap<CreateEventResult, CreateEventResponse>();
+        CreateMap<CreateEventResult, CreateEventResponse>();
 
-            CreateMap<
-                EventFlow.Event.Application.Features.Events.Common.GetEventResponse,
-                EventFlow.Event.Api.Responses.Events.GetEventResponse>();
+        CreateMap<
+            EventFlow.Event.Application.Features.Events.Common.GetEventResponse,
+            EventFlow.Event.Api.Responses.Events.GetEventResponse>();
 
-            CreateMap<UpdateEventRequest, UpdateEventCommand>();
+        CreateMap<UpdateEventRequest, UpdateEventCommand>();
 
-            //Event Features
-            CreateMap<EventFeature, GetEventFeaturesResponse>()
-                .ForMember(
-                    dest => dest.FeatureCode,
-                    opt => opt.MapFrom(src => src.Feature.Code))
-                .ForMember(
-                    dest => dest.FeatureName,
-                    opt => opt.MapFrom(src => src.Feature.Name))
-                .ForMember(
-                    dest => dest.FeatureDescription,
-                    opt => opt.MapFrom(src => src.Feature.Description));
+        CreateMap<EventFeature, GetEventFeaturesResponse>()
+            .ForMember(
+                dest => dest.FeatureCode,
+                opt => opt.MapFrom(src => src.Feature.Code))
+            .ForMember(
+                dest => dest.FeatureName,
+                opt => opt.MapFrom(src => src.Feature.Name))
+            .ForMember(
+                dest => dest.FeatureDescription,
+                opt => opt.MapFrom(src => src.Feature.Description));
 
-            //Section
-            CreateMap<CreateSectionRequest, CreateSectionCommand>();
-            CreateMap<UpdateSectionRequest, UpdateSectionCommand>();
+        CreateMap<CreateSectionRequest, CreateSectionCommand>();
+        CreateMap<UpdateSectionRequest, UpdateSectionCommand>();
 
-            //Event page
-            CreateMap<CreateEventPageRequest, CreateEventPageCommand>();
+        CreateMap<CreateEventPageRequest, CreateEventPageCommand>();
 
-            //Event page section
-            CreateMap<CreatePageSectionRequest, CreatePageSectionCommand>();
-            CreateMap<UpdatePageSectionRequest, UpdatePageSectionCommand>();
+        CreateMap<CreatePageSectionRequest, CreatePageSectionCommand>();
+        CreateMap<UpdatePageSectionRequest, UpdatePageSectionCommand>();
 
-        }
     }
 }

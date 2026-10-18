@@ -1,5 +1,5 @@
-using FluentValidation;
 using EventFlow.Registration.Domain.Enums;
+using FluentValidation;
 
 namespace EventFlow.Registration.Application.Features.RegistrationForms.Commands.UpsertRegistrationForm;
 

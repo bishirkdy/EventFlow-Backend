@@ -6,7 +6,7 @@ using MediatR;
 
 namespace EventFlow.Registration.Application.Features.Tickets.Queries.GetTicket;
 
-public sealed class GetTicketQueryHandler(ITicketRepository tickets,EventFlow.Security.Authentication.ICurrentUserService user,IMapper mapper) : IRequestHandler<GetTicketQuery, TicketDto>
+public sealed class GetTicketQueryHandler(ITicketRepository tickets, EventFlow.Security.Authentication.ICurrentUserService user, IMapper mapper) : IRequestHandler<GetTicketQuery, TicketDto>
 {
     public async Task<TicketDto> Handle(GetTicketQuery query, CancellationToken cancellationToken)
     {

@@ -1,13 +1,12 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using System.Net;
 using EventFlow.Contracts.Common;
 using EventFlow.SharedKernel.Exceptions;
 using FluentValidation;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace EventFlow.Api.Middleware;
 
-//Global exeption middleware to every services
 public sealed class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger)
 {
     public async Task InvokeAsync(HttpContext context)
@@ -37,7 +36,6 @@ public sealed class GlobalExceptionMiddleware(RequestDelegate next, ILogger<Glob
             _ => HttpStatusCode.InternalServerError
         };
 
-        //Make validation exeption in list
         var errors = exception is ValidationException validation ? validation.Errors
                 .Select(x => string.IsNullOrWhiteSpace(x.PropertyName) ? x.ErrorMessage : $"{x.PropertyName}: {x.ErrorMessage}")
                 .Distinct()

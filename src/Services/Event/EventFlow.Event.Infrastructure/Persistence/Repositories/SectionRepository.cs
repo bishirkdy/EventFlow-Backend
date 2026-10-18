@@ -3,17 +3,16 @@ using EventFlow.Event.Domain.Entities;
 using EventFlow.Event.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace EventFlow.Event.Infrastructure.Persistence.Repositories
+namespace EventFlow.Event.Infrastructure.Persistence.Repositories;
+
+public sealed class SectionRepository(EventCoreDbContext context) : GenericRepository<Section>(context), ISectionRepository
 {
-    public sealed class SectionRepository(EventCoreDbContext context) : GenericRepository<Section>(context), ISectionRepository
+    public async Task<IReadOnlyList<Section>> GetByEventIdAsync(Guid eventId, CancellationToken cancellationToken = default)
     {
-        public async Task<IReadOnlyList<Section>> GetByEventIdAsync(Guid eventId, CancellationToken cancellationToken = default)
-        {
-            return await Context.Set<Section>()
-                .AsNoTracking()
-                .Where(x => x.EventId == eventId)
-                .OrderBy(x => x.DisplayOrder)
-                .ToListAsync(cancellationToken);
-        }
+        return await Context.Set<Section>()
+            .AsNoTracking()
+            .Where(x => x.EventId == eventId)
+            .OrderBy(x => x.DisplayOrder)
+            .ToListAsync(cancellationToken);
     }
 }

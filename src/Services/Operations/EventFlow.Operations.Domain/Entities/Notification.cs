@@ -49,7 +49,6 @@ public sealed class Notification : Entity
 
     public string? Error { get; private set; }
 
-    // Marks the notification as picked up for delivery.
     public void MarkProcessing()
     {
         Status = NotificationStatus.Processing;
@@ -57,7 +56,6 @@ public sealed class Notification : Entity
         SetUpdatedAt();
     }
 
-    // Marks the notification as successfully delivered.
     public void MarkSent()
     {
         Status = NotificationStatus.Sent;
@@ -67,7 +65,6 @@ public sealed class Notification : Entity
         SetUpdatedAt();
     }
 
-    // Marks the notification as permanently failed.
     public void MarkFailed(string error)
     {
         Error = error;
@@ -76,7 +73,6 @@ public sealed class Notification : Entity
         SetUpdatedAt();
     }
 
-    // Schedules a retry after a transient failure.
     public void ScheduleRetry(string error)
     {
         Error = error;

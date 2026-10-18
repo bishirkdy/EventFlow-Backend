@@ -1,79 +1,76 @@
 using EventFlow.Event.Application.Abstractions.Persistence;
+using EventFlow.Event.Application.Abstractions.Services;
 using EventFlow.Event.Application.Abstractions.Storage;
 using EventFlow.Event.Infrastructure.Persistence;
-using EventFlow.Event.Infrastructure.Storage;
+using EventFlow.Event.Infrastructure.Persistence.Repositories;
 using EventFlow.Event.Infrastructure.Services.Identity;
 using EventFlow.Event.Infrastructure.Services.Registration;
 using EventFlow.Event.Infrastructure.Services.Website;
-using EventFlow.Event.Application.Abstractions.Services;
+using EventFlow.Event.Infrastructure.Storage;
 using EventFlow.Infrastructure.Storage.Cloudinary;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using EventFlow.Event.Infrastructure.Persistence.Repositories;
 
-namespace EventFlow.Event.Infrastructure
+namespace EventFlow.Event.Infrastructure;
+
+public static class DependencyInjection
 {
-    public static class DependencyInjection
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+        services.AddDbContext<EventCoreDbContext>(option =>
         {
-            //Register postersql
-            services.AddDbContext<EventCoreDbContext>(option =>
+            option.UseNpgsql(configuration.GetConnectionString("EventCoreDatabase"));
+        });
+
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
+        services.AddScoped<IEventRepository, EventRepository>();
+        services.AddScoped<ISectionRepository, SectionRepository>();
+        services.AddScoped<ISessionRepository, SessionRepository>();
+        services.AddScoped<ISpeakerRepository, SpeakerRepository>();
+        services.AddScoped<ISponsorRepository, SponsorRepository>();
+        services.AddScoped<ISessionSpeakerRepository, SessionSpeakerRepository>();
+        services.AddScoped<IEventFeatureRepository, EventFeatureRepository>();
+        services.AddScoped<IVenueRepository, VenueRepository>();
+        services.AddScoped<IEventPageRepository, EventPageRepository>();
+        services.AddScoped<IPageSectionRepository, PageSectionRepository>();
+        services.AddScoped<INavigationItemRepository, NavigationItemRepository>();
+        services.AddScoped<IEventTypeRepository, EventTypeRepository>();
+        services.AddScoped<IFeatureRepository, FeatureRepository>();
+        services.AddScoped<IEventTypeFeatureRepository, EventTypeFeatureRepository>();
+        services.AddScoped<IEventPhotoRepository, EventPhotoRepository>();
+        services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+
+        services.AddScoped<IEventWebsiteProvisioningService, EventWebsiteProvisioningService>();
+        services.Configure<CloudinaryStorageOptions>(configuration.GetSection("Cloudinary"));
+        services.AddSingleton<ICloudinaryStorage, CloudinaryStorage>();
+        services.AddScoped<IFileStorage, CloudinaryFileStorage>();
+
+        services.AddHttpClient<IUserDirectoryClient, UserDirectoryClient>(client =>
+        {
+            var identityBaseUrl = configuration["Services:Identity:BaseUrl"];
+
+            if (string.IsNullOrWhiteSpace(identityBaseUrl))
             {
-                option.UseNpgsql(configuration.GetConnectionString("EventCoreDatabase"));
-            });
+                throw new InvalidOperationException("Identity service URL is not configured. Set Services:Identity:BaseUrl.");
+            }
 
-            // Repositories
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
-            services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
-            services.AddScoped<IEventRepository, EventRepository>();
-            services.AddScoped<ISectionRepository, SectionRepository>();
-            services.AddScoped<ISessionRepository, SessionRepository>();
-            services.AddScoped<ISpeakerRepository, SpeakerRepository>();
-            services.AddScoped<ISponsorRepository, SponsorRepository>();
-            services.AddScoped<ISessionSpeakerRepository, SessionSpeakerRepository>();
-            services.AddScoped<IEventFeatureRepository, EventFeatureRepository>();
-            services.AddScoped<IVenueRepository, VenueRepository>();
-            services.AddScoped<IEventPageRepository, EventPageRepository>();
-            services.AddScoped<IPageSectionRepository, PageSectionRepository>();
-            services.AddScoped<INavigationItemRepository, NavigationItemRepository>();
-            services.AddScoped<IEventTypeRepository, EventTypeRepository>();
-            services.AddScoped<IFeatureRepository, FeatureRepository>();
-            services.AddScoped<IEventTypeFeatureRepository,EventTypeFeatureRepository>();
-            services.AddScoped<IEventPhotoRepository, EventPhotoRepository>();
-            services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+            client.BaseAddress = new Uri(identityBaseUrl);
+        });
 
-            services.AddScoped<IEventWebsiteProvisioningService, EventWebsiteProvisioningService>();
-            services.Configure<CloudinaryStorageOptions>(configuration.GetSection("Cloudinary"));
-            services.AddSingleton<ICloudinaryStorage, CloudinaryStorage>();
-            services.AddScoped<IFileStorage, CloudinaryFileStorage>();
+        services.AddHttpClient<IRegistrationClient, RegistrationClient>(client =>
+        {
+            var registrationBaseUrl = configuration["Services:Registration:BaseUrl"];
 
-            services.AddHttpClient<IUserDirectoryClient, UserDirectoryClient>(client =>
+            if (string.IsNullOrWhiteSpace(registrationBaseUrl))
             {
-                var identityBaseUrl = configuration["Services:Identity:BaseUrl"];
+                throw new InvalidOperationException("Registration service URL is not configured. Set Services:Registration:BaseUrl.");
+            }
 
-                if (string.IsNullOrWhiteSpace(identityBaseUrl))
-                {
-                    throw new InvalidOperationException("Identity service URL is not configured. Set Services:Identity:BaseUrl.");
-                }
+            client.BaseAddress = new Uri(registrationBaseUrl);
+        });
 
-                client.BaseAddress = new Uri(identityBaseUrl);
-            });
-
-            services.AddHttpClient<IRegistrationClient, RegistrationClient>(client =>
-            {
-                var registrationBaseUrl = configuration["Services:Registration:BaseUrl"];
-
-                if (string.IsNullOrWhiteSpace(registrationBaseUrl))
-                {
-                    throw new InvalidOperationException("Registration service URL is not configured. Set Services:Registration:BaseUrl.");
-                }
-
-                client.BaseAddress = new Uri(registrationBaseUrl);
-            });
-
-            return services;
-        }
+        return services;
     }
 }

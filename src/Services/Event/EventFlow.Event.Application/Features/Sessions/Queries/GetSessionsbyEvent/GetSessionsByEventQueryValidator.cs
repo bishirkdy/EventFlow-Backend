@@ -2,16 +2,15 @@
 
 using FluentValidation;
 
-namespace EventFlow.Event.Application.Features.Sessions.Queries.GetSessionsbyEvent
+namespace EventFlow.Event.Application.Features.Sessions.Queries.GetSessionsbyEvent;
+
+public sealed class GetSessionsByEventQueryValidator
+    : AbstractValidator<GetSessionsByEventQuery>
 {
-    public sealed class GetSessionsByEventQueryValidator
-        : AbstractValidator<GetSessionsByEventQuery>
+    public GetSessionsByEventQueryValidator()
     {
-        public GetSessionsByEventQueryValidator()
-        {
-            RuleFor(x => x.EventId)
-                .NotEmpty()
-                .WithMessage("Event ID is required.");
-        }
+        RuleFor(x => x.EventId)
+            .NotEmpty()
+            .WithMessage("Event ID is required.");
     }
 }

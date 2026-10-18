@@ -3,4 +3,4 @@ using MediatR;
 
 namespace EventFlow.Identity.Application.Features.EventTeam.Queries.GetMyEventPermissions;
 
-public sealed record GetMyEventPermissionsQuery(Guid UserId,Guid EventId) : IRequest<EventAccessResponse>;
+public sealed record GetMyEventPermissionsQuery(Guid UserId, Guid EventId) : IRequest<EventAccessResponse>;

@@ -1,4 +1,3 @@
-using System.Net;
 using AutoMapper;
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.Admin;
@@ -11,6 +10,7 @@ using EventFlow.Security.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 using AdminEventListItemResponse = EventFlow.Event.Api.Responses.Admin.AdminEventListItemResponse;
 
 namespace EventFlow.Event.Api.Controllers;

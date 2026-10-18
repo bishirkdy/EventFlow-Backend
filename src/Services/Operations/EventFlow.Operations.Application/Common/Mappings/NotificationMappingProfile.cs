@@ -8,7 +8,6 @@ public sealed class NotificationMappingProfile : Profile
 {
     public NotificationMappingProfile()
     {
-        // Notification entity -> read model.
         CreateMap<Notification, NotificationDto>();
     }
 }

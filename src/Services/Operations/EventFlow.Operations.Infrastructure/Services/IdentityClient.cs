@@ -1,7 +1,7 @@
-using System.Net.Http.Json;
 using EventFlow.Contracts.Common;
 using EventFlow.Operations.Application.Abstractions;
 using Microsoft.Extensions.Configuration;
+using System.Net.Http.Json;
 
 namespace EventFlow.Operations.Infrastructure.Services;
 

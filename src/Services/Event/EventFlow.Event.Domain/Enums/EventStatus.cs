@@ -1,14 +1,12 @@
 
 
-namespace EventFlow.Event.Domain.Enums
+namespace EventFlow.Event.Domain.Enums;
+
+public enum EventStatus
 {
-    //Event current status 
-    public enum EventStatus
-    {
-        Draft = 1,
-        Published = 2,
-        Ongoing = 3,
-        Completed = 4,
-        Cancelled = 5
-    }
+    Draft = 1,
+    Published = 2,
+    Ongoing = 3,
+    Completed = 4,
+    Cancelled = 5
 }

@@ -1,16 +1,13 @@
 using FluentValidation;
 
-namespace EventFlow.Event.Application.Features.Events.Queries.GetMyEvents
+namespace EventFlow.Event.Application.Features.Events.Queries.GetMyEvents;
+
+internal sealed class GetMyEventsQueryValidator : AbstractValidator<GetMyEventsQuery>
 {
-    // Query Validator
-    internal sealed class GetMyEventsQueryValidator : AbstractValidator<GetMyEventsQuery>
+    public GetMyEventsQueryValidator()
     {
-        public GetMyEventsQueryValidator()
-        {
-            // Validate user ID
-            RuleFor(x => x.UserId)
-                .NotEmpty()
-                .WithMessage("User ID is required.");
-        }
+        RuleFor(x => x.UserId)
+            .NotEmpty()
+            .WithMessage("User ID is required.");
     }
 }

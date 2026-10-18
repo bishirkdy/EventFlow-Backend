@@ -11,10 +11,10 @@ namespace EventFlow.Identity.Api.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/v1/events/{eventId:guid}/my-permissions")]
-public sealed class MyEventPermissionsController(ISender sender,ICurrentUserService currentUser) : ControllerBase
+public sealed class MyEventPermissionsController(ISender sender, ICurrentUserService currentUser) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> Get(Guid eventId,CancellationToken cancellationToken)
+    public async Task<IActionResult> Get(Guid eventId, CancellationToken cancellationToken)
     {
         var result = await sender.Send(
             new GetMyEventPermissionsQuery(currentUser.UserId, eventId),

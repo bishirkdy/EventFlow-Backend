@@ -2,21 +2,20 @@
 
 #nullable disable
 
-namespace EventFlow.Event.Infrastructure.Migrations
+namespace EventFlow.Event.Infrastructure.Migrations;
+
+/// <inheritdoc />
+public partial class AddEventSettingsReset : Migration
 {
     /// <inheritdoc />
-    public partial class AddEventSettingsReset : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
 
-        }
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
 
-        }
     }
 }

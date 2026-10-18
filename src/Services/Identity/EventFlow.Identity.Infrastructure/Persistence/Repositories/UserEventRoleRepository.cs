@@ -2,83 +2,81 @@ using EventFlow.Identity.Application.Abstractions.Repositories;
 using EventFlow.Identity.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace EventFlow.Identity.Infrastructure.Persistence.Repositories
+namespace EventFlow.Identity.Infrastructure.Persistence.Repositories;
+
+public sealed class UserEventRoleRepository(IdentityDbContext context) : IUserEventRoleRepository
 {
-    //It is responsible for managing the relationship between a User, an Event, and a Role.
-    public sealed class UserEventRoleRepository(IdentityDbContext context) : IUserEventRoleRepository
+    public async Task<bool> ExistsAsync(Guid userId, Guid eventId, Guid roleId, CancellationToken cancellationToken = default)
     {
-        public async Task<bool> ExistsAsync(Guid userId,Guid eventId,Guid roleId, CancellationToken cancellationToken = default)
-        {
-            return await context.UserEventRoles.AnyAsync(x =>x.UserId == userId &&x.EventId == eventId &&x.RoleId == roleId,cancellationToken);
-        }
+        return await context.UserEventRoles.AnyAsync(x => x.UserId == userId && x.EventId == eventId && x.RoleId == roleId, cancellationToken);
+    }
 
-        public async Task AddAsync(UserEventRole userEventRole,CancellationToken cancellationToken = default)
-        {
-            await context.UserEventRoles.AddAsync(userEventRole,cancellationToken);
-        }
+    public async Task AddAsync(UserEventRole userEventRole, CancellationToken cancellationToken = default)
+    {
+        await context.UserEventRoles.AddAsync(userEventRole, cancellationToken);
+    }
 
-        public async Task<List<UserEventRole>> GetByUserAndEventAsync(Guid userId,Guid eventId,CancellationToken cancellationToken = default)
-        {
-            return await context.UserEventRoles
-                .AsNoTracking()
-                .Include(x => x.Role)
-                .Where(x =>
-                    x.UserId == userId &&
-                    x.EventId == eventId)
-                .ToListAsync(cancellationToken);
-        }
+    public async Task<List<UserEventRole>> GetByUserAndEventAsync(Guid userId, Guid eventId, CancellationToken cancellationToken = default)
+    {
+        return await context.UserEventRoles
+            .AsNoTracking()
+            .Include(x => x.Role)
+            .Where(x =>
+                x.UserId == userId &&
+                x.EventId == eventId)
+            .ToListAsync(cancellationToken);
+    }
 
-        public async Task<List<string>> GetPermissionNamesAsync(Guid userId,Guid eventId,CancellationToken cancellationToken = default)
-        {
-            return await context.UserEventRoles
-                .AsNoTracking()
-                .Where(x =>
-                    x.UserId == userId &&
-                    x.EventId == eventId)
-                .SelectMany(x => x.Role.RolePermissions)
-                .Select(x => x.Permission.Name)
-                .Distinct()
-                .ToListAsync(cancellationToken);
-        }
+    public async Task<List<string>> GetPermissionNamesAsync(Guid userId, Guid eventId, CancellationToken cancellationToken = default)
+    {
+        return await context.UserEventRoles
+            .AsNoTracking()
+            .Where(x =>
+                x.UserId == userId &&
+                x.EventId == eventId)
+            .SelectMany(x => x.Role.RolePermissions)
+            .Select(x => x.Permission.Name)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+    }
 
-        public async Task<List<UserEventRole>> GetByUserAndEventForUpdateAsync(Guid userId,Guid eventId,CancellationToken cancellationToken = default)
-        {
-            return await context.UserEventRoles
-                .Where(x =>
-                    x.UserId == userId &&
-                    x.EventId == eventId)
-                .ToListAsync(cancellationToken);
-        }
+    public async Task<List<UserEventRole>> GetByUserAndEventForUpdateAsync(Guid userId, Guid eventId, CancellationToken cancellationToken = default)
+    {
+        return await context.UserEventRoles
+            .Where(x =>
+                x.UserId == userId &&
+                x.EventId == eventId)
+            .ToListAsync(cancellationToken);
+    }
 
-        public async Task<List<UserEventRole>> GetByUserAsync(Guid userId,CancellationToken cancellationToken = default)
-        {
-            return await context.UserEventRoles
-                .AsNoTracking()
-                .Include(x => x.Role)
-                .Where(x => x.UserId == userId)
-                .OrderByDescending(x => x.AssignedAt)
-                .ToListAsync(cancellationToken);
-        }
+    public async Task<List<UserEventRole>> GetByUserAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await context.UserEventRoles
+            .AsNoTracking()
+            .Include(x => x.Role)
+            .Where(x => x.UserId == userId)
+            .OrderByDescending(x => x.AssignedAt)
+            .ToListAsync(cancellationToken);
+    }
 
-        public async Task<List<UserEventRole>> GetByEventAsync(Guid eventId,CancellationToken cancellationToken = default)
-        {
-            return await context.UserEventRoles
-                .Include(x => x.User)
-                .Include(x => x.Role)
-                .Where(x => x.EventId == eventId)
-                .OrderBy(x => x.AssignedAt)
-                .ToListAsync(cancellationToken);
-        }
+    public async Task<List<UserEventRole>> GetByEventAsync(Guid eventId, CancellationToken cancellationToken = default)
+    {
+        return await context.UserEventRoles
+            .Include(x => x.User)
+            .Include(x => x.Role)
+            .Where(x => x.EventId == eventId)
+            .OrderBy(x => x.AssignedAt)
+            .ToListAsync(cancellationToken);
+    }
 
-        public Task DeleteAsync(UserEventRole userEventRole)
-        {
-            context.UserEventRoles.Remove(userEventRole);
-            return Task.CompletedTask;
-        }
+    public Task DeleteAsync(UserEventRole userEventRole)
+    {
+        context.UserEventRoles.Remove(userEventRole);
+        return Task.CompletedTask;
+    }
 
-        public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            await context.SaveChangesAsync(cancellationToken);
-        }
+    public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

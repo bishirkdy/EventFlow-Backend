@@ -1,7 +1,5 @@
-﻿using MediatR;
+using MediatR;
 
+namespace EventFlow.Event.Application.Features.EventType.Queries.GetActiveEventTypes;
 
-namespace EventFlow.Event.Application.Features.EventType.Queries.GetActiveEventTypes
-{
-    public sealed record GetActiveEventTypesQuery : IRequest<IReadOnlyList<GetEventTypeResponse>>;
-}
+public sealed record GetActiveEventTypesQuery : IRequest<IReadOnlyList<GetEventTypeResponse>>;

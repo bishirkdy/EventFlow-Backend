@@ -1,5 +1,5 @@
-using System.Net.Http.Headers;
 using EventFlow.Registration.Application.Abstractions.Services;
+using System.Net.Http.Headers;
 
 namespace EventFlow.Registration.Api.Services;
 

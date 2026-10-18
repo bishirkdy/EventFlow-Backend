@@ -1,13 +1,12 @@
 using FluentValidation;
 
-namespace EventFlow.Event.Application.Features.EventPages.Commands.ReorderEventPages
+namespace EventFlow.Event.Application.Features.EventPages.Commands.ReorderEventPages;
+
+public sealed class ReorderEventPagesCommandValidator : AbstractValidator<ReorderEventPagesCommand>
 {
-    public sealed class ReorderEventPagesCommandValidator : AbstractValidator<ReorderEventPagesCommand>
+    public ReorderEventPagesCommandValidator()
     {
-        public ReorderEventPagesCommandValidator()
-        {
-            RuleFor(x => x.EventId).NotEmpty();
-            RuleFor(x => x.PageIds).NotNull();
-        }
+        RuleFor(x => x.EventId).NotEmpty();
+        RuleFor(x => x.PageIds).NotNull();
     }
 }

@@ -1,4 +1,3 @@
-using System.Net;
 using AutoMapper;
 using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.Events;
@@ -17,6 +16,7 @@ using EventFlow.Security.Authentication;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace EventFlow.Event.Api.Controllers;
 

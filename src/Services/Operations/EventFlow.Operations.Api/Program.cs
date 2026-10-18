@@ -1,8 +1,8 @@
 using EventFlow.Api.Extensions;
 using EventFlow.Operations.Application;
 using EventFlow.Operations.Infrastructure;
-using EventFlow.Security.Authentication;
 using EventFlow.Operations.Infrastructure.Persistence;
+using EventFlow.Security.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 

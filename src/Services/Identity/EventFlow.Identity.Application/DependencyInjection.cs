@@ -3,25 +3,22 @@ using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
+namespace EventFlow.Identity.Application;
 
-namespace EventFlow.Identity.Application
+public static class DependencyInjection
 {
-    public static class DependencyInjection
+    public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        public static IServiceCollection AddApplication(this IServiceCollection services)
+        services.AddMediatR(options =>
         {
-            services.AddMediatR(options =>
-            {
-                options.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
-            });
+            options.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
+        });
 
-            services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
+        services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 
-            services.AddTransient(typeof(IPipelineBehavior<,>),typeof(ValidationBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
-            // Register AutoMapper profiles.
-            services.AddAutoMapper(cfg => { },typeof(DependencyInjection).Assembly);
-            return services;
-        }
+        services.AddAutoMapper(cfg => { }, typeof(DependencyInjection).Assembly);
+        return services;
     }
 }

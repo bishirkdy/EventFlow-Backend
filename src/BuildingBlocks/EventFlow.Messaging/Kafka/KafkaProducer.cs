@@ -1,7 +1,7 @@
-using System.Text.Json;
 using Confluent.Kafka;
 using EventFlow.Messaging.Events;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 namespace EventFlow.Messaging.Kafka;
 
@@ -32,10 +32,10 @@ public sealed class KafkaProducer : IKafkaProducer, IDisposable
         try
         {
             await _producer.ProduceAsync(topic, new Message<string, string>
-                {
-                    Key = key,
-                    Value = payload
-                },
+            {
+                Key = key,
+                Value = payload
+            },
                 cancellationToken);
         }
         catch (OperationCanceledException)

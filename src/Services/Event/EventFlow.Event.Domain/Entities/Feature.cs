@@ -13,7 +13,7 @@ public sealed class Feature : Entity
     {
     }
 
-    public Feature(Guid id,string code,string name,string? description)
+    public Feature(Guid id, string code, string name, string? description)
     {
         Id = id;
         Code = code;

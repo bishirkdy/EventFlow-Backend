@@ -2,14 +2,12 @@ using AutoMapper;
 using EventFlow.Identity.Application.DTOs.Admin;
 using EventFlow.Identity.Domain.Entities;
 
-namespace EventFlow.Identity.Application.Common.Mappings
+namespace EventFlow.Identity.Application.Common.Mappings;
+
+public sealed class AdminMappingProfile : Profile
 {
-    public sealed class AdminMappingProfile : Profile
+    public AdminMappingProfile()
     {
-        public AdminMappingProfile()
-        {
-            // Project the user entity into the admin list item.
-            CreateMap<User, AdminUserListItemResponse>();
-        }
+        CreateMap<User, AdminUserListItemResponse>();
     }
 }

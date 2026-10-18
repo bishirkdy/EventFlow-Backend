@@ -1,6 +1,6 @@
 using AutoMapper;
-using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Security.Authentication;
+using EventFlow.SharedKernel.Exceptions;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Commands.CancelRegistration;
 
@@ -12,7 +12,7 @@ public sealed class CancelRegistrationCommandHandler(
     IMapper mapper)
     : IRequestHandler<CancelRegistrationCommand, RegistrationDto>
 {
-    public async Task<RegistrationDto> Handle(CancelRegistrationCommand command,CancellationToken cancellationToken)
+    public async Task<RegistrationDto> Handle(CancelRegistrationCommand command, CancellationToken cancellationToken)
     {
         var registration = await registrations.GetByIdAsync(
             command.EventId,

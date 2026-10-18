@@ -6,13 +6,13 @@ using MediatR;
 
 namespace EventFlow.Registration.Application.Features.Tickets.Queries.VerifyQrInternal;
 
-public sealed class VerifyQrInternalQueryHandler(ITicketRepository tickets,IMapper mapper) : IRequestHandler<VerifyQrInternalQuery,TicketDto>
+public sealed class VerifyQrInternalQueryHandler(ITicketRepository tickets, IMapper mapper) : IRequestHandler<VerifyQrInternalQuery, TicketDto>
 {
- public async Task<TicketDto> Handle(VerifyQrInternalQuery q,CancellationToken ct)
- {
-  var ticket=await tickets.GetByQrCodeAsync(q.EventId,q.QrCodeValue,ct);
-  if(ticket is null)throw new NotFoundException("QR code is invalid.");
-  if(!ticket.IsActive)throw new ConflictException("Ticket is inactive or revoked.");
-  return mapper.Map<TicketDto>(ticket);
- }
+    public async Task<TicketDto> Handle(VerifyQrInternalQuery q, CancellationToken ct)
+    {
+        var ticket = await tickets.GetByQrCodeAsync(q.EventId, q.QrCodeValue, ct);
+        if (ticket is null) throw new NotFoundException("QR code is invalid.");
+        if (!ticket.IsActive) throw new ConflictException("Ticket is inactive or revoked.");
+        return mapper.Map<TicketDto>(ticket);
+    }
 }

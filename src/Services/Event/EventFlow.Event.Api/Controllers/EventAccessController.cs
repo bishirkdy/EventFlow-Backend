@@ -24,7 +24,7 @@ public sealed class EventAccessController(ISender sender) : ControllerBase
     }
 
     [HttpGet("registration-access")]
-    public async Task<IActionResult> RegistrationAccess(Guid eventId,[FromQuery] Guid userId,CancellationToken cancellationToken)
+    public async Task<IActionResult> RegistrationAccess(Guid eventId, [FromQuery] Guid userId, CancellationToken cancellationToken)
     {
         var allowed = await sender.Send(
             new GetRegistrationAccessQuery(eventId, userId),
@@ -34,7 +34,7 @@ public sealed class EventAccessController(ISender sender) : ControllerBase
     }
 
     [HttpGet("preview-access")]
-    public async Task<IActionResult> PreviewAccess(Guid eventId,[FromQuery] Guid userId,CancellationToken cancellationToken)
+    public async Task<IActionResult> PreviewAccess(Guid eventId, [FromQuery] Guid userId, CancellationToken cancellationToken)
     {
         var allowed = await sender.Send(
             new GetEventPreviewAccessQuery(eventId, userId),

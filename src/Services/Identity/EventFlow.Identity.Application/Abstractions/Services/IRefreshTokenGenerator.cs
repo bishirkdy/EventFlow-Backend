@@ -1,8 +1,7 @@
 
-namespace EventFlow.Identity.Application.Abstractions.Services
+namespace EventFlow.Identity.Application.Abstractions.Services;
+
+public interface IRefreshTokenGenerator
 {
-    public interface IRefreshTokenGenerator
-    {
-        string Generate();
-    }
+    string Generate();
 }

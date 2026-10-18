@@ -7,7 +7,7 @@ namespace EventFlow.Identity.Application.Features.EventTeam.Queries.GetMyEventPe
 public sealed class GetMyEventPermissionsQueryHandler(IUserEventRoleRepository userEventRoleRepository)
     : IRequestHandler<GetMyEventPermissionsQuery, EventAccessResponse>
 {
-    public async Task<EventAccessResponse> Handle(GetMyEventPermissionsQuery request,CancellationToken cancellationToken)
+    public async Task<EventAccessResponse> Handle(GetMyEventPermissionsQuery request, CancellationToken cancellationToken)
     {
         var userEventRoles = await userEventRoleRepository.GetByUserAndEventAsync(
             request.UserId,

@@ -4,8 +4,8 @@ using EventFlow.Registration.Application.Contracts.Certificates;
 using EventFlow.Registration.Application.Features.Certificates.Commands.DeleteCertificateTemplateImage;
 using EventFlow.Registration.Application.Features.Certificates.Commands.GenerateCertificates;
 using EventFlow.Registration.Application.Features.Certificates.Commands.RevokeCertificate;
-using EventFlow.Registration.Application.Features.Certificates.Commands.UpsertCertificateSettings;
 using EventFlow.Registration.Application.Features.Certificates.Commands.UploadCertificateTemplateImage;
+using EventFlow.Registration.Application.Features.Certificates.Commands.UpsertCertificateSettings;
 using EventFlow.Registration.Application.Features.Certificates.Queries.DownloadCertificate;
 using EventFlow.Registration.Application.Features.Certificates.Queries.GetCertificateEligibility;
 using EventFlow.Registration.Application.Features.Certificates.Queries.GetCertificateSettings;
@@ -86,7 +86,7 @@ public sealed class CertificatesController(ISender sender) : ControllerBase
         var dto = await sender.Send(
             new GetCertificateEligibilityQuery(eventId), cancellationToken);
 
-        return Ok(ApiResponse<CertificateEligibilityDto>.Success(dto,"Eligibility computed."));
+        return Ok(ApiResponse<CertificateEligibilityDto>.Success(dto, "Eligibility computed."));
     }
 
     [Authorize]
@@ -120,7 +120,7 @@ public sealed class CertificatesController(ISender sender) : ControllerBase
 
     [Authorize]
     [HttpGet]
-    public async Task<IActionResult> List(Guid eventId,CancellationToken cancellationToken)
+    public async Task<IActionResult> List(Guid eventId, CancellationToken cancellationToken)
     {
         var dto = await sender.Send(new ListCertificatesQuery(eventId), cancellationToken);
 
@@ -134,7 +134,7 @@ public sealed class CertificatesController(ISender sender) : ControllerBase
         var dto = await sender.Send(new GetMyCertificatesQuery(eventId), cancellationToken);
 
         return Ok(ApiResponse<List<CertificateDto>>.Success(dto, dto.Count == 0
-                ? "No certificate has been issued for you yet.": "Certificate found."));
+                ? "No certificate has been issued for you yet." : "Certificate found."));
     }
 
     [Authorize]
@@ -154,7 +154,7 @@ public sealed class CertificatesController(ISender sender) : ControllerBase
 
     [Authorize]
     [HttpGet("{certificateId:guid}/download")]
-    public async Task<IActionResult> Download(Guid eventId, Guid certificateId,CancellationToken cancellationToken)
+    public async Task<IActionResult> Download(Guid eventId, Guid certificateId, CancellationToken cancellationToken)
     {
         var dto = await sender.Send(
             new DownloadCertificateQuery(eventId, certificateId), cancellationToken);

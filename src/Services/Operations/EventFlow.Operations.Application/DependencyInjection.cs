@@ -21,7 +21,6 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(
             typeof(DependencyInjection).Assembly);
 
-        // Register AutoMapper profiles.
         services.AddAutoMapper(
             cfg => { },
             typeof(DependencyInjection).Assembly);

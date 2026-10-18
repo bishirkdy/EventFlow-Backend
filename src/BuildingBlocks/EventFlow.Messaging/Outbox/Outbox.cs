@@ -1,7 +1,7 @@
-using System.Text.Json;
 using EventFlow.Messaging.Correlation;
 using EventFlow.Messaging.Events;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace EventFlow.Messaging.Outbox;
 

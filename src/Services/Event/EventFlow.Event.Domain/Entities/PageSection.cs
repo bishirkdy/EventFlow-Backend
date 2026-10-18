@@ -1,61 +1,60 @@
 using EventFlow.SharedKernel.Domain;
 
-namespace EventFlow.Event.Domain.Entities
+namespace EventFlow.Event.Domain.Entities;
+
+public sealed class PageSection : Entity
 {
-    public sealed class PageSection : Entity
+    public Guid PageId { get; private set; }
+    public string SectionType { get; private set; } = string.Empty;
+    public string? Title { get; private set; }
+    public string? Content { get; private set; }
+    public string? ImageUrl { get; private set; }
+    public string? ImagePublicId { get; private set; }
+    public int DisplayOrder { get; private set; }
+    public bool IsVisible { get; private set; }
+    public bool ShowRegistrationForm { get; private set; }
+    public string? Configuration { get; private set; }
+
+    private PageSection()
     {
-        public Guid PageId { get; private set; }
-        public string SectionType { get; private set; } = string.Empty;
-        public string? Title { get; private set; }
-        public string? Content { get; private set; }
-        public string? ImageUrl { get; private set; }
-        public string? ImagePublicId { get; private set; }
-        public int DisplayOrder { get; private set; }
-        public bool IsVisible { get; private set; }
-        public bool ShowRegistrationForm { get; private set; }
-        public string? Configuration { get; private set; }
+        // Required by EF Core
+    }
 
-        private PageSection()
-        {
-            // Required by EF Core
-        }
+    public PageSection(Guid pageId, string sectionType, string? title, string? content, string? imageUrl, string? imagePublicId, int displayOrder, string? configuration, bool showRegistrationForm = false)
+    {
+        PageId = pageId;
+        SectionType = sectionType;
+        Title = title;
+        Content = content;
+        ImageUrl = imageUrl;
+        ImagePublicId = imagePublicId;
+        DisplayOrder = displayOrder;
+        IsVisible = true;
+        ShowRegistrationForm = showRegistrationForm;
+        Configuration = configuration;
+    }
 
-        public PageSection(Guid pageId,string sectionType,string? title,string? content,string? imageUrl,string? imagePublicId,int displayOrder,string? configuration,bool showRegistrationForm = false)
-        {
-            PageId = pageId;
-            SectionType = sectionType;
-            Title = title;
-            Content = content;
-            ImageUrl = imageUrl;
-            ImagePublicId = imagePublicId;
-            DisplayOrder = displayOrder;
-            IsVisible = true;
-            ShowRegistrationForm = showRegistrationForm;
-            Configuration = configuration;
-        }
+    public void Update(string sectionType, string? title, string? content, string? imageUrl, string? imagePublicId, string? configuration, bool showRegistrationForm = false)
+    {
+        SectionType = sectionType;
+        Title = title;
+        Content = content;
+        ImageUrl = imageUrl;
+        ImagePublicId = imagePublicId;
+        ShowRegistrationForm = showRegistrationForm;
+        Configuration = configuration;
+        UpdatedAt = DateTime.UtcNow;
+    }
 
-        public void Update(string sectionType,string? title,string? content,string? imageUrl,string? imagePublicId,string? configuration,bool showRegistrationForm = false)
-        {
-            SectionType = sectionType;
-            Title = title;
-            Content = content;
-            ImageUrl = imageUrl;
-            ImagePublicId = imagePublicId;
-            ShowRegistrationForm = showRegistrationForm;
-            Configuration = configuration;
-            UpdatedAt = DateTime.UtcNow;
-        }
+    public void SetVisibility(bool isVisible)
+    {
+        IsVisible = isVisible;
+        UpdatedAt = DateTime.UtcNow;
+    }
 
-        public void SetVisibility(bool isVisible)
-        {
-            IsVisible = isVisible;
-            UpdatedAt = DateTime.UtcNow;
-        }
-
-        public void UpdateDisplayOrder(int displayOrder)
-        {
-            DisplayOrder = displayOrder;
-            UpdatedAt = DateTime.UtcNow;
-        }
+    public void UpdateDisplayOrder(int displayOrder)
+    {
+        DisplayOrder = displayOrder;
+        UpdatedAt = DateTime.UtcNow;
     }
 }

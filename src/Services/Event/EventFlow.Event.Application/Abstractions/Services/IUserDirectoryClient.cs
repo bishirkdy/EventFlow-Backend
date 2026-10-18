@@ -6,5 +6,5 @@ public interface IUserDirectoryClient
 
     Task AssignOwnerAsync(Guid userId, Guid eventId, CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<Guid>> GetEventIdsForUserAsync(Guid userId,CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Guid>> GetEventIdsForUserAsync(Guid userId, CancellationToken cancellationToken = default);
 }

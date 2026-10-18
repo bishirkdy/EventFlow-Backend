@@ -11,14 +11,13 @@ namespace EventFlow.Registration.Api.Controllers;
 [ApiController]
 [Authorize]
 [Route("api/v1/events/{eventId:guid}/participants")]
-//Controller for handling participants
-public sealed class ParticipantsController(IMediator mediator): ControllerBase
+public sealed class ParticipantsController(IMediator mediator) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> List(Guid eventId, ParticipantStatus? status,
         string? search, int page = 1, int pageSize = 20, CancellationToken cancellationToken = default)
     {
-        var dto = await mediator.Send(new GetEventParticipantsQuery(eventId,status,search,page,pageSize), cancellationToken);
+        var dto = await mediator.Send(new GetEventParticipantsQuery(eventId, status, search, page, pageSize), cancellationToken);
 
         return Ok(ApiResponse<PaginatedResponse<ParticipantDto>>.Success(dto));
     }

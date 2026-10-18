@@ -2,18 +2,17 @@ using EventFlow.Api.Extensions;
 using EventFlow.Identity.Application;
 using EventFlow.Identity.Infrastructure;
 
-namespace EventFlow.Identity.Api.Extensions
-{
-    public static class ServiceCollectionExtensions
-    {
-        public static IServiceCollection AddIdentityServices(this IServiceCollection services,IConfiguration configuration)
-        {
-            services.AddEventFlowValidation();
-            services
-                .AddApplication()
-                .AddInfrastructure(configuration);
+namespace EventFlow.Identity.Api.Extensions;
 
-            return services;
-        }
+public static class ServiceCollectionExtensions
+{
+    public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddEventFlowValidation();
+        services
+            .AddApplication()
+            .AddInfrastructure(configuration);
+
+        return services;
     }
 }

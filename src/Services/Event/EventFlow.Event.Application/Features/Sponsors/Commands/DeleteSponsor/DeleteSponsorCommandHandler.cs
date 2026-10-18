@@ -3,6 +3,7 @@ using EventFlow.Event.Application.Common;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 namespace EventFlow.Event.Application.Features.Sponsors.Commands.DeleteSponsor;
+
 public sealed class DeleteSponsorCommandHandler(ISponsorRepository repository, IEventFeatureRepository featureRepository, IUnitOfWork unitOfWork) : IRequestHandler<DeleteSponsorCommand>
 {
     public async Task Handle(DeleteSponsorCommand request, CancellationToken cancellationToken)

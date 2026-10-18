@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace EventFlow.Operations.Infrastructure.Services;
 
-public sealed class NotificationQueueProcessor(IOperationsDbContext db,IEmailSender emailSender,ILogger<NotificationQueueProcessor> logger)
+public sealed class NotificationQueueProcessor(IOperationsDbContext db, IEmailSender emailSender, ILogger<NotificationQueueProcessor> logger)
     : INotificationQueueProcessor
 {
     private const int BatchSize = 20;
@@ -73,6 +73,6 @@ public sealed class NotificationQueueProcessor(IOperationsDbContext db,IEmailSen
 
     private static string Truncate(string value, int maxLength)
     {
-        return value.Length <= maxLength? value : value[..maxLength];
+        return value.Length <= maxLength ? value : value[..maxLength];
     }
 }

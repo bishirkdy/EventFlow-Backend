@@ -18,7 +18,6 @@ public sealed class TicketConfiguration : IEntityTypeConfiguration<Ticket>
             .HasForeignKey<Ticket>(x => x.ParticipantId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Audit fields from the base entity.
         b.Property(x => x.CreatedAt).IsRequired();
         b.Property(x => x.UpdatedAt);
     }

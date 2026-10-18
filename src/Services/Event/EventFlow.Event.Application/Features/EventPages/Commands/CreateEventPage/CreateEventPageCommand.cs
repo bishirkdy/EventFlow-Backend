@@ -1,10 +1,9 @@
 using MediatR;
 
-namespace EventFlow.Event.Application.Features.EventPages.Commands.CreateEventPage
-{
-    public sealed record CreateEventPageCommand(
-        Guid EventId,
-        string Name,
-        string Slug,
-        string PageType) : IRequest<Guid>;
-}
+namespace EventFlow.Event.Application.Features.EventPages.Commands.CreateEventPage;
+
+public sealed record CreateEventPageCommand(
+    Guid EventId,
+    string Name,
+    string Slug,
+    string PageType) : IRequest<Guid>;

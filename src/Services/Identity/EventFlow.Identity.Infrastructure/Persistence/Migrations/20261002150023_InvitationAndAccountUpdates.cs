@@ -2,21 +2,20 @@
 
 #nullable disable
 
-namespace EventFlow.Identity.Infrastructure.Persistence.Migrations
+namespace EventFlow.Identity.Infrastructure.Persistence.Migrations;
+
+/// <inheritdoc />
+public partial class InvitationAndAccountUpdates : Migration
 {
     /// <inheritdoc />
-    public partial class InvitationAndAccountUpdates : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
 
-        }
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
 
-        }
     }
 }

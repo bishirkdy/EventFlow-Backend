@@ -1,9 +1,8 @@
 ﻿
 
-namespace EventFlow.SharedKernel.Exceptions
+namespace EventFlow.SharedKernel.Exceptions;
+
+public sealed class NotFoundException : EventFlowException
 {
-    public sealed class NotFoundException : EventFlowException
-    {
-        public NotFoundException(string message) : base(message) { }
-    }
+    public NotFoundException(string message) : base(message) { }
 }

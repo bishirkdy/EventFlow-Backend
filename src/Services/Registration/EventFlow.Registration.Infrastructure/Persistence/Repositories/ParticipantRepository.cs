@@ -5,7 +5,7 @@ namespace EventFlow.Registration.Infrastructure.Persistence.Repositories;
 
 public sealed class ParticipantRepository(RegistrationDbContext db) : IParticipantRepository
 {
-    public async Task<Participant?> GetByIdAsync(Guid eventId,Guid participantId,bool asNoTracking = false,CancellationToken cancellationToken = default)
+    public async Task<Participant?> GetByIdAsync(Guid eventId, Guid participantId, bool asNoTracking = false, CancellationToken cancellationToken = default)
     {
         IQueryable<Participant> query = db.Participants;
 

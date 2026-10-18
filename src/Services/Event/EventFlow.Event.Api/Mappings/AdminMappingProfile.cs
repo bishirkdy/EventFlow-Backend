@@ -1,15 +1,13 @@
 using AutoMapper;
-using AppItem = EventFlow.Event.Application.Features.Admin.Queries.GetAdminEvents.AdminEventListItemResponse;
 using ApiItem = EventFlow.Event.Api.Responses.Admin.AdminEventListItemResponse;
+using AppItem = EventFlow.Event.Application.Features.Admin.Queries.GetAdminEvents.AdminEventListItemResponse;
 
-namespace EventFlow.Event.Api.Mappings
+namespace EventFlow.Event.Api.Mappings;
+
+public sealed class AdminMappingProfile : Profile
 {
-    public sealed class AdminMappingProfile : Profile
+    public AdminMappingProfile()
     {
-        public AdminMappingProfile()
-        {
-            // Map the application admin event item into the API response.
-            CreateMap<AppItem, ApiItem>();
-        }
+        CreateMap<AppItem, ApiItem>();
     }
 }

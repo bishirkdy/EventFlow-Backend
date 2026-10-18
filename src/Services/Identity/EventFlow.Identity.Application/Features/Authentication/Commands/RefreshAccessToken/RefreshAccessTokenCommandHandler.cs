@@ -1,8 +1,8 @@
 using EventFlow.Identity.Application.Abstractions.Repositories;
 using EventFlow.Identity.Application.Abstractions.Services;
 using EventFlow.Identity.Application.DTOs.Authentication;
-using EventFlow.Security.Configuration;
 using EventFlow.Identity.Domain.Entities;
+using EventFlow.Security.Configuration;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 using Microsoft.Extensions.Options;

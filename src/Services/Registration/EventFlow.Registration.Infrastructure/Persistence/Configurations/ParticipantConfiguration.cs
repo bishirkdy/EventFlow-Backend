@@ -37,7 +37,6 @@ public sealed class ParticipantConfiguration : IEntityTypeConfiguration<Particip
         b.Property(x => x.Status)
             .HasConversion<int>();
 
-        // Audit fields from the base entity.
         b.Property(x => x.CreatedAt).IsRequired();
         b.Property(x => x.UpdatedAt);
     }

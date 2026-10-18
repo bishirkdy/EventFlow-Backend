@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventFlow.Registration.Api.Controllers;
-//Controller for handling registration form
+
 [ApiController]
 [Route("api/v1/events/{eventId:guid}/registration-form")]
 public sealed class RegistrationFormsController(
@@ -46,7 +46,7 @@ public sealed class RegistrationFormsController(
     [HttpPut]
     public async Task<IActionResult> Put(Guid eventId, UpsertRegistrationFormRequest request, CancellationToken cancellationToken)
     {
-        var dto = await sender.Send(new UpsertRegistrationFormCommand(eventId,request), cancellationToken);
+        var dto = await sender.Send(new UpsertRegistrationFormCommand(eventId, request), cancellationToken);
         return Ok(ApiResponse<RegistrationFormDto>.Success(dto, "Registration form saved."));
     }
 }

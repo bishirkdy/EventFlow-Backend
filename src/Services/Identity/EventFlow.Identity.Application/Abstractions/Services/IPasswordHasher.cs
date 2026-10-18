@@ -1,11 +1,9 @@
 
 
-namespace EventFlow.Identity.Application.Abstractions.Services
+namespace EventFlow.Identity.Application.Abstractions.Services;
+
+public interface IPasswordHasher
 {
-    //Password hashing interface
-    public interface IPasswordHasher
-    {
-        string Hash(string password);
-        bool Verify(string password, string passwordHash);
-    }
+    string Hash(string password);
+    bool Verify(string password, string passwordHash);
 }

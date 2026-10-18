@@ -2,21 +2,20 @@
 
 #nullable disable
 
-namespace EventFlow.Identity.Infrastructure.Migrations
+namespace EventFlow.Identity.Infrastructure.Migrations;
+
+/// <inheritdoc />
+public partial class FinalBaseIdentity : Migration
 {
     /// <inheritdoc />
-    public partial class FinalBaseIdentity : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
 
-        }
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
 
-        }
     }
 }

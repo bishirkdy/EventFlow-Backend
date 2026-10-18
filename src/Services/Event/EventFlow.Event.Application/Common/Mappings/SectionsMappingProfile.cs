@@ -4,15 +4,13 @@ using EventFlow.Event.Application.Features.Sections.Queries.GetSectionById;
 using EventFlow.Event.Application.Features.Sections.Queries.GetSectionsByEvent;
 using EventFlow.Event.Domain.Entities;
 
-namespace EventFlow.Event.Application.Common.Mappings
+namespace EventFlow.Event.Application.Common.Mappings;
+
+public sealed class SectionMappingProfile : Profile
 {
-    // Section Mapping
-    public sealed class SectionMappingProfile : Profile
+    public SectionMappingProfile()
     {
-        public SectionMappingProfile()
-        {
-            CreateMap<Section, GetSectionsByEventResponse>();
-            CreateMap<Section, GetSectionByIdResponse>();
-        }
+        CreateMap<Section, GetSectionsByEventResponse>();
+        CreateMap<Section, GetSectionByIdResponse>();
     }
 }

@@ -1,8 +1,8 @@
-using System.Text.Json;
 using EventFlow.Registration.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using System.Text.Json;
 
 namespace EventFlow.Registration.Infrastructure.Persistence.Configurations;
 
@@ -32,7 +32,6 @@ public sealed class CertificateSettingsConfiguration : IEntityTypeConfiguration<
                         : JsonSerializer.Deserialize<List<CertificateTemplateField>>(json, SerializerOptions) ?? new List<CertificateTemplateField>()))
             .Metadata.SetValueComparer(JsonValueComparer);
 
-        // Audit fields from the base entity.
         b.Property(x => x.CreatedAt).IsRequired();
         b.Property(x => x.UpdatedAt);
     }

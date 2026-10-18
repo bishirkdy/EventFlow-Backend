@@ -6,7 +6,7 @@ namespace EventFlow.Identity.Infrastructure.Authorization;
 
 public sealed class PermissionService(IdentityDbContext context) : IPermissionService
 {
-    public async Task<bool> HasPermissionAsync(Guid userId,Guid eventId, string permission, CancellationToken cancellationToken = default)
+    public async Task<bool> HasPermissionAsync(Guid userId, Guid eventId, string permission, CancellationToken cancellationToken = default)
     {
         var normalizedPermission = permission.Trim();
 

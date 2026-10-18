@@ -1,9 +1,8 @@
 ﻿
 
-namespace EventFlow.SharedKernel.Exceptions
+namespace EventFlow.SharedKernel.Exceptions;
+
+public sealed class ForbiddenException : EventFlowException
 {
-    public sealed class ForbiddenException : EventFlowException
-    {
-        public ForbiddenException(string message): base(message){}
-    }
+    public ForbiddenException(string message) : base(message) { }
 }

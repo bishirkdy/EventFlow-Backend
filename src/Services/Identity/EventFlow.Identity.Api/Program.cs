@@ -1,8 +1,8 @@
 using EventFlow.Api.Extensions;
 using EventFlow.Identity.Api.Extensions;
-using Microsoft.AspNetCore.RateLimiting;
-using EventFlow.Security.Authentication;
 using EventFlow.Identity.Infrastructure.Persistence;
+using EventFlow.Security.Authentication;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace EventFlow.Identity.Api;
 

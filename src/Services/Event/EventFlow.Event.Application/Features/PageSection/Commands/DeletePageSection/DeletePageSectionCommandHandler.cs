@@ -3,36 +3,35 @@ using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
-namespace EventFlow.Event.Application.Features.PageSection.Commands.DeletePageSection
+namespace EventFlow.Event.Application.Features.PageSection.Commands.DeletePageSection;
+
+public sealed class DeletePageSectionCommandHandler(IPageSectionRepository pageSectionRepository, IUnitOfWork unitOfWork)
+    : IRequestHandler<DeletePageSectionCommand, string?>
 {
-    public sealed class DeletePageSectionCommandHandler(IPageSectionRepository pageSectionRepository, IUnitOfWork unitOfWork)
-        : IRequestHandler<DeletePageSectionCommand, string?>
+    public async Task<string?> Handle(DeletePageSectionCommand request, CancellationToken cancellationToken)
     {
-        public async Task<string?> Handle(DeletePageSectionCommand request, CancellationToken cancellationToken)
-        {
-            var section = await pageSectionRepository.GetByIdAsync(request.Id, cancellationToken);
+        var section = await pageSectionRepository.GetByIdAsync(request.Id, cancellationToken);
 
-            if (section is null || section.PageId != request.PageId)
-                throw new NotFoundException("Page section not found.");
+        if (section is null || section.PageId != request.PageId)
+            throw new NotFoundException("Page section not found.");
 
-            var imagePublicId = section.ImagePublicId;
+        var imagePublicId = section.ImagePublicId;
 
-            pageSectionRepository.Remove(section);
+        pageSectionRepository.Remove(section);
 
-            var remainingSections = (await pageSectionRepository.GetByPageIdAsync(
-                request.PageId,
-                includeUnpublished: true,
-                cancellationToken))
-                .Where(x => x.Id != section.Id)
-                .OrderBy(x => x.DisplayOrder)
-                .ToList();
+        var remainingSections = (await pageSectionRepository.GetByPageIdAsync(
+            request.PageId,
+            includeUnpublished: true,
+            cancellationToken))
+            .Where(x => x.Id != section.Id)
+            .OrderBy(x => x.DisplayOrder)
+            .ToList();
 
-            for (var i = 0; i < remainingSections.Count; i++)
-                remainingSections[i].UpdateDisplayOrder(i + 1);
+        for (var i = 0; i < remainingSections.Count; i++)
+            remainingSections[i].UpdateDisplayOrder(i + 1);
 
-            await unitOfWork.SaveChangesAsync(cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return imagePublicId;
-        }
+        return imagePublicId;
     }
 }

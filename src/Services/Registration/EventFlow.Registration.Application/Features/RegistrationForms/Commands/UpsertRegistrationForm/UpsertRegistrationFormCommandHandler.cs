@@ -1,7 +1,7 @@
 
 using AutoMapper;
-using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Security.Authentication;
+using EventFlow.SharedKernel.Exceptions;
 
 namespace EventFlow.Registration.Application.Features.RegistrationForms.Commands.UpsertRegistrationForm;
 
@@ -12,12 +12,12 @@ public sealed class UpsertRegistrationFormCommandHandler(
     ICurrentUserService user,
     IEventRegistrationAccessService access,
     IMapper mapper)
-    : IRequestHandler<UpsertRegistrationFormCommand,RegistrationFormDto>
+    : IRequestHandler<UpsertRegistrationFormCommand, RegistrationFormDto>
 {
     public async Task<RegistrationFormDto> Handle(
         UpsertRegistrationFormCommand command, CancellationToken cancellationToken)
     {
-        if (!await access.CanManageRegistrationAsync(command.EventId,user.UserId,cancellationToken))
+        if (!await access.CanManageRegistrationAsync(command.EventId, user.UserId, cancellationToken))
         {
             throw new ForbiddenException("You do not have permission.");
         }
@@ -66,7 +66,7 @@ public sealed class UpsertRegistrationFormCommandHandler(
 
         if (removedIds.Length > 0)
         {
-            var usedFieldIds = await forms.GetFieldIdsWithAnswersAsync(removedIds,cancellationToken);
+            var usedFieldIds = await forms.GetFieldIdsWithAnswersAsync(removedIds, cancellationToken);
 
             if (usedFieldIds.Count > 0)
             {

@@ -1,4 +1,4 @@
-﻿namespace EventFlow.SharedKernel.Domain;
+namespace EventFlow.SharedKernel.Domain;
 
 public abstract class Entity
 {
@@ -15,7 +15,6 @@ public abstract class Entity
         Id = id;
         CreatedAt = DateTime.UtcNow;
     }
-
 
     public Guid Id { get; protected set; }
     public DateTime CreatedAt { get; protected set; }

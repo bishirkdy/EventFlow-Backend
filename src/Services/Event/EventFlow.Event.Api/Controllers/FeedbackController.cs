@@ -1,7 +1,7 @@
 using EventFlow.Contracts.Common;
+using EventFlow.Event.Api.Requests.Feedback;
 using EventFlow.Event.Application.Features.Feedback.Commands.SubmitFeedback;
 using EventFlow.Event.Application.Features.Feedback.Queries.GetFeedbackResults;
-using EventFlow.Event.Api.Requests.Feedback;
 using EventFlow.Security.Authentication;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -14,7 +14,6 @@ namespace EventFlow.Event.Api.Controllers;
 [Authorize]
 public sealed class FeedbackController(ISender sender, ICurrentUserService currentUser) : ControllerBase
 {
-    //  Submit participant feedback
     [HttpPost]
     public async Task<IActionResult> Submit(Guid eventId, SubmitFeedbackRequest request,
         CancellationToken cancellationToken)
@@ -33,7 +32,6 @@ public sealed class FeedbackController(ISender sender, ICurrentUserService curre
             response, "Thank you for your feedback."));
     }
 
-    // Organizer feedback results
     [HttpGet("results")]
     public async Task<IActionResult> Results(Guid eventId, CancellationToken cancellationToken)
     {

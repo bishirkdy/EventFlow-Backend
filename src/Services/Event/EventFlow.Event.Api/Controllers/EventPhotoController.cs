@@ -17,7 +17,6 @@ namespace EventFlow.Event.Api.Controllers;
 [Route("api/v1/events/{eventId:guid}/photos")]
 public sealed class EventPhotoController(ISender sender, ICurrentUserService currentUser, IEventPreviewAccess previewAccess) : ControllerBase
 {
-    //Upload photo (Photographer)
     [Authorize]
     [HttpPost]
     [RequestSizeLimit(10 * 1024 * 1024)]
@@ -41,7 +40,7 @@ public sealed class EventPhotoController(ISender sender, ICurrentUserService cur
     // so anonymous and authenticated non-members get the same empty result.
     [AllowAnonymous]
     [HttpGet]
-    public async Task<IActionResult> GetPhotos(Guid eventId,[FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] bool? visibleOnly = null,
+    public async Task<IActionResult> GetPhotos(Guid eventId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] bool? visibleOnly = null,
         CancellationToken cancellationToken = default)
     {
         if (!await previewAccess.CanReadAsync(eventId, cancellationToken))
@@ -66,17 +65,16 @@ public sealed class EventPhotoController(ISender sender, ICurrentUserService cur
 
     [Authorize]
     [HttpPatch("{photoId:guid}/visibility")]
-    public async Task<IActionResult> UpdateVisibility(Guid eventId,Guid photoId, [FromBody] UpdateVisibilityRequest request,
+    public async Task<IActionResult> UpdateVisibility(Guid eventId, Guid photoId, [FromBody] UpdateVisibilityRequest request,
         CancellationToken cancellationToken)
     {
-        var command = new UpdateEventPhotoVisibilityCommand(photoId,request.IsVisible, currentUser.UserId);
+        var command = new UpdateEventPhotoVisibilityCommand(photoId, request.IsVisible, currentUser.UserId);
 
         await sender.Send(command, cancellationToken);
 
         return Ok(ApiResponse<object?>.Success(null, request.IsVisible ? "Photo approved." : "Photo hidden."));
     }
 
-    // Delete photo (Photographer or Organizer)
     [Authorize]
     [HttpDelete("{photoId:guid}")]
     public async Task<IActionResult> DeletePhoto(Guid eventId, Guid photoId, CancellationToken cancellationToken)

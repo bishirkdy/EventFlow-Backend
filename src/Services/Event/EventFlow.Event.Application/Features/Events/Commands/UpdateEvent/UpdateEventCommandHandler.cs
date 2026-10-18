@@ -1,6 +1,6 @@
-using EventFlow.SharedKernel.Exceptions;
-using EventFlow.Event.Application.Common;
 using EventFlow.Event.Application.Abstractions.Persistence;
+using EventFlow.Event.Application.Common;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
 namespace EventFlow.Event.Application.Features.Events.Commands.UpdateEvent;

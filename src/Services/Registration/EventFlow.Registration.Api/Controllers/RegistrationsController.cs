@@ -19,7 +19,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EventFlow.Registration.Api.Controllers;
 
-//Controller for registrations
 [ApiController]
 [Route("api/v1/events/{eventId:guid}/registrations")]
 public sealed class RegistrationsController(ISender sender, IEventRegistrationAccessService eventAccess) : ControllerBase
@@ -37,28 +36,26 @@ public sealed class RegistrationsController(ISender sender, IEventRegistrationAc
                 System.Net.HttpStatusCode.NotFound));
         }
 
-        var dto = await sender.Send(new CreateRegistrationCommand(eventId,request), cancellationToken);
+        var dto = await sender.Send(new CreateRegistrationCommand(eventId, request), cancellationToken);
 
         return Ok(ApiResponse<RegistrationDto>.Success(
-            dto,dto.Status == RegistrationStatus.Waitlisted
+            dto, dto.Status == RegistrationStatus.Waitlisted
                 ? "Registration submitted and added to the waitlist."
                 : "Registration submitted successfully."));
     }
 
-    //for update registration by event
     [Authorize]
     [HttpPut("{registrationId:guid}")]
-    public async Task<IActionResult> Update(Guid eventId,Guid registrationId, UpdateRegistrationRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Update(Guid eventId, Guid registrationId, UpdateRegistrationRequest request, CancellationToken cancellationToken)
     {
         var dto = await sender.Send(
-            new UpdateRegistrationCommand(eventId,registrationId,request), cancellationToken);
+            new UpdateRegistrationCommand(eventId, registrationId, request), cancellationToken);
 
         return Ok(ApiResponse<RegistrationDto>.Success(
             dto,
             "Registration updated successfully."));
     }
 
-    // Participant view own registration
     [Authorize]
     [HttpGet("{registrationId:guid}")]
     public async Task<IActionResult> GetMyRegistration(
@@ -76,7 +73,6 @@ public sealed class RegistrationsController(ISender sender, IEventRegistrationAc
         return Ok(ApiResponse<RegistrationDto>.Success(dto));
     }
 
-    // Organizer view a participant's registration
     [Authorize]
     [HttpGet("organizer/{registrationId:guid}")]
     public async Task<IActionResult> GetForOrganizer(
@@ -96,10 +92,10 @@ public sealed class RegistrationsController(ISender sender, IEventRegistrationAc
 
     [Authorize]
     [HttpGet("{registrationId:guid}/manage")]
-    public async Task<IActionResult> Manage(Guid eventId,Guid registrationId,CancellationToken cancellationToken)
+    public async Task<IActionResult> Manage(Guid eventId, Guid registrationId, CancellationToken cancellationToken)
     {
         var dto = await sender.Send(
-            new GetRegistrationByIdQuery(eventId,registrationId,true),cancellationToken);
+            new GetRegistrationByIdQuery(eventId, registrationId, true), cancellationToken);
 
         return Ok(ApiResponse<RegistrationDto>.Success(dto));
     }
@@ -117,17 +113,17 @@ public sealed class RegistrationsController(ISender sender, IEventRegistrationAc
     [Authorize]
     [HttpGet]
     public async Task<IActionResult> List(
-        Guid eventId,RegistrationStatus? status,string? search,int page = 1,int pageSize = 20,CancellationToken cancellationToken = default)
+        Guid eventId, RegistrationStatus? status, string? search, int page = 1, int pageSize = 20, CancellationToken cancellationToken = default)
     {
         var dto = await sender.Send(
-            new GetEventRegistrationsQuery(eventId,status,search,page,pageSize),cancellationToken);
+            new GetEventRegistrationsQuery(eventId, status, search, page, pageSize), cancellationToken);
 
         return Ok(ApiResponse<PaginatedResponse<RegistrationDto>>.Success(dto));
     }
 
     [Authorize]
     [HttpGet("stats")]
-    public async Task<IActionResult> Stats(Guid eventId,CancellationToken cancellationToken)
+    public async Task<IActionResult> Stats(Guid eventId, CancellationToken cancellationToken)
     {
         var dto = await sender.Send(
             new GetRegistrationStatsQuery(eventId), cancellationToken);

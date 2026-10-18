@@ -1,13 +1,12 @@
 using EventFlow.Api.Middleware;
 
-namespace EventFlow.Event.Api.Extensions
+namespace EventFlow.Event.Api.Extensions;
+
+public static class MiddlewareExtensions
 {
-    public static class MiddlewareExtensions
+    public static IApplicationBuilder UseApiMiddleware(this IApplicationBuilder app)
     {
-        public static IApplicationBuilder UseApiMiddleware(this IApplicationBuilder app)
-        {
-            app.UseMiddleware<GlobalExceptionMiddleware>();
-            return app;
-        }
+        app.UseMiddleware<GlobalExceptionMiddleware>();
+        return app;
     }
 }

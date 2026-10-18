@@ -1,7 +1,7 @@
 using AutoMapper;
 using EventFlow.Contracts.Common;
-using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Security.Authentication;
+using EventFlow.SharedKernel.Exceptions;
 
 namespace EventFlow.Registration.Application.Features.Participants.Queries.GetEventParticipants;
 

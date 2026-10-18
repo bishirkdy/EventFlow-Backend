@@ -27,7 +27,6 @@ public sealed class Registration : Entity
         ScopeId = scopeId;
         RegisteredAtUtc = DateTime.UtcNow;
 
-        // Waitlisted registrations remember when and where they joined the queue.
         if (status == RegistrationStatus.Waitlisted)
         {
             WaitlistedAtUtc = RegisteredAtUtc;
@@ -69,13 +68,11 @@ public sealed class Registration : Entity
 
     public Ticket? Ticket { get; private set; }
 
-    // Links the submitted participant details to this registration.
     public void SetParticipant(Participant participant)
     {
         Participant = participant;
     }
 
-    // Approves the registration and clears any waitlist state.
     public void Approve()
     {
         Status = RegistrationStatus.Approved;
@@ -85,7 +82,6 @@ public sealed class Registration : Entity
         SetUpdatedAt();
     }
 
-    // Rejects the registration with a reason and revokes any issued ticket.
     public void Reject(string reason)
     {
         Status = RegistrationStatus.Rejected;
@@ -97,7 +93,6 @@ public sealed class Registration : Entity
         SetUpdatedAt();
     }
 
-    // Cancels the registration, the participant and any issued ticket.
     public void Cancel(string? reason)
     {
         Status = RegistrationStatus.Cancelled;
@@ -108,7 +103,6 @@ public sealed class Registration : Entity
         SetUpdatedAt();
     }
 
-    // Moves the registration onto the waitlist at the given position.
     public void Waitlist(int position)
     {
         Status = RegistrationStatus.Waitlisted;
@@ -117,13 +111,11 @@ public sealed class Registration : Entity
         SetUpdatedAt();
     }
 
-    // Attaches a freshly issued ticket.
     public void AttachTicket(Ticket ticket)
     {
         Ticket = ticket;
     }
 
-    // Updates the participant details submitted with the registration.
     public void UpdateParticipant(
         string firstName,
         string lastName,
@@ -151,7 +143,6 @@ public sealed class Registration : Entity
         return answers;
     }
 
-    // Adds a single form answer to the registration.
     public void AddAnswer(Guid registrationFormFieldId, string value)
     {
         Answers.Add(new RegistrationAnswer(Id, registrationFormFieldId, value));

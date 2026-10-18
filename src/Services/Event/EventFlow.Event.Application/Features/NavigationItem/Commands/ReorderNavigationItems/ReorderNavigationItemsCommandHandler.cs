@@ -2,36 +2,35 @@ using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
-namespace EventFlow.Event.Application.Features.NavigationItem.Commands.ReorderNavigationItems
+namespace EventFlow.Event.Application.Features.NavigationItem.Commands.ReorderNavigationItems;
+
+public sealed class ReorderNavigationItemsCommandHandler(
+    INavigationItemRepository navigationItemRepository,
+    IUnitOfWork unitOfWork)
+    : IRequestHandler<ReorderNavigationItemsCommand>
 {
-    public sealed class ReorderNavigationItemsCommandHandler(
-        INavigationItemRepository navigationItemRepository,
-        IUnitOfWork unitOfWork)
-        : IRequestHandler<ReorderNavigationItemsCommand>
+    public async Task Handle(
+        ReorderNavigationItemsCommand request,
+        CancellationToken cancellationToken)
     {
-        public async Task Handle(
-            ReorderNavigationItemsCommand request,
-            CancellationToken cancellationToken)
+        var items = await navigationItemRepository.GetByEventIdAsync(
+            request.EventId,
+            cancellationToken);
+
+        if (items.Count != request.ItemIds.Count ||
+            request.ItemIds.Any(id => items.All(x => x.Id != id)))
         {
-            var items = await navigationItemRepository.GetByEventIdAsync(
-                request.EventId,
-                cancellationToken);
-
-            if (items.Count != request.ItemIds.Count ||
-                request.ItemIds.Any(id => items.All(x => x.Id != id)))
-            {
-                throw new NotFoundException(
-                    "One or more navigation items were not found.");
-            }
-
-            for (var i = 0; i < request.ItemIds.Count; i++)
-            {
-                var item = items.First(x => x.Id == request.ItemIds[i]);
-
-                item.UpdateDisplayOrder(i + 1);
-            }
-
-            await unitOfWork.SaveChangesAsync(cancellationToken);
+            throw new NotFoundException(
+                "One or more navigation items were not found.");
         }
+
+        for (var i = 0; i < request.ItemIds.Count; i++)
+        {
+            var item = items.First(x => x.Id == request.ItemIds[i]);
+
+            item.UpdateDisplayOrder(i + 1);
+        }
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

@@ -1,27 +1,24 @@
-﻿using EventFlow.SharedKernel.Domain;
+using EventFlow.SharedKernel.Domain;
 
-namespace EventFlow.Identity.Domain.Entities
+namespace EventFlow.Identity.Domain.Entities;
+
+public class Role : Entity
 {
-    public class Role : Entity
+    private Role()
     {
-        private Role()
-        {
-        }
-
-        public Role(string name, string description)
-        {
-            Name = name;
-            Description = description;
-        }
-
-        public string Name { get; private set; } = string.Empty;
-
-        public string Description { get; private set; } = string.Empty;
-
-        // Role → Permissions
-        public ICollection<RolePermission> RolePermissions { get; private set; } = new List<RolePermission>();
-
-        // Role → Users within events
-        public ICollection<UserEventRole> UserEventRoles { get; private set; } = new List<UserEventRole>();
     }
+
+    public Role(string name, string description)
+    {
+        Name = name;
+        Description = description;
+    }
+
+    public string Name { get; private set; } = string.Empty;
+
+    public string Description { get; private set; } = string.Empty;
+
+    public ICollection<RolePermission> RolePermissions { get; private set; } = new List<RolePermission>();
+
+    public ICollection<UserEventRole> UserEventRoles { get; private set; } = new List<UserEventRole>();
 }

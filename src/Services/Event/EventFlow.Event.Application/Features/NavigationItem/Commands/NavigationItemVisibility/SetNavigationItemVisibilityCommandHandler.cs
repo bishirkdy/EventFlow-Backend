@@ -3,26 +3,22 @@ using EventFlow.Event.Application.Abstractions.Persistence;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 
-namespace EventFlow.Event.Application.Features.NavigationItem.Commands.NavigationItemVisibility
+namespace EventFlow.Event.Application.Features.NavigationItem.Commands.NavigationItemVisibility;
+
+public sealed class SetNavigationItemVisibilityCommandHandler(INavigationItemRepository navigationItemRepository, IUnitOfWork unitOfWork)
+    : IRequestHandler<SetNavigationItemVisibilityCommand>
 {
-    public sealed class SetNavigationItemVisibilityCommandHandler(INavigationItemRepository navigationItemRepository,IUnitOfWork unitOfWork)
-        : IRequestHandler<SetNavigationItemVisibilityCommand>
+    public async Task Handle(SetNavigationItemVisibilityCommand request, CancellationToken cancellationToken)
     {
-        public async Task Handle(SetNavigationItemVisibilityCommand request,CancellationToken cancellationToken)
+        var item = await navigationItemRepository.GetByIdAsync(request.Id, cancellationToken);
+
+        if (item is null ||
+            item.EventId != request.EventId)
         {
-            // Get navigation item
-            var item = await navigationItemRepository.GetByIdAsync(request.Id,cancellationToken);
-
-            // Validate item belongs to menu
-            if (item is null ||
-                item.EventId != request.EventId)
-            {
-                throw new NotFoundException("Navigation item not found.");
-            }
-
-            // Update visibility
-            item.SetVisibility(request.IsVisible);
-            await unitOfWork.SaveChangesAsync(cancellationToken);
+            throw new NotFoundException("Navigation item not found.");
         }
+
+        item.SetVisibility(request.IsVisible);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

@@ -4,11 +4,11 @@ using EventFlow.Messaging.Correlation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi;
-using Microsoft.EntityFrameworkCore;
 using System.Threading.RateLimiting;
 
 namespace EventFlow.Api.Extensions;

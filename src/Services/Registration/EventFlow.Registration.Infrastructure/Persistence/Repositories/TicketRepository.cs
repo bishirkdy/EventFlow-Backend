@@ -1,6 +1,5 @@
 using EventFlow.Registration.Application.Abstractions.Persistence;
 
-
 namespace EventFlow.Registration.Infrastructure.Persistence.Repositories;
 
 public sealed class TicketRepository(RegistrationDbContext db)

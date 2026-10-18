@@ -1,6 +1,6 @@
 using AutoMapper;
-using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Security.Authentication;
+using EventFlow.SharedKernel.Exceptions;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Commands.ApproveRegistration;
 
@@ -15,7 +15,7 @@ public sealed class ApproveRegistrationCommandHandler(
 {
     public async Task<RegistrationDto> Handle(ApproveRegistrationCommand command, CancellationToken cancellationToken)
     {
-        if (!await access.CanManageRegistrationAsync(command.EventId,user.UserId,cancellationToken))
+        if (!await access.CanManageRegistrationAsync(command.EventId, user.UserId, cancellationToken))
         {
             throw new ForbiddenException("You do not have permission.");
         }

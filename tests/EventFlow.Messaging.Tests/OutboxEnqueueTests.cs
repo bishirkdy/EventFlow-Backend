@@ -1,7 +1,7 @@
-using System.Text.Json;
 using EventFlow.Messaging.Outbox;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json;
 
 namespace EventFlow.Messaging.Tests;
 

@@ -1,10 +1,10 @@
 using AutoMapper;
-using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Security.Authentication;
+using EventFlow.SharedKernel.Exceptions;
 
 namespace EventFlow.Registration.Application.Features.Registrations.Queries.GetRegistrationById;
 
-public sealed class GetRegistrationByIdQueryHandler(IRegistrationRepository registrations,ICurrentUserService user,IEventRegistrationAccessService access,IMapper mapper)
+public sealed class GetRegistrationByIdQueryHandler(IRegistrationRepository registrations, ICurrentUserService user, IEventRegistrationAccessService access, IMapper mapper)
     : IRequestHandler<GetRegistrationByIdQuery, RegistrationDto>
 {
     public async Task<RegistrationDto> Handle(

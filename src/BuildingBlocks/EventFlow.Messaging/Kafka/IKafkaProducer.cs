@@ -1,6 +1,5 @@
 using EventFlow.Messaging.Events;
 
-
 namespace EventFlow.Messaging.Kafka;
 
 public interface IKafkaProducer

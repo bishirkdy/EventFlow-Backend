@@ -1,18 +1,14 @@
 using FluentValidation;
 
+namespace EventFlow.Event.Application.Features.Events.Commands.CancelEvent;
 
-namespace EventFlow.Event.Application.Features.Events.Commands.CancelEvent
+internal sealed class CancelEventCommandValidator
+    : AbstractValidator<CancelEventCommand>
 {
-    // Command Validator
-    internal sealed class CancelEventCommandValidator
-        : AbstractValidator<CancelEventCommand>
+    public CancelEventCommandValidator()
     {
-        public CancelEventCommandValidator()
-        {
-            // Validate event ID
-            RuleFor(x => x.Id)
-                .NotEmpty()
-                .WithMessage("Event ID is required.");
-        }
+        RuleFor(x => x.Id)
+            .NotEmpty()
+            .WithMessage("Event ID is required.");
     }
 }

@@ -30,9 +30,9 @@ public sealed class AuthorizationController(ISender sender) : ControllerBase
     }
 
     [HttpPost("check-permission")]
-    public async Task<IActionResult> CheckPermission(CheckPermissionRequest request,CancellationToken cancellationToken)
+    public async Task<IActionResult> CheckPermission(CheckPermissionRequest request, CancellationToken cancellationToken)
     {
-        var hasPermission = await sender.Send(new CheckPermissionQuery(request.UserId, request.EventId, request.Permission),cancellationToken);
+        var hasPermission = await sender.Send(new CheckPermissionQuery(request.UserId, request.EventId, request.Permission), cancellationToken);
 
         return Ok(ApiResponse<bool>.Success(
             hasPermission,
@@ -59,7 +59,7 @@ public sealed class AuthorizationController(ISender sender) : ControllerBase
     [HttpPost("remove-event-role")]
     public async Task<IActionResult> RemoveEventRole(RemoveEventRoleRequest request, CancellationToken cancellationToken)
     {
-        await sender.Send(new RemoveEventRoleCommand(request.UserId,request.EventId,request.RoleName), cancellationToken);
+        await sender.Send(new RemoveEventRoleCommand(request.UserId, request.EventId, request.RoleName), cancellationToken);
         return Ok(ApiResponse<object?>.Success(null, "Event role removed successfully."));
     }
 }
