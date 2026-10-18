@@ -1,10 +1,11 @@
+using EventFlow.Contracts.Common;
 using EventFlow.Event.Application.Features.Analytics.Queries.GetContentAnalytics;
 using EventFlow.Event.Application.Features.Analytics.Queries.GetEventOverviewAnalytics;
 using EventFlow.Event.Application.Features.Analytics.Queries.GetProgrammeAnalytics;
-using EventFlow.Contracts.Common;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace EventFlow.Event.Api.Controllers;
 
@@ -18,26 +19,19 @@ public sealed class EventAnalyticsController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Overview(Guid eventId, CancellationToken cancellationToken)
     {
-        var result = await sender.Send(new GetEventOverviewAnalyticsQuery(eventId),cancellationToken);
+        var result = await sender.Send(new GetEventOverviewAnalyticsQuery(eventId), cancellationToken);
 
         if (result is null)
         {
-            return NotFound(new ApiResponse<GetEventOverviewAnalyticsResponse>
-            {
-                IsSuccess = false,
-                StatusCode = StatusCodes.Status404NotFound,
-                Message = "Event not found.",
-                Data = null
-            });
+            return NotFound(ApiResponse<GetEventOverviewAnalyticsResponse>.Fail(
+                ["Event not found."],
+                "Event not found.",
+                HttpStatusCode.NotFound));
         }
 
-        return Ok(new ApiResponse<GetEventOverviewAnalyticsResponse>
-        {
-            IsSuccess = true,
-            StatusCode = StatusCodes.Status200OK,
-            Message = "Event overview analytics retrieved successfully.",
-            Data = result
-        });
+        return Ok(ApiResponse<GetEventOverviewAnalyticsResponse>.Success(
+            result,
+            "Event overview analytics retrieved successfully."));
     }
 
     [HttpGet("programme")]
@@ -46,13 +40,9 @@ public sealed class EventAnalyticsController(ISender sender) : ControllerBase
     {
         var result = await sender.Send(new GetProgrammeAnalyticsQuery(eventId), cancellationToken);
 
-        return Ok(new ApiResponse<GetProgrammeAnalyticsResponse>
-        {
-            IsSuccess = true,
-            StatusCode = StatusCodes.Status200OK,
-            Message = "Programme analytics retrieved successfully.",
-            Data = result
-        });
+        return Ok(ApiResponse<GetProgrammeAnalyticsResponse>.Success(
+            result,
+            "Programme analytics retrieved successfully."));
     }
 
     [HttpGet("content")]
@@ -61,12 +51,8 @@ public sealed class EventAnalyticsController(ISender sender) : ControllerBase
     {
         var result = await sender.Send(new GetContentAnalyticsQuery(eventId), cancellationToken);
 
-        return Ok(new ApiResponse<GetContentAnalyticsResponse>
-        {
-            IsSuccess = true,
-            StatusCode = StatusCodes.Status200OK,
-            Message = "Content analytics retrieved successfully.",
-            Data = result
-        });
+        return Ok(ApiResponse<GetContentAnalyticsResponse>.Success(
+            result,
+            "Content analytics retrieved successfully."));
     }
 }

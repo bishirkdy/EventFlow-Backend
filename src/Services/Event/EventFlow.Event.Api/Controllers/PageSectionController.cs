@@ -18,256 +18,210 @@ using Microsoft.AspNetCore.Mvc;
 using EventAuthorizationService =
     EventFlow.Event.Application.Abstractions.Authorization.IAuthorizationService;
 
-namespace EventFlow.Event.Api.Controllers
+namespace EventFlow.Event.Api.Controllers;
+
+[ApiController]
+[Route("api/v1/page-section")]
+[Authorize]
+public class PageSectionController(ISender sender, ICloudinaryStorage cloudinaryStorage, IEventPreviewAccess previewAccess, EventAuthorizationService authorizationService, ICurrentUserService currentUserService) : ControllerBase
 {
-    [ApiController]
-    [Route("api/v1/page-section")]
-    [Authorize]
-    public class PageSectionController(ISender sender, ICloudinaryStorage cloudinaryStorage, IEventPreviewAccess previewAccess, EventAuthorizationService authorizationService, ICurrentUserService currentUserService) : ControllerBase
+    // Page-section routes only carry a page id, so the event permission
+    // middleware cannot resolve the owning event. Every mutating action
+    // resolves the page's event and requires event.update.
+    private async Task EnsureCanManagePageAsync(Guid pageId, CancellationToken cancellationToken)
     {
-        // Page-section routes only carry a page id, so the event permission
-        // middleware cannot resolve the owning event. Every mutating action
-        // resolves the page's event and requires event.update.
-        private async Task EnsureCanManagePageAsync(Guid pageId, CancellationToken cancellationToken)
-        {
-            var eventId = await sender.Send(new GetEventIdByPageQuery(pageId), cancellationToken);
+        var eventId = await sender.Send(new GetEventIdByPageQuery(pageId), cancellationToken);
 
-            if (!eventId.HasValue ||
-                !await authorizationService.HasPermissionAsync(
-                    currentUserService.UserId,
-                    eventId.Value,
-                    PermissionConstants.Event.Update,
-                    cancellationToken))
-            {
-                throw new ForbiddenException("You do not have permission to manage this event.");
-            }
+        if (!eventId.HasValue ||
+            !await authorizationService.HasPermissionAsync(
+                currentUserService.UserId,
+                eventId.Value,
+                PermissionConstants.Event.Update,
+                cancellationToken))
+        {
+            throw new ForbiddenException("You do not have permission to manage this event.");
         }
+    }
 
+    [HttpPost("{pageId:guid}/sections")]
+    public async Task<IActionResult> CreatePageSection(Guid pageId, [FromForm] CreatePageSectionRequest request, CancellationToken cancellationToken)
+    {
+        await EnsureCanManagePageAsync(pageId, cancellationToken);
 
-        //Create event sections
-        [HttpPost("{pageId:guid}/sections")]
-        public async Task<IActionResult> CreatePageSection(Guid pageId,[FromForm] CreatePageSectionRequest request,CancellationToken cancellationToken)
+        string? imageUrl = null;
+        string? imagePublicId = null;
+
+        if (request.Image is not null)
         {
-            await EnsureCanManagePageAsync(pageId, cancellationToken);
+            await using var stream = request.Image.OpenReadStream();
 
-            string? imageUrl = null;
-            string? imagePublicId = null;
-
-            if (request.Image is not null)
-            {
-                await using var stream = request.Image.OpenReadStream();
-
-                var uploadedFile = await cloudinaryStorage.UploadAsync(
-                    stream,
-                    request.Image.FileName,
-                    request.Image.ContentType,
-                    $"events/{pageId}/page-sections",
-                    cancellationToken);
-
-                imageUrl = uploadedFile.Url;
-                imagePublicId = uploadedFile.PublicId;
-            }
-
-            var command = new CreatePageSectionCommand(
-                pageId,
-                request.SectionType,
-                request.Title,
-                request.Content,
-                imageUrl,
-                imagePublicId,
-                request.ShowRegistrationForm,
-                request.Configuration);
-
-            var sectionId = await sender.Send(command, cancellationToken);
-
-            return Ok(new ApiResponse<Guid>
-            {
-                IsSuccess = true,
-                StatusCode = StatusCodes.Status200OK,
-                Message = "Page section created successfully.",
-                Data = sectionId
-            });
-        }
-
-        [AllowAnonymous]
-        [HttpGet("event/{eventId:guid}/sections")]
-        public async Task<IActionResult> GetPageSectionsByEvent(Guid eventId, CancellationToken cancellationToken)
-        {
-            var sections = await sender.Send(
-                new GetPageSectionsByEventQuery(eventId, IncludeUnpublished: false),
+            var uploadedFile = await cloudinaryStorage.UploadAsync(
+                stream,
+                request.Image.FileName,
+                request.Image.ContentType,
+                $"events/{pageId}/page-sections",
                 cancellationToken);
 
-            return Ok(new ApiResponse<IReadOnlyList<GetPageSectionsResponse>>
-            {
-                IsSuccess = true,
-                StatusCode = StatusCodes.Status200OK,
-                Message = "Published event page sections retrieved successfully.",
-                Data = sections,
-            });
+            imageUrl = uploadedFile.Url;
+            imagePublicId = uploadedFile.PublicId;
         }
 
-        [HttpGet("event/{eventId:guid}/preview-sections")]
-        public async Task<IActionResult> GetPreviewPageSectionsByEvent(Guid eventId, CancellationToken cancellationToken)
-        {
-            if (!await previewAccess.CanPreviewWebsiteAsync(eventId, cancellationToken))
-            {
-                throw new ForbiddenException("You do not have permission to preview this event.");
-            }
+        var command = new CreatePageSectionCommand(
+            pageId,
+            request.SectionType,
+            request.Title,
+            request.Content,
+            imageUrl,
+            imagePublicId,
+            request.ShowRegistrationForm,
+            request.Configuration);
 
-            var sections = await sender.Send(
-                new GetPageSectionsByEventQuery(eventId, IncludeUnpublished: true),
+        var sectionId = await sender.Send(command, cancellationToken);
+
+        return Ok(ApiResponse<Guid>.Success(
+            sectionId,
+            "Page section created successfully."));
+    }
+
+    [AllowAnonymous]
+    [HttpGet("event/{eventId:guid}/sections")]
+    public async Task<IActionResult> GetPageSectionsByEvent(Guid eventId, CancellationToken cancellationToken)
+    {
+        var sections = await sender.Send(
+            new GetPageSectionsByEventQuery(eventId, IncludeUnpublished: false),
+            cancellationToken);
+
+        return Ok(ApiResponse<IReadOnlyList<GetPageSectionsResponse>>.Success(
+            sections,
+            "Published event page sections retrieved successfully."));
+    }
+
+    [HttpGet("event/{eventId:guid}/preview-sections")]
+    public async Task<IActionResult> GetPreviewPageSectionsByEvent(Guid eventId, CancellationToken cancellationToken)
+    {
+        if (!await previewAccess.CanPreviewWebsiteAsync(eventId, cancellationToken))
+        {
+            throw new ForbiddenException("You do not have permission to preview this event.");
+        }
+
+        var sections = await sender.Send(
+            new GetPageSectionsByEventQuery(eventId, IncludeUnpublished: true),
+            cancellationToken);
+
+        return Ok(ApiResponse<IReadOnlyList<GetPageSectionsResponse>>.Success(
+            sections,
+            "Event preview page sections retrieved successfully."));
+    }
+
+    [AllowAnonymous]
+    [HttpGet("{pageId:guid}/sections")]
+    public async Task<IActionResult> GetPageSections(Guid pageId, CancellationToken cancellationToken)
+    {
+        var sections = await sender.Send(new GetPageSectionsQuery(pageId, IncludeUnpublished: false), cancellationToken);
+
+        return Ok(ApiResponse<IReadOnlyList<GetPageSectionsResponse>>.Success(
+            sections,
+            "Page sections retrieved successfully."));
+    }
+
+    [HttpGet("{pageId:guid}/manage-sections")]
+    public async Task<IActionResult> GetManagePageSections(Guid pageId, CancellationToken cancellationToken)
+    {
+        var eventId = await sender.Send(
+            new GetEventIdByPageQuery(pageId),
+            cancellationToken);
+
+        if (!eventId.HasValue ||
+            !await previewAccess.CanPreviewAsync(eventId.Value, cancellationToken))
+        {
+            throw new ForbiddenException("You do not have permission to manage this event.");
+        }
+
+        var sections = await sender.Send(
+            new GetPageSectionsQuery(pageId, IncludeUnpublished: true),
+            cancellationToken);
+
+        return Ok(ApiResponse<IReadOnlyList<GetPageSectionsResponse>>.Success(
+            sections,
+            "Page sections retrieved successfully."));
+    }
+
+    [HttpPut("{pageId:guid}/sections/{id:guid}")]
+    public async Task<IActionResult> UpdatePageSection(Guid pageId, Guid id,
+       [FromForm] UpdatePageSectionRequest request, CancellationToken cancellationToken)
+    {
+        await EnsureCanManagePageAsync(pageId, cancellationToken);
+
+        string? imageUrl = null;
+        string? imagePublicId = null;
+
+        if (request.Image is not null)
+        {
+            await using var stream = request.Image.OpenReadStream();
+
+            var uploadedFile = await cloudinaryStorage.UploadAsync(
+                stream,
+                request.Image.FileName,
+                request.Image.ContentType,
+                $"events/{pageId}/page-sections",
                 cancellationToken);
 
-            return Ok(new ApiResponse<IReadOnlyList<GetPageSectionsResponse>>
-            {
-                IsSuccess = true,
-                StatusCode = StatusCodes.Status200OK,
-                Message = "Event preview page sections retrieved successfully.",
-                Data = sections,
-            });
+            imageUrl = uploadedFile.Url;
+            imagePublicId = uploadedFile.PublicId;
         }
 
-        //Get page sections
-        [AllowAnonymous]
-        [HttpGet("{pageId:guid}/sections")]
-        public async Task<IActionResult> GetPageSections(Guid pageId, CancellationToken cancellationToken)
+        var command = new UpdatePageSectionCommand(
+            id,
+            pageId,
+            request.SectionType,
+            request.Title,
+            request.Content,
+            imageUrl,
+            imagePublicId,
+            request.IsVisible,
+            request.ShowRegistrationForm,
+            request.Configuration);
+
+        var oldImagePublicId = await sender.Send(command, cancellationToken);
+
+        if (!string.IsNullOrWhiteSpace(oldImagePublicId))
         {
-            // Send query
-            var sections = await sender.Send(new GetPageSectionsQuery(pageId, IncludeUnpublished: false),cancellationToken);
-
-            var response = new ApiResponse<IReadOnlyList<GetPageSectionsResponse>>
-                {
-                    IsSuccess = true,
-                    StatusCode = StatusCodes.Status200OK,
-                    Message = "Page sections retrieved successfully.",
-                    Data = sections
-                };
-
-            return Ok(response);
+            await cloudinaryStorage.DeleteAsync(oldImagePublicId, cancellationToken);
         }
 
-        [HttpGet("{pageId:guid}/manage-sections")]
-        public async Task<IActionResult> GetManagePageSections(Guid pageId, CancellationToken cancellationToken)
+        return Ok(ApiResponse<object?>.Success(
+            null,
+            "Page section updated successfully."));
+    }
+
+    [HttpDelete("{pageId:guid}/sections/{id:guid}")]
+    public async Task<IActionResult> DeletePageSection(Guid pageId, Guid id, CancellationToken cancellationToken)
+    {
+        await EnsureCanManagePageAsync(pageId, cancellationToken);
+
+        var imagePublicId = await sender.Send(new DeletePageSectionCommand(pageId, id), cancellationToken);
+
+        if (!string.IsNullOrWhiteSpace(imagePublicId))
         {
-            var eventId = await sender.Send(
-                new GetEventIdByPageQuery(pageId),
-                cancellationToken);
-
-            if (!eventId.HasValue ||
-                !await previewAccess.CanPreviewAsync(eventId.Value, cancellationToken))
-            {
-                throw new ForbiddenException("You do not have permission to manage this event.");
-            }
-
-            var sections = await sender.Send(
-                new GetPageSectionsQuery(pageId, IncludeUnpublished: true),
-                cancellationToken);
-
-            return Ok(new ApiResponse<IReadOnlyList<GetPageSectionsResponse>>
-            {
-                IsSuccess = true,
-                StatusCode = StatusCodes.Status200OK,
-                Message = "Page sections retrieved successfully.",
-                Data = sections,
-            });
+            await cloudinaryStorage.DeleteAsync(imagePublicId, cancellationToken);
         }
 
-        //Update event sections by id
-        [HttpPut("{pageId:guid}/sections/{id:guid}")]
-        public async Task<IActionResult> UpdatePageSection(Guid pageId, Guid id,
-           [FromForm] UpdatePageSectionRequest request,CancellationToken cancellationToken)
-        {
-            await EnsureCanManagePageAsync(pageId, cancellationToken);
+        return Ok(ApiResponse<object?>.Success(
+            null,
+            "Page section deleted successfully."));
+    }
 
-            string? imageUrl = null;
-            string? imagePublicId = null;
+    [HttpPut("{pageId:guid}/sections/reorder")]
+    public async Task<IActionResult> ReorderPageSections(Guid pageId, [FromBody] IReadOnlyList<Guid> sectionIds, CancellationToken cancellationToken)
+    {
+        await EnsureCanManagePageAsync(pageId, cancellationToken);
 
-            if (request.Image is not null)
-            {
-                await using var stream = request.Image.OpenReadStream();
+        var command = new ReorderPageSectionsCommand(pageId, sectionIds);
 
-                var uploadedFile = await cloudinaryStorage.UploadAsync(
-                    stream,
-                    request.Image.FileName,
-                    request.Image.ContentType,
-                    $"events/{pageId}/page-sections",
-                    cancellationToken);
+        await sender.Send(command, cancellationToken);
 
-                imageUrl = uploadedFile.Url;
-                imagePublicId = uploadedFile.PublicId;
-            }
-
-            var command = new UpdatePageSectionCommand(
-                id,
-                pageId,
-                request.SectionType,
-                request.Title,
-                request.Content,
-                imageUrl,
-                imagePublicId,
-                request.IsVisible,
-                request.ShowRegistrationForm,
-                request.Configuration);
-
-            var oldImagePublicId = await sender.Send(command,cancellationToken);
-
-            // New image replaced the old one
-            if (!string.IsNullOrWhiteSpace(oldImagePublicId))
-            {
-                await cloudinaryStorage.DeleteAsync(oldImagePublicId, cancellationToken);
-            }
-
-            return Ok(new ApiResponse<object?>
-            {
-                IsSuccess = true,
-                StatusCode = StatusCodes.Status200OK,
-                Message = "Page section updated successfully.",
-                Data = null
-            });
-        }
-
-        //Delete page section
-        [HttpDelete("{pageId:guid}/sections/{id:guid}")]
-        public async Task<IActionResult> DeletePageSection(Guid pageId,Guid id,CancellationToken cancellationToken)
-        {
-            await EnsureCanManagePageAsync(pageId, cancellationToken);
-
-            var imagePublicId = await sender.Send(new DeletePageSectionCommand(pageId, id),cancellationToken);
-
-            if (!string.IsNullOrWhiteSpace(imagePublicId))
-            {
-                await cloudinaryStorage.DeleteAsync(imagePublicId,cancellationToken);
-            }
-
-            return Ok(new ApiResponse<object?>
-            {
-                IsSuccess = true,
-                StatusCode = StatusCodes.Status200OK,
-                Message = "Page section deleted successfully.",
-                Data = null
-            });
-        }
-
-        //Changing the order in which sections appear on the page
-        [HttpPut("{pageId:guid}/sections/reorder")]
-        public async Task<IActionResult> ReorderPageSections(Guid pageId, [FromBody] IReadOnlyList<Guid> sectionIds, CancellationToken cancellationToken)
-        {
-            await EnsureCanManagePageAsync(pageId, cancellationToken);
-
-            var command = new ReorderPageSectionsCommand(pageId , sectionIds);
-
-            // Send command
-            await sender.Send(command, cancellationToken);
-
-            var response = new ApiResponse<object?>
-            {
-                IsSuccess = true,
-                StatusCode = StatusCodes.Status200OK,
-                Message = "Page sections reordered successfully.",
-                Data = null
-            };
-
-            return Ok(response);
-        }
+        return Ok(ApiResponse<object?>.Success(
+            null,
+            "Page sections reordered successfully."));
     }
 }

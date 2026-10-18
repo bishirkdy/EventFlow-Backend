@@ -2,12 +2,12 @@ using EventFlow.Contracts.Common;
 using EventFlow.Event.Api.Requests.Speakers;
 using EventFlow.Event.Api.Services;
 using EventFlow.Event.Application.Abstractions.Storage;
-using EventFlow.SharedKernel.Exceptions;
 using EventFlow.Event.Application.Features.Speakers.Commands.CreateSpeaker;
 using EventFlow.Event.Application.Features.Speakers.Commands.DeleteSpeaker;
 using EventFlow.Event.Application.Features.Speakers.Commands.UpdateSpeaker;
 using EventFlow.Event.Application.Features.Speakers.Queries.GetSpeakerById;
 using EventFlow.Event.Application.Features.Speakers.Queries.GetSpeakersByEvent;
+using EventFlow.SharedKernel.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,32 +26,32 @@ public sealed class SpeakerController(ISender sender, IEventPreviewAccess previe
         await using var stream = request.Image?.OpenReadStream();
         var image = request.Image is null ? null : new UploadedFile(stream!, request.Image.FileName, request.Image.ContentType, request.Image.Length);
         var id = await sender.Send(new CreateSpeakerCommand(eventId, request.Name, request.Bio, request.Designation, request.Organization, request.Email, request.DisplayOrder, image), cancellationToken);
-        return Ok(new ApiResponse<Guid> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Speaker created successfully.", Data = id });
+        return Ok(ApiResponse<Guid>.Success(id, "Speaker created successfully."));
     }
 
     [AllowAnonymous]
     [HttpGet("{eventId:guid}/speakers")]
-        public async Task<IActionResult> GetAll(Guid eventId, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll(Guid eventId, CancellationToken cancellationToken)
+    {
+        if (!await previewAccess.CanReadAsync(eventId, cancellationToken))
         {
-            if (!await previewAccess.CanReadAsync(eventId, cancellationToken))
-            {
-                return Ok(new ApiResponse<IReadOnlyList<GetSpeakersByEventResponse>> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Speakers retrieved successfully.", Data = [] });
-            }
-
-            var result = await sender.Send(new GetSpeakersByEventQuery(eventId), cancellationToken);
-            return Ok(new ApiResponse<IReadOnlyList<GetSpeakersByEventResponse>> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Speakers retrieved successfully.", Data = result });
+            return Ok(ApiResponse<IReadOnlyList<GetSpeakersByEventResponse>>.Success([], "Speakers retrieved successfully."));
         }
+
+        var result = await sender.Send(new GetSpeakersByEventQuery(eventId), cancellationToken);
+        return Ok(ApiResponse<IReadOnlyList<GetSpeakersByEventResponse>>.Success(result, "Speakers retrieved successfully."));
+    }
 
     [AllowAnonymous]
     [HttpGet("{eventId:guid}/speakers/{id:guid}")]
     public async Task<IActionResult> GetById(Guid eventId, Guid id, CancellationToken cancellationToken)
     {
-            if (!await previewAccess.CanReadAsync(eventId, cancellationToken))
-                throw new NotFoundException("Speaker not found.");
+        if (!await previewAccess.CanReadAsync(eventId, cancellationToken))
+            throw new NotFoundException("Speaker not found.");
 
-            var result = await sender.Send(new GetSpeakerByIdQuery(id, eventId), cancellationToken);
-            if (result is null) throw new NotFoundException("Speaker not found.");
-        return Ok(new ApiResponse<GetSpeakerByIdResponse> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Speaker retrieved successfully.", Data = result });
+        var result = await sender.Send(new GetSpeakerByIdQuery(id, eventId), cancellationToken);
+        if (result is null) throw new NotFoundException("Speaker not found.");
+        return Ok(ApiResponse<GetSpeakerByIdResponse>.Success(result, "Speaker retrieved successfully."));
     }
 
     [HttpPut("{eventId:guid}/speakers/{id:guid}")]
@@ -61,13 +61,13 @@ public sealed class SpeakerController(ISender sender, IEventPreviewAccess previe
         await using var stream = request.Image?.OpenReadStream();
         var image = request.Image is null ? null : new UploadedFile(stream!, request.Image.FileName, request.Image.ContentType, request.Image.Length);
         await sender.Send(new UpdateSpeakerCommand(id, eventId, request.Name, request.Bio, request.Designation, request.Organization, request.Email, request.DisplayOrder, request.IsActive, image), cancellationToken);
-        return Ok(new ApiResponse<object?> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Speaker updated successfully.", Data = null });
+        return Ok(ApiResponse<object?>.Success(null, "Speaker updated successfully."));
     }
 
     [HttpDelete("{eventId:guid}/speakers/{id:guid}")]
     public async Task<IActionResult> Delete(Guid eventId, Guid id, CancellationToken cancellationToken)
     {
         await sender.Send(new DeleteSpeakerCommand(id, eventId), cancellationToken);
-        return Ok(new ApiResponse<object?> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Speaker deleted successfully.", Data = null });
+        return Ok(ApiResponse<object?>.Success(null, "Speaker deleted successfully."));
     }
 }

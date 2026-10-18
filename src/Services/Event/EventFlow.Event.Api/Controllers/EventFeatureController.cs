@@ -16,24 +16,16 @@ namespace EventFlow.Event.Api.Controllers;
 [Authorize]
 public sealed class EventFeatureController(ISender sender, IEventPreviewAccess previewAccess) : ControllerBase
 {
-    // Enable event feature
     [HttpPost("{eventId:guid}/features/{featureId:guid}/enable")]
-    public async Task<IActionResult> EnableFeature(Guid eventId,Guid featureId,CancellationToken cancellationToken)
+    public async Task<IActionResult> EnableFeature(Guid eventId, Guid featureId, CancellationToken cancellationToken)
     {
-        await sender.Send(new EnableEventFeatureCommand(eventId, featureId),cancellationToken);
+        await sender.Send(new EnableEventFeatureCommand(eventId, featureId), cancellationToken);
 
-        var response = new ApiResponse<object?>
-        {
-            IsSuccess = true,
-            StatusCode = StatusCodes.Status200OK,
-            Message = "Feature enabled successfully.",
-            Data = null
-        };
-
-        return Ok(response);
+        return Ok(ApiResponse<object?>.Success(
+            null,
+            "Feature enabled successfully."));
     }
 
-    // Disable event feature
     [HttpPost("{eventId:guid}/features/{featureId:guid}/disable")]
     public async Task<IActionResult> DisableFeature(Guid eventId, Guid featureId, CancellationToken cancellationToken)
     {
@@ -41,61 +33,37 @@ public sealed class EventFeatureController(ISender sender, IEventPreviewAccess p
             new DisableEventFeatureCommand(eventId, featureId),
             cancellationToken);
 
-        var response = new ApiResponse<object?>
-        {
-            IsSuccess = true,
-            StatusCode = StatusCodes.Status200OK,
-            Message = "Feature disabled successfully.",
-            Data = null
-        };
-
-        return Ok(response);
+        return Ok(ApiResponse<object?>.Success(
+            null,
+            "Feature disabled successfully."));
     }
 
-    // Get event features
-        [AllowAnonymous]
+    [AllowAnonymous]
     [HttpGet("{eventId:guid}/features")]
     public async Task<IActionResult> GetEventFeatures(Guid eventId, CancellationToken cancellationToken)
     {
         if (!await previewAccess.CanReadAsync(eventId, cancellationToken))
         {
-            return Ok(new ApiResponse<IReadOnlyList<GetEventFeaturesResponse>>
-            {
-                IsSuccess = true,
-                StatusCode = StatusCodes.Status200OK,
-                Message = "Event features retrieved successfully.",
-                Data = []
-            });
+            return Ok(ApiResponse<IReadOnlyList<GetEventFeaturesResponse>>.Success(
+                [],
+                "Event features retrieved successfully."));
         }
 
-        var features = await sender.Send(new GetEventFeaturesQuery(eventId),cancellationToken);
+        var features = await sender.Send(new GetEventFeaturesQuery(eventId), cancellationToken);
 
-        var response = new ApiResponse<IReadOnlyList<GetEventFeaturesResponse>>
-        {
-            IsSuccess = true,
-            StatusCode = StatusCodes.Status200OK,
-            Message = "Event features retrieved successfully.",
-            Data = features
-        };
-
-        return Ok(response);
+        return Ok(ApiResponse<IReadOnlyList<GetEventFeaturesResponse>>.Success(
+            features,
+            "Event features retrieved successfully."));
     }
 
-    // Reset event features
     [HttpPost("{eventId:guid}/features/reset")]
     public async Task<IActionResult> ResetEventFeatures(Guid eventId, CancellationToken cancellationToken)
     {
         var features = await sender.Send(
             new ResetEventFeaturesCommand(eventId), cancellationToken);
 
-        var response = new ApiResponse<IReadOnlyList<GetEventFeaturesResponse>>
-        {
-            IsSuccess = true,
-            StatusCode = StatusCodes.Status200OK,
-            Message = "Event features reset successfully.",
-            Data = features
-        };
-
-        return Ok(response);
+        return Ok(ApiResponse<IReadOnlyList<GetEventFeaturesResponse>>.Success(
+            features,
+            "Event features reset successfully."));
     }
 }

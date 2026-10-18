@@ -18,20 +18,20 @@ public sealed class SessionSpeakerController(ISender sender) : ControllerBase
     public async Task<IActionResult> Get(Guid eventId, Guid sessionId, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetSessionSpeakersQuery(eventId, sessionId), cancellationToken);
-        return Ok(new ApiResponse<IReadOnlyList<GetSessionSpeakersResponse>> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Session speakers retrieved successfully.", Data = result });
+        return Ok(ApiResponse<IReadOnlyList<GetSessionSpeakersResponse>>.Success(result, "Session speakers retrieved successfully."));
     }
 
     [HttpPost("{speakerId:guid}")]
     public async Task<IActionResult> Assign(Guid eventId, Guid sessionId, Guid speakerId, CancellationToken cancellationToken)
     {
         await sender.Send(new AssignSpeakerCommand(eventId, sessionId, speakerId), cancellationToken);
-        return Ok(new ApiResponse<object?> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Speaker assigned successfully.", Data = null });
+        return Ok(ApiResponse<object?>.Success(null, "Speaker assigned successfully."));
     }
 
     [HttpDelete("{speakerId:guid}")]
     public async Task<IActionResult> Unassign(Guid eventId, Guid sessionId, Guid speakerId, CancellationToken cancellationToken)
     {
         await sender.Send(new UnassignSpeakerCommand(eventId, sessionId, speakerId), cancellationToken);
-        return Ok(new ApiResponse<object?> { IsSuccess = true, StatusCode = StatusCodes.Status200OK, Message = "Speaker removed from session successfully.", Data = null });
+        return Ok(ApiResponse<object?>.Success(null, "Speaker removed from session successfully."));
     }
 }
