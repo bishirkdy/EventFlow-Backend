@@ -1,4 +1,5 @@
 using EventFlow.Contracts.Common;
+using EventFlow.Identity.Api.Common;
 using EventFlow.Identity.Api.Contracts.Request.EventInvitations;
 using EventFlow.Identity.Application.Features.EventInvitations.Commands.AcceptEventInvitation;
 using EventFlow.Identity.Application.Features.EventInvitations.Queries.GetEventInvitation;
@@ -42,6 +43,13 @@ public sealed class PublicInvitationController(ISender sender) : ControllerBase
                 request.FirstName,
                 request.LastName),
             cancellationToken);
+
+        // A new account is signed in straight away so the invitation link can
+        // send the invitee to their dashboard without a separate login.
+        if (response.AccessToken is not null && response.RefreshToken is not null)
+        {
+            Response.SetAuthCookies(response.AccessToken, response.RefreshToken);
+        }
 
         return Ok(ApiResponse<AcceptEventInvitationResponse>.Success(response, "Invitation accepted successfully."));
     }

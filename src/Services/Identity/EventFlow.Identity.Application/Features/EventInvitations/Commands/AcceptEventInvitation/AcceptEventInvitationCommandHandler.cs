@@ -3,8 +3,10 @@ using EventFlow.Identity.Application.Abstractions.Services;
 using EventFlow.Identity.Domain.Entities;
 using EventFlow.Identity.Domain.Enums;
 using EventFlow.Messaging.Outbox;
+using EventFlow.Security.Configuration;
 using EventFlow.SharedKernel.Exceptions;
 using MediatR;
+using Microsoft.Extensions.Options;
 
 namespace EventFlow.Identity.Application.Features.EventInvitations.Commands.AcceptEventInvitation;
 
@@ -14,6 +16,10 @@ public class AcceptEventInvitationCommandHandler : IRequestHandler<AcceptEventIn
     private readonly IUserRepository _userRepository;
     private readonly IUserEventRoleRepository _userEventRoleRepository;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly IJwtService _jwtService;
+    private readonly IRefreshTokenGenerator _refreshTokenGenerator;
+    private readonly IRefreshTokenRepository _refreshTokenRepository;
+    private readonly JwtOptions _jwtOptions;
     private readonly IOutbox _outbox;
 
     public AcceptEventInvitationCommandHandler(
@@ -21,12 +27,20 @@ public class AcceptEventInvitationCommandHandler : IRequestHandler<AcceptEventIn
         IUserRepository userRepository,
         IUserEventRoleRepository userEventRoleRepository,
         IPasswordHasher passwordHasher,
+        IJwtService jwtService,
+        IRefreshTokenGenerator refreshTokenGenerator,
+        IRefreshTokenRepository refreshTokenRepository,
+        IOptions<JwtOptions> jwtOptions,
         IOutbox outbox)
     {
         _invitationRepository = invitationRepository;
         _userRepository = userRepository;
         _userEventRoleRepository = userEventRoleRepository;
         _passwordHasher = passwordHasher;
+        _jwtService = jwtService;
+        _refreshTokenGenerator = refreshTokenGenerator;
+        _refreshTokenRepository = refreshTokenRepository;
+        _jwtOptions = jwtOptions.Value;
         _outbox = outbox;
     }
 
@@ -50,6 +64,8 @@ public class AcceptEventInvitationCommandHandler : IRequestHandler<AcceptEventIn
 
         var user = await _userRepository.GetByEmailAsync(invitation.Email, cancellationToken);
         Guid userId;
+        string? accessToken = null;
+        string? refreshToken = null;
 
         if (user is null)
         {
@@ -57,6 +73,18 @@ public class AcceptEventInvitationCommandHandler : IRequestHandler<AcceptEventIn
             user = new User(request.UserName, invitation.Email, request.FirstName, request.LastName, passwordHash);
             await _userRepository.AddAsync(user, cancellationToken);
             userId = user.Id;
+
+            // A brand new account is signed in right away so the invitation link
+            // takes the invitee straight to their dashboard. The existing account
+            // branch stays token-less and must use the authenticated accept flow.
+            accessToken = _jwtService.GenerateAccessToken(user);
+            refreshToken = _refreshTokenGenerator.Generate();
+            await _refreshTokenRepository.AddAsync(
+                new RefreshToken(
+                    user.Id,
+                    refreshToken,
+                    DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenExpirationDays)),
+                cancellationToken);
         }
         else
         {
@@ -75,6 +103,6 @@ public class AcceptEventInvitationCommandHandler : IRequestHandler<AcceptEventIn
         EventInvitationAcceptance.EnqueueAcceptedIfAttendance(_outbox, invitation, userId);
         await _invitationRepository.UpdateAsync(invitation, cancellationToken);
 
-        return new AcceptEventInvitationResponse(userId, invitation.Id);
+        return new AcceptEventInvitationResponse(userId, invitation.Id, accessToken, refreshToken);
     }
 }

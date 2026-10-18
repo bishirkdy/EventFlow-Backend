@@ -2,4 +2,6 @@ namespace EventFlow.Identity.Application.Features.EventInvitations.Commands.Acce
 
 public sealed record AcceptEventInvitationResponse(
     Guid UserId,
-    Guid InvitationId);
+    Guid InvitationId,
+    string? AccessToken = null,
+    string? RefreshToken = null);
