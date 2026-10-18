@@ -1,4 +1,5 @@
 using EventFlow.Operations.Domain.Enums;
+using EventFlow.SharedKernel.Validation;
 using FluentValidation;
 
 namespace EventFlow.Operations.Application.Features.AttendanceStaff.Commands.AssignAttendanceStaff;
@@ -15,10 +16,10 @@ public sealed class AssignAttendanceStaffCommandValidator
         RuleFor(x => x.Email)
             .NotEmpty()
             .WithMessage("Email address is required.")
-            .EmailAddress()
-            .WithMessage("Invalid email format.")
             .MaximumLength(320)
-            .WithMessage("Email address cannot exceed 320 characters.");
+            .WithMessage("Email address cannot exceed 320 characters.")
+            .Must(ValidationRules.IsValidEmail)
+            .WithMessage("Invalid email format.");
 
         RuleFor(x => x.ScopeType)
             .IsInEnum()

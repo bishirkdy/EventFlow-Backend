@@ -1,3 +1,4 @@
+using EventFlow.SharedKernel.Validation;
 using FluentValidation;
 
 namespace EventFlow.Operations.Application.Features.Notifications.Commands.QueueNotification;
@@ -14,10 +15,10 @@ public sealed class QueueNotificationCommandValidator
         RuleFor(x => x.RecipientEmail)
             .NotEmpty()
             .WithMessage("Recipient email and subject are required.")
-            .EmailAddress()
-            .WithMessage("Invalid email format.")
             .MaximumLength(320)
-            .WithMessage("Recipient email cannot exceed 320 characters.");
+            .WithMessage("Recipient email cannot exceed 320 characters.")
+            .Must(ValidationRules.IsValidEmail)
+            .WithMessage("Invalid email format.");
 
         RuleFor(x => x.Subject)
             .NotEmpty()
