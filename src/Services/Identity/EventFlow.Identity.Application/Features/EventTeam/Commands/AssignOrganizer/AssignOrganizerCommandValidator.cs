@@ -1,3 +1,4 @@
+using EventFlow.SharedKernel.Validation;
 using FluentValidation;
 
 namespace EventFlow.Identity.Application.Features.EventTeam.Commands.AssignOrganizer;
@@ -13,9 +14,9 @@ public sealed class AssignOrganizerCommandValidator : AbstractValidator<AssignOr
         RuleFor(x => x.Email)
             .NotEmpty()
             .WithMessage("Email is required.")
-            .EmailAddress()
-            .WithMessage("Invalid email format.")
             .MaximumLength(320)
-            .WithMessage("Email cannot exceed 320 characters.");
+            .WithMessage("Email cannot exceed 320 characters.")
+            .Must(ValidationRules.IsValidEmail)
+            .WithMessage("Invalid email format.");
     }
 }

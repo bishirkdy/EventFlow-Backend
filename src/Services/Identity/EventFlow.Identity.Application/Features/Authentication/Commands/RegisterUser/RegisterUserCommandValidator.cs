@@ -1,3 +1,4 @@
+using EventFlow.SharedKernel.Validation;
 using FluentValidation;
 namespace EventFlow.Identity.Application.Features.Authentication.Commands.RegisterUser
 {
@@ -16,8 +17,9 @@ namespace EventFlow.Identity.Application.Features.Authentication.Commands.Regist
 
             RuleFor(x => x.Email)
                 .NotEmpty()
-                .EmailAddress()
-                .MaximumLength(255);
+                .MaximumLength(255)
+                .Must(ValidationRules.IsValidEmail)
+                .WithMessage("Please enter a valid email address.");
 
             RuleFor(x => x.Password)
                 .NotEmpty()

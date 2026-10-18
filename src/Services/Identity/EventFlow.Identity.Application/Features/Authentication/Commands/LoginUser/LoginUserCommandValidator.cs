@@ -1,3 +1,4 @@
+using EventFlow.SharedKernel.Validation;
 using FluentValidation;
 
 
@@ -11,10 +12,10 @@ namespace EventFlow.Identity.Application.Features.Authentication.Commands.LoginU
             RuleFor(x => x.Email)
                 .NotEmpty()
                 .WithMessage("Email is required.")
-                .EmailAddress()
-                .WithMessage("Please enter a valid email address.")
                 .MaximumLength(255)
-                .WithMessage("Email must not exceed 255 characters.");
+                .WithMessage("Email must not exceed 255 characters.")
+                .Must(ValidationRules.IsValidEmail)
+                .WithMessage("Please enter a valid email address.");
 
             RuleFor(x => x.Password)
                 .NotEmpty()
