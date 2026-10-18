@@ -30,14 +30,16 @@ public sealed class CheckOutCommandHandler(
             throw new NotFoundException("Attendance record not found.");
         }
 
-        if (!await AttendanceAuthorization.CanOperateAsync(
-                db,
-                authorization,
-                command.EventId,
-                actorUserId,
-                record.SectionId,
-                record.SessionId,
-                cancellationToken))
+        var access = await AttendanceAuthorization.ResolveAsync(
+            db,
+            authorization,
+            command.EventId,
+            actorUserId,
+            record.SectionId,
+            record.SessionId,
+            cancellationToken);
+
+        if (access == AttendanceAccess.None)
         {
             throw new ForbiddenException("You are not assigned to this attendance scope.");
         }

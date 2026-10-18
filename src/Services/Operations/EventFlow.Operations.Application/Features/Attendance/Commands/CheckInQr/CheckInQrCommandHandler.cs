@@ -13,6 +13,7 @@ namespace EventFlow.Operations.Application.Features.Attendance.Commands.CheckInQ
 public sealed class CheckInQrCommandHandler(
     IOperationsDbContext db,
     IEventAuthorizationClient authorization,
+    IEventScheduleClient scheduleClient,
     IRegistrationClient registrationClient,
     ICurrentUserService currentUser,
     IMapper mapper)
@@ -24,14 +25,16 @@ public sealed class CheckInQrCommandHandler(
     {
         var actorUserId = currentUser.UserId;
 
-        if (!await AttendanceAuthorization.CanOperateAsync(
-                db,
-                authorization,
-                command.EventId,
-                actorUserId,
-                command.SectionId,
-                command.SessionId,
-                cancellationToken))
+        var access = await AttendanceAuthorization.ResolveAsync(
+            db,
+            authorization,
+            command.EventId,
+            actorUserId,
+            command.SectionId,
+            command.SessionId,
+            cancellationToken);
+
+        if (access == AttendanceAccess.None)
         {
             throw new ForbiddenException("You are not assigned to this attendance scope.");
         }
@@ -53,6 +56,21 @@ public sealed class CheckInQrCommandHandler(
         {
             throw new ValidationException(
                 "This ticket is only valid for the session it was registered for.");
+        }
+
+        // A section-scoped staff member may only operate sessions that belong to their section.
+        if (verified.ScopeType == RegistrationScope.Session &&
+            access == AttendanceAccess.Section)
+        {
+            var ticketSectionId = verified.ScopeId is { } sessionId
+                ? await scheduleClient.GetSessionSectionIdAsync(command.EventId, sessionId, cancellationToken)
+                : null;
+
+            if (ticketSectionId is null || ticketSectionId != command.SectionId)
+            {
+                throw new ValidationException(
+                    "This session is not part of the section you are assigned to.");
+            }
         }
 
         var existing = await db.AttendanceRecords.SingleOrDefaultAsync(

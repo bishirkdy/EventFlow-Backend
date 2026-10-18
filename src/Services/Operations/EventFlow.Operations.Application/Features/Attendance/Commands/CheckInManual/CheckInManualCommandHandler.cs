@@ -5,6 +5,7 @@ using EventFlow.Operations.Domain.Entities;
 using EventFlow.Operations.Domain.Enums;
 using EventFlow.Security.Authentication;
 using EventFlow.SharedKernel.Exceptions;
+using FluentValidation;
 using MediatR;
 
 namespace EventFlow.Operations.Application.Features.Attendance.Commands.CheckInManual;
@@ -12,6 +13,7 @@ namespace EventFlow.Operations.Application.Features.Attendance.Commands.CheckInM
 public sealed class CheckInManualCommandHandler(
     IOperationsDbContext db,
     IEventAuthorizationClient authorization,
+    IEventScheduleClient scheduleClient,
     ICurrentUserService currentUser,
     IMapper mapper)
     : IRequestHandler<CheckInManualCommand, AttendanceDto>
@@ -22,16 +24,33 @@ public sealed class CheckInManualCommandHandler(
     {
         var actorUserId = currentUser.UserId;
 
-        if (!await AttendanceAuthorization.CanOperateAsync(
-                db,
-                authorization,
-                command.EventId,
-                actorUserId,
-                command.SectionId,
-                command.SessionId,
-                cancellationToken))
+        var access = await AttendanceAuthorization.ResolveAsync(
+            db,
+            authorization,
+            command.EventId,
+            actorUserId,
+            command.SectionId,
+            command.SessionId,
+            cancellationToken);
+
+        if (access == AttendanceAccess.None)
         {
             throw new ForbiddenException("You are not assigned to this attendance scope.");
+        }
+
+        // A section-scoped staff member may only operate sessions that belong to their section.
+        if (access == AttendanceAccess.Section && command.SessionId is { } sessionId)
+        {
+            var ticketSectionId = await scheduleClient.GetSessionSectionIdAsync(
+                command.EventId,
+                sessionId,
+                cancellationToken);
+
+            if (ticketSectionId is null || ticketSectionId != command.SectionId)
+            {
+                throw new ValidationException(
+                    "This session is not part of the section you are assigned to.");
+            }
         }
 
         // Manual check-in is performed by staff on behalf of a participant.
