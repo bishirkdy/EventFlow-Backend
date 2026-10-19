@@ -35,11 +35,32 @@ public sealed class GetAttendanceDashboardQueryHandler(
         var checkedOut = records.Count(x => x.CheckedOutAtUtc.HasValue);
         var inside = records.Count(x => !x.CheckedOutAtUtc.HasValue);
 
+        var sessions = records
+            .Where(x => x.SessionId.HasValue)
+            .GroupBy(x => x.SessionId!.Value)
+            .Select(group =>
+            {
+                var sessionDistinct = group.Select(x => x.RegistrationId).Distinct().Count();
+                var sessionCheckedOut = group.Count(x => x.CheckedOutAtUtc.HasValue);
+                var sessionInside = group.Count(x => !x.CheckedOutAtUtc.HasValue);
+
+                return new SessionAttendanceDto(
+                    group.Key,
+                    sessionDistinct,
+                    sessionDistinct,
+                    sessionCheckedOut,
+                    sessionInside,
+                    sessionDistinct == 0 ? 0 : 100d);
+            })
+            .OrderBy(x => x.SessionId)
+            .ToList();
+
         return new AttendanceDashboardDto(
             distinct,
             distinct,
             checkedOut,
             inside,
-            distinct == 0 ? 0 : 100d);
+            distinct == 0 ? 0 : 100d,
+            sessions);
     }
 }

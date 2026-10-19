@@ -5,4 +5,5 @@ public sealed record AttendanceDashboardDto(
     int CheckedIn,
     int CheckedOut,
     int CurrentlyInside,
-    double AttendancePercentage);
+    double AttendancePercentage,
+    IReadOnlyList<SessionAttendanceDto> Sessions);
