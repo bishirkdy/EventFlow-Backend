@@ -7,7 +7,7 @@ public sealed class ParticipantRepository(RegistrationDbContext db) : IParticipa
 {
     public async Task<Participant?> GetByIdAsync(Guid eventId, Guid participantId, bool asNoTracking = false, CancellationToken cancellationToken = default)
     {
-        IQueryable<Participant> query = db.Participants;
+        IQueryable<Participant> query = db.Participants.Include(x => x.Registration);
 
         if (asNoTracking)
         {
@@ -28,6 +28,7 @@ public sealed class ParticipantRepository(RegistrationDbContext db) : IParticipa
     {
         IQueryable<Participant> query = db.Participants
             .AsNoTracking()
+            .Include(x => x.Registration)
             .Where(x => x.EventId == eventId);
 
         if (status.HasValue)

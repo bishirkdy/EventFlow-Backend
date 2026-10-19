@@ -10,6 +10,10 @@ public sealed class ParticipantDto
 
     public Guid RegistrationId { get; set; }
 
+    public RegistrationScope ScopeType { get; set; }
+
+    public Guid? ScopeId { get; set; }
+
     public Guid UserId { get; set; }
 
     public string ParticipantNumber { get; set; } = "";
