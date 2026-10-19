@@ -35,7 +35,6 @@ public sealed class CheckOutCommandHandler(
             authorization,
             command.EventId,
             actorUserId,
-            record.SectionId,
             record.SessionId,
             cancellationToken);
 

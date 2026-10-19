@@ -28,6 +28,6 @@ public sealed class AssignAttendanceStaffCommandValidator
         RuleFor(x => x.ScopeId)
             .NotEmpty()
             .When(x => x.ScopeType != AttendanceScopeType.Event)
-            .WithMessage("ScopeId is required for section and session attendance staff.");
+            .WithMessage("ScopeId is required for session attendance staff.");
     }
 }

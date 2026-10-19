@@ -27,7 +27,7 @@ public sealed class CreateEventInvitationCommandValidator
 
         RuleFor(x => x.ScopeId)
             .NotNull()
-            .WithMessage("A section or session must be selected for this scope.")
+            .WithMessage("A session must be selected for this scope.")
             .When(x => x.Type == EventInvitationType.AttendanceStaff
                        && x.ScopeType.HasValue
                        && x.ScopeType.Value != InvitationScopeType.Event);

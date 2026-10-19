@@ -8,9 +8,8 @@ namespace EventFlow.Operations.Application.Features.Attendance;
 internal enum AttendanceAccess
 {
     None = 0,
-    Section = 1,
-    SessionExact = 2,
-    Broad = 3,
+    SessionExact = 1,
+    Broad = 2,
 }
 
 internal static class AttendanceAuthorization
@@ -20,7 +19,6 @@ internal static class AttendanceAuthorization
         IEventAuthorizationClient authorization,
         Guid eventId,
         Guid userId,
-        Guid? sectionId,
         Guid? sessionId,
         CancellationToken cancellationToken)
     {
@@ -44,12 +42,6 @@ internal static class AttendanceAuthorization
             assignments.Any(x => x.ScopeType == AttendanceScopeType.Session && x.ScopeId == sessionId))
         {
             return AttendanceAccess.SessionExact;
-        }
-
-        if (sectionId.HasValue &&
-            assignments.Any(x => x.ScopeType == AttendanceScopeType.Section && x.ScopeId == sectionId))
-        {
-            return AttendanceAccess.Section;
         }
 
         return AttendanceAccess.None;

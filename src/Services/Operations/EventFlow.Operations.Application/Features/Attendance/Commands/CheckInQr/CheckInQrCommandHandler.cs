@@ -25,20 +25,6 @@ public sealed class CheckInQrCommandHandler(
     {
         var actorUserId = currentUser.UserId;
 
-        var access = await AttendanceAuthorization.ResolveAsync(
-            db,
-            authorization,
-            command.EventId,
-            actorUserId,
-            command.SectionId,
-            command.SessionId,
-            cancellationToken);
-
-        if (access == AttendanceAccess.None)
-        {
-            throw new ForbiddenException("You are not assigned to this attendance scope.");
-        }
-
         var verified = await registrationClient.VerifyTicketAsync(
             command.EventId,
             command.QrCode.Trim(),
@@ -50,33 +36,34 @@ public sealed class CheckInQrCommandHandler(
             throw new ValidationException(verified?.Message ?? "Ticket verification failed.");
         }
 
-        // Session tickets are only valid at the session they were registered for.
-        if (verified.ScopeType == RegistrationScope.Session &&
-            command.SessionId != verified.ScopeId)
+        // The scanned ticket decides the scope: a session ticket is always
+        // recorded against its own session, an event ticket against the event.
+        var sessionId = verified.ScopeType == RegistrationScope.Session
+            ? verified.ScopeId
+            : null;
+
+        var access = await AttendanceAuthorization.ResolveAsync(
+            db,
+            authorization,
+            command.EventId,
+            actorUserId,
+            sessionId,
+            cancellationToken);
+
+        if (access == AttendanceAccess.None)
         {
-            throw new ValidationException(
-                "This ticket is only valid for the session it was registered for.");
+            throw new ForbiddenException("You are not assigned to this attendance scope.");
         }
 
-        // A section-scoped staff member may only operate sessions that belong to their section.
-        if (verified.ScopeType == RegistrationScope.Session &&
-            access == AttendanceAccess.Section)
-        {
-            var ticketSectionId = verified.ScopeId is { } sessionId
-                ? await scheduleClient.GetSessionSectionIdAsync(command.EventId, sessionId, cancellationToken)
-                : null;
-
-            if (ticketSectionId is null || ticketSectionId != command.SectionId)
-            {
-                throw new ValidationException(
-                    "This session is not part of the section you are assigned to.");
-            }
-        }
+        var sectionId = sessionId is { } scannedSessionId
+            ? await scheduleClient.GetSessionSectionIdAsync(
+                command.EventId, scannedSessionId, cancellationToken)
+            : null;
 
         var existing = await db.AttendanceRecords.SingleOrDefaultAsync(
             x => x.EventId == command.EventId
                  && x.RegistrationId == verified.RegistrationId
-                 && x.SessionId == command.SessionId,
+                 && x.SessionId == sessionId,
             cancellationToken);
 
         // Idempotent: return the record if the ticket was already checked in.
@@ -90,8 +77,8 @@ public sealed class CheckInQrCommandHandler(
             verified.RegistrationId,
             verified.ParticipantId,
             verified.ParticipantUserId,
-            command.SectionId,
-            command.SessionId,
+            sectionId,
+            sessionId,
             actorUserId,
             command.Method);
 
