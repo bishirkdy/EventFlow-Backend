@@ -66,7 +66,13 @@ public sealed class CreateRegistrationCommandHandler(
             }
         }
 
-        var form = await forms.GetByEventIdAsync(command.EventId, includeFields: true, asNoTracking: true, cancellationToken: cancellationToken);
+        var form = await forms.GetEffectiveByScopeAsync(
+            command.EventId,
+            scopeType,
+            scopeId,
+            includeFields: true,
+            asNoTracking: true,
+            cancellationToken: cancellationToken);
 
         var now = DateTime.UtcNow;
 

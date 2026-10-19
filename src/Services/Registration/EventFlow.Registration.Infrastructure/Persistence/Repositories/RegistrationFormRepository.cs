@@ -1,15 +1,58 @@
 using EventFlow.Registration.Application.Abstractions.Persistence;
+using EventFlow.Registration.Domain.Enums;
 
 namespace EventFlow.Registration.Infrastructure.Persistence.Repositories;
 
 public sealed class RegistrationFormRepository(RegistrationDbContext db)
     : IRegistrationFormRepository
 {
-    public async Task<RegistrationForm?> GetByEventIdAsync(
+    public Task<RegistrationForm?> GetByEventIdAsync(
         Guid eventId,
         bool includeFields = false,
         bool asNoTracking = false,
+        CancellationToken cancellationToken = default) =>
+        Query(
+            eventId,
+            RegistrationScope.Event,
+            null,
+            includeFields,
+            asNoTracking).SingleOrDefaultAsync(cancellationToken);
+
+    public Task<RegistrationForm?> GetByScopeAsync(
+        Guid eventId,
+        RegistrationScope scopeType,
+        Guid? scopeId,
+        bool includeFields = false,
+        bool asNoTracking = false,
+        CancellationToken cancellationToken = default) =>
+        Query(eventId, scopeType, scopeId, includeFields, asNoTracking)
+            .SingleOrDefaultAsync(cancellationToken);
+
+    public async Task<RegistrationForm?> GetEffectiveByScopeAsync(
+        Guid eventId,
+        RegistrationScope scopeType,
+        Guid? scopeId,
+        bool includeFields = false,
+        bool asNoTracking = false,
         CancellationToken cancellationToken = default)
+    {
+        var form = await Query(eventId, scopeType, scopeId, includeFields, asNoTracking)
+            .SingleOrDefaultAsync(cancellationToken);
+
+        if (form is not null || scopeType == RegistrationScope.Event)
+        {
+            return form;
+        }
+
+        return await GetByEventIdAsync(eventId, includeFields, asNoTracking, cancellationToken);
+    }
+
+    private IQueryable<RegistrationForm> Query(
+        Guid eventId,
+        RegistrationScope scopeType,
+        Guid? scopeId,
+        bool includeFields,
+        bool asNoTracking)
     {
         IQueryable<RegistrationForm> query = db.RegistrationForms;
 
@@ -23,9 +66,8 @@ public sealed class RegistrationFormRepository(RegistrationDbContext db)
             query = query.Include(x => x.Fields);
         }
 
-        return await query.SingleOrDefaultAsync(
-            x => x.EventId == eventId,
-            cancellationToken);
+        return query.Where(
+            x => x.EventId == eventId && x.ScopeType == scopeType && x.ScopeId == scopeId);
     }
 
     public async Task<IReadOnlySet<Guid>> GetFieldIdsWithAnswersAsync(

@@ -4,6 +4,9 @@ public sealed class RegistrationFormDto
 {
     public Guid Id { get; set; }
     public Guid EventId { get; set; }
+    public RegistrationScope ScopeType { get; set; }
+    public Guid? ScopeId { get; set; }
+    public bool IsInherited { get; set; }
     public string Name { get; set; } = "";
     public string? Description { get; set; }
     public bool IsActive { get; set; }

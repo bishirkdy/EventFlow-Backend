@@ -10,12 +10,21 @@ public sealed class RegistrationForm : Entity
     {
     }
 
-    public RegistrationForm(Guid eventId)
+    public RegistrationForm(
+        Guid eventId,
+        RegistrationScope scopeType = RegistrationScope.Event,
+        Guid? scopeId = null)
     {
         EventId = eventId;
+        ScopeType = scopeType;
+        ScopeId = scopeType == RegistrationScope.Event ? null : scopeId;
     }
 
     public Guid EventId { get; private set; }
+
+    public RegistrationScope ScopeType { get; private set; } = RegistrationScope.Event;
+
+    public Guid? ScopeId { get; private set; }
 
     public string Name { get; private set; } = "Event Registration";
 

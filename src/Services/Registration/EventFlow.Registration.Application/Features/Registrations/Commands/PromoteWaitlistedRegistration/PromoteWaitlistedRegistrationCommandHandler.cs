@@ -42,10 +42,20 @@ public sealed class PromoteWaitlistedRegistrationCommandHandler(
             throw new ConflictException("Registration is not waitlisted.");
         }
 
-        var form = await forms.GetByEventIdAsync(command.EventId, asNoTracking: true, cancellationToken: cancellationToken);
+        var form = await forms.GetEffectiveByScopeAsync(
+            command.EventId,
+            registration.ScopeType,
+            registration.ScopeId,
+            asNoTracking: true,
+            cancellationToken: cancellationToken);
 
         if (form?.CapacityMode == CapacityMode.Limited && form.Capacity.HasValue &&
-            await registrations.CountByStatusAsync(command.EventId, RegistrationStatus.Approved, cancellationToken) >= form.Capacity.Value)
+            await registrations.CountByScopeAsync(
+                command.EventId,
+                registration.ScopeType,
+                registration.ScopeId,
+                RegistrationStatus.Approved,
+                cancellationToken) >= form.Capacity.Value)
         {
             throw new ConflictException("No available capacity.");
         }

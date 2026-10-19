@@ -1,5 +1,6 @@
 
 using AutoMapper;
+using EventFlow.Registration.Domain.Enums;
 using EventFlow.SharedKernel.Exceptions;
 
 namespace EventFlow.Registration.Application.Features.RegistrationForms.Queries.GetRegistrationForm;
@@ -13,27 +14,58 @@ public sealed class GetRegistrationFormQueryHandler(
 {
     public async Task<RegistrationFormDto> Handle(GetRegistrationFormQuery query, CancellationToken cancellationToken)
     {
-        var form = await forms.GetByEventIdAsync(query.EventId, includeFields: true, asNoTracking: true, cancellationToken: cancellationToken);
+        var scopeType = query.ScopeType;
+        var scopeId = scopeType == RegistrationScope.Session ? query.ScopeId : null;
 
-        if (form is null)
+        var isInherited = false;
+
+        var form = await forms.GetByScopeAsync(
+            query.EventId,
+            scopeType,
+            scopeId,
+            includeFields: true,
+            asNoTracking: true,
+            cancellationToken: cancellationToken);
+
+        if (form is null && scopeType == RegistrationScope.Session)
+        {
+            // A session without its own form simply inherits the event form.
+            form = await forms.GetByEventIdAsync(
+                query.EventId, includeFields: true, asNoTracking: true, cancellationToken: cancellationToken);
+
+            isInherited = true;
+
+            if (form is null)
+            {
+                await CreateDefaultFormAsync(query.EventId, cancellationToken);
+
+                form = await forms.GetByEventIdAsync(
+                    query.EventId, includeFields: true, asNoTracking: true, cancellationToken: cancellationToken);
+            }
+        }
+        else if (form is null)
         {
             // Events get a ready to use registration form the first time
             // somebody opens it, so registration never starts empty handed.
             await CreateDefaultFormAsync(query.EventId, cancellationToken);
 
-            form = await forms.GetByEventIdAsync(query.EventId, includeFields: true, asNoTracking: true, cancellationToken: cancellationToken);
-
-            if (form is null)
-            {
-                throw new NotFoundException("Registration form not found.");
-            }
+            form = await forms.GetByEventIdAsync(
+                query.EventId, includeFields: true, asNoTracking: true, cancellationToken: cancellationToken);
         }
 
-        var approvedCount = await registrations.CountByStatusAsync(query.EventId, RegistrationStatus.Approved, cancellationToken);
+        if (form is null)
+        {
+            throw new NotFoundException("Registration form not found.");
+        }
 
-        var waitlistCount = await registrations.CountByStatusAsync(query.EventId, RegistrationStatus.Waitlisted, cancellationToken);
+        var approvedCount = await registrations.CountByScopeAsync(
+            query.EventId, scopeType, scopeId, RegistrationStatus.Approved, cancellationToken);
+
+        var waitlistCount = await registrations.CountByScopeAsync(
+            query.EventId, scopeType, scopeId, RegistrationStatus.Waitlisted, cancellationToken);
 
         var response = mapper.Map<RegistrationFormDto>(form);
+        response.IsInherited = isInherited;
         response.ApprovedCount = approvedCount;
         response.WaitlistCount = waitlistCount;
 

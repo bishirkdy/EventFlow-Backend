@@ -2,6 +2,7 @@ using EventFlow.Contracts.Common;
 using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Registration.Application.Features.RegistrationForms.Commands.UpsertRegistrationForm;
 using EventFlow.Registration.Application.Features.RegistrationForms.Queries.GetRegistrationForm;
+using EventFlow.Registration.Domain.Enums;
 using EventFlow.Security.Authentication;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -19,7 +20,11 @@ public sealed class RegistrationFormsController(
 {
     [AllowAnonymous]
     [HttpGet]
-    public async Task<IActionResult> Get(Guid eventId, CancellationToken cancellationToken)
+    public async Task<IActionResult> Get(
+        Guid eventId,
+        [FromQuery] RegistrationScope scopeType = RegistrationScope.Event,
+        [FromQuery] Guid? scopeId = null,
+        CancellationToken cancellationToken = default)
     {
         // The public registration form is only available once the event is
         // published; event members may still open it while preparing.
@@ -37,7 +42,7 @@ public sealed class RegistrationFormsController(
             }
         }
 
-        var dto = await sender.Send(new GetRegistrationFormQuery(eventId), cancellationToken);
+        var dto = await sender.Send(new GetRegistrationFormQuery(eventId, scopeType, scopeId), cancellationToken);
 
         return Ok(ApiResponse<RegistrationFormDto>.Success(dto));
     }

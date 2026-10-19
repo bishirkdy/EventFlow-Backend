@@ -9,7 +9,11 @@ public sealed class RegistrationFormConfiguration : IEntityTypeConfiguration<Reg
         b.Property(x => x.Name).HasMaxLength(200).IsRequired();
         b.Property(x => x.Description).HasMaxLength(2000);
         b.Property(x => x.CapacityMode).HasConversion<int>();
-        b.HasIndex(x => x.EventId).IsUnique();
+        b.Property(x => x.ScopeType).HasConversion<int>();
+        b.HasIndex(x => new { x.EventId, x.ScopeType, x.ScopeId }).IsUnique();
+        b.HasIndex(x => x.EventId)
+            .IsUnique()
+            .HasFilter("\"ScopeId\" IS NULL");
 
         b.HasMany(x => x.Fields).WithOne(x => x.RegistrationForm)
             .HasForeignKey(x => x.RegistrationFormId)

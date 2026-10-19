@@ -37,8 +37,10 @@ public sealed class UpdateRegistrationCommandHandler(
             throw new NotFoundException("Registration not found.");
         }
 
-        var form = await forms.GetByEventIdAsync(
+        var form = await forms.GetEffectiveByScopeAsync(
             command.EventId,
+            registration.ScopeType,
+            registration.ScopeId,
             includeFields: true,
             asNoTracking: true,
             cancellationToken: cancellationToken);

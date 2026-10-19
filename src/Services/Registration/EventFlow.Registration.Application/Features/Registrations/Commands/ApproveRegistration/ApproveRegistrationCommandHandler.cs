@@ -42,19 +42,26 @@ public sealed class ApproveRegistrationCommandHandler(
             return mapper.Map<RegistrationDto>(registration);
         }
 
-        var form = await forms.GetByEventIdAsync(
+        var form = await forms.GetEffectiveByScopeAsync(
             command.EventId,
+            registration.ScopeType,
+            registration.ScopeId,
             asNoTracking: true,
             cancellationToken: cancellationToken);
 
         if (form?.CapacityMode == CapacityMode.Limited &&
             form.Capacity.HasValue &&
-            await registrations.CountByStatusAsync(
+            await registrations.CountByScopeAsync(
                 command.EventId,
+                registration.ScopeType,
+                registration.ScopeId,
                 RegistrationStatus.Approved,
                 cancellationToken) >= form.Capacity.Value)
         {
-            throw new ConflictException("Event capacity has been reached.");
+            throw new ConflictException(
+                registration.ScopeType == RegistrationScope.Session
+                    ? "Session capacity has been reached."
+                    : "Event capacity has been reached.");
         }
 
         registration.Approve();

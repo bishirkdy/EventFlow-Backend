@@ -2,6 +2,8 @@ namespace EventFlow.Registration.Application.Contracts.RegistrationForms;
 
 public sealed class UpsertRegistrationFormRequest
 {
+    public RegistrationScope ScopeType { get; set; } = RegistrationScope.Event;
+    public Guid? ScopeId { get; set; }
     public string Name { get; set; } = "Event Registration";
     public string? Description { get; set; }
     public bool IsActive { get; set; } = true;

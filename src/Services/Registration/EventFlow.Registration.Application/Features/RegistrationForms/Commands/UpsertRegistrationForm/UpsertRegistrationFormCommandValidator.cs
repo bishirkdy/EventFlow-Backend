@@ -11,6 +11,15 @@ public sealed class UpsertRegistrationFormCommandValidator
         RuleFor(x => x.EventId)
             .NotEmpty();
 
+        RuleFor(x => x.Request.ScopeType)
+            .IsInEnum()
+            .WithMessage("Invalid registration scope.");
+
+        RuleFor(x => x.Request.ScopeId)
+            .NotEmpty()
+            .WithMessage("A session is required for a session registration form.")
+            .When(x => x.Request.ScopeType == RegistrationScope.Session);
+
         RuleFor(x => x.Request.Name)
             .NotEmpty()
             .MaximumLength(200);

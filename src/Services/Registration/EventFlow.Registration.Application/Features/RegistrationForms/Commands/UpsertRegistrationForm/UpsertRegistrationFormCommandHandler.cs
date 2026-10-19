@@ -23,15 +23,30 @@ public sealed class UpsertRegistrationFormCommandHandler(
         }
 
         var request = command.Request;
+        var scopeType = request.ScopeType;
+        var scopeId = scopeType == RegistrationScope.Session ? request.ScopeId : null;
 
-        var form = await forms.GetByEventIdAsync(
+        if (scopeType == RegistrationScope.Session)
+        {
+            var session = await access.GetSessionRegistrationInfoAsync(
+                command.EventId, scopeId!.Value, cancellationToken);
+
+            if (session is null || !session.Exists)
+            {
+                throw new NotFoundException("Session not found.");
+            }
+        }
+
+        var form = await forms.GetByScopeAsync(
             command.EventId,
+            scopeType,
+            scopeId,
             includeFields: true,
             cancellationToken: cancellationToken);
 
         if (form is null)
         {
-            form = new RegistrationForm(command.EventId);
+            form = new RegistrationForm(command.EventId, scopeType, scopeId);
             forms.Add(form);
         }
 
@@ -107,13 +122,17 @@ public sealed class UpsertRegistrationFormCommandHandler(
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var approvedCount = await registrations.CountByStatusAsync(
+        var approvedCount = await registrations.CountByScopeAsync(
             command.EventId,
+            scopeType,
+            scopeId,
             RegistrationStatus.Approved,
             cancellationToken);
 
-        var waitlistCount = await registrations.CountByStatusAsync(
+        var waitlistCount = await registrations.CountByScopeAsync(
             command.EventId,
+            scopeType,
+            scopeId,
             RegistrationStatus.Waitlisted,
             cancellationToken);
 

@@ -378,12 +378,22 @@ namespace EventFlow.Registration.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("OpensAtUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("ScopeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("ScopeType")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
                     b.HasIndex("EventId")
+                        .IsUnique()
+                        .HasFilter("\"ScopeId\" IS NULL");
+
+                    b.HasIndex("EventId", "ScopeType", "ScopeId")
                         .IsUnique();
 
                     b.ToTable("RegistrationForms", (string)null);
