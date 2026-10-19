@@ -121,6 +121,11 @@ public sealed class GetEventPhotosQueryHandlerTests
             CancellationToken cancellationToken = default) =>
             Task.FromResult<EventPhoto?>(null);
 
+        public Task<IReadOnlyList<EventPhoto>> GetByIdsAsync(
+            IReadOnlyList<Guid> photoIds,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<EventPhoto>>([]);
+
         public Task<EventPhoto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
             Task.FromResult<EventPhoto?>(null);
 

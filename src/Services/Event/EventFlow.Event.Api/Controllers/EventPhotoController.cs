@@ -4,6 +4,7 @@ using EventFlow.Event.Api.Services;
 using EventFlow.Event.Application.Abstractions.Storage;
 using EventFlow.Event.Application.Features.Commands.DeleteEventPhoto;
 using EventFlow.Event.Application.Features.Commands.UpdateEventPhotoVisibility;
+using EventFlow.Event.Application.Features.Commands.UpdateEventPhotosVisibility;
 using EventFlow.Event.Application.Features.Commands.UploadEventPhoto;
 using EventFlow.Event.Application.Features.Queries.GetEventPhotos;
 using EventFlow.Security.Authentication;
@@ -73,6 +74,18 @@ public sealed class EventPhotoController(ISender sender, ICurrentUserService cur
         await sender.Send(command, cancellationToken);
 
         return Ok(ApiResponse<object?>.Success(null, request.IsVisible ? "Photo approved." : "Photo hidden."));
+    }
+
+    [Authorize]
+    [HttpPatch("visibility")]
+    public async Task<IActionResult> UpdateVisibilityBulk(Guid eventId, [FromBody] UpdatePhotosVisibilityRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new UpdateEventPhotosVisibilityCommand(eventId, request.PhotoIds, request.IsVisible, currentUser.UserId);
+
+        var updated = await sender.Send(command, cancellationToken);
+
+        return Ok(ApiResponse<object?>.Success(null, request.IsVisible ? $"Approved {updated} photo(s)." : $"Hidden {updated} photo(s)."));
     }
 
     [Authorize]
