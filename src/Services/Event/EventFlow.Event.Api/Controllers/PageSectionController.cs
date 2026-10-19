@@ -73,7 +73,6 @@ public class PageSectionController(ISender sender, ICloudinaryStorage cloudinary
             request.Content,
             imageUrl,
             imagePublicId,
-            request.ShowRegistrationForm,
             request.Configuration);
 
         var sectionId = await sender.Send(command, cancellationToken);
@@ -179,7 +178,6 @@ public class PageSectionController(ISender sender, ICloudinaryStorage cloudinary
             imageUrl,
             imagePublicId,
             request.IsVisible,
-            request.ShowRegistrationForm,
             request.Configuration);
 
         var oldImagePublicId = await sender.Send(command, cancellationToken);

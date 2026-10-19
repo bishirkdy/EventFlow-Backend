@@ -29,8 +29,7 @@ public sealed class CreatePageSectionCommandHandler(
             request.ImageUrl,
             request.ImagePublicId,
             displayOrder,
-            request.Configuration,
-            request.ShowRegistrationForm);
+            request.Configuration);
 
         await pageSectionRepository.AddAsync(section, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);

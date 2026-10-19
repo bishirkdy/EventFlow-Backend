@@ -5,5 +5,4 @@ public sealed record CreatePageSectionRequest(
     string? Title,
     string? Content,
     IFormFile? Image,
-    bool ShowRegistrationForm,
     string? Configuration);

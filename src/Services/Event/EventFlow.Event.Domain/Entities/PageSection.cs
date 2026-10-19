@@ -12,7 +12,6 @@ public sealed class PageSection : Entity
     public string? ImagePublicId { get; private set; }
     public int DisplayOrder { get; private set; }
     public bool IsVisible { get; private set; }
-    public bool ShowRegistrationForm { get; private set; }
     public string? Configuration { get; private set; }
 
     private PageSection()
@@ -20,7 +19,7 @@ public sealed class PageSection : Entity
         // Required by EF Core
     }
 
-    public PageSection(Guid pageId, string sectionType, string? title, string? content, string? imageUrl, string? imagePublicId, int displayOrder, string? configuration, bool showRegistrationForm = false)
+    public PageSection(Guid pageId, string sectionType, string? title, string? content, string? imageUrl, string? imagePublicId, int displayOrder, string? configuration)
     {
         PageId = pageId;
         SectionType = sectionType;
@@ -30,18 +29,16 @@ public sealed class PageSection : Entity
         ImagePublicId = imagePublicId;
         DisplayOrder = displayOrder;
         IsVisible = true;
-        ShowRegistrationForm = showRegistrationForm;
         Configuration = configuration;
     }
 
-    public void Update(string sectionType, string? title, string? content, string? imageUrl, string? imagePublicId, string? configuration, bool showRegistrationForm = false)
+    public void Update(string sectionType, string? title, string? content, string? imageUrl, string? imagePublicId, string? configuration)
     {
         SectionType = sectionType;
         Title = title;
         Content = content;
         ImageUrl = imageUrl;
         ImagePublicId = imagePublicId;
-        ShowRegistrationForm = showRegistrationForm;
         Configuration = configuration;
         UpdatedAt = DateTime.UtcNow;
     }

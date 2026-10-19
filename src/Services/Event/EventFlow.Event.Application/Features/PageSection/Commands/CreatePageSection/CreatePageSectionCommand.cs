@@ -9,5 +9,4 @@ public sealed record CreatePageSectionCommand(
     string? Content,
     string? ImageUrl,
     string? ImagePublicId,
-    bool ShowRegistrationForm,
     string? Configuration) : IRequest<Guid>;

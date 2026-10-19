@@ -6,5 +6,4 @@ public sealed record UpdatePageSectionRequest(
     string? Content,
     IFormFile? Image,
     bool IsVisible,
-    bool ShowRegistrationForm,
     string? Configuration);

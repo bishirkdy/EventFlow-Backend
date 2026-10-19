@@ -26,8 +26,7 @@ public sealed class UpdatePageSectionCommandHandler(IPageSectionRepository pageS
             request.Content,
             imageUrl,
             imagePublicId,
-            request.Configuration,
-            request.ShowRegistrationForm);
+            request.Configuration);
         section.SetVisibility(request.IsVisible);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 

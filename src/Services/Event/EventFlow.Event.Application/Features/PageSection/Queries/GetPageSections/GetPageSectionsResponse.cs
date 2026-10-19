@@ -11,7 +11,6 @@ public sealed record GetPageSectionsResponse(
     string? ImageUrl,
     int DisplayOrder,
     bool IsVisible,
-    bool ShowRegistrationForm,
     string? Configuration,
     DateTime CreatedAt,
     DateTime? UpdatedAt);

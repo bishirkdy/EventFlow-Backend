@@ -35,10 +35,6 @@ public sealed class PageSectionConfiguration : IEntityTypeConfiguration<PageSect
         builder.Property(x => x.IsVisible)
             .IsRequired();
 
-        builder.Property(x => x.ShowRegistrationForm)
-            .IsRequired()
-            .HasDefaultValue(false);
-
         builder.Property(x => x.Configuration)
             .HasColumnType("jsonb");
 
