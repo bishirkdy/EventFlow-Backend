@@ -42,6 +42,16 @@ public sealed class EventPermissionMiddleware(RequestDelegate next, EventAuthori
             return;
         }
 
+        // Participants are not event team members and hold no event role, so
+        // they cannot pass the event.view check. The submit handler authorizes
+        // them by verifying their registration instead. Reading the results
+        // stays organizer-only through the event.view rule below.
+        if (IsFeedbackSubmit(context))
+        {
+            await next(context);
+            return;
+        }
+
         if (!TryGetEventId(context, out var eventId))
         {
             await next(context);
@@ -122,6 +132,14 @@ public sealed class EventPermissionMiddleware(RequestDelegate next, EventAuthori
         return HttpMethods.IsGet(request.Method)
             ? [PermissionConstants.Event.View]
             : [PermissionConstants.Event.Update];
+    }
+
+    private static bool IsFeedbackSubmit(HttpContext context)
+    {
+        return HttpMethods.IsPost(context.Request.Method)
+               && context.Request.Path.Value?.Contains(
+                   "/feedback",
+                   StringComparison.OrdinalIgnoreCase) == true;
     }
 
     private static bool IsClaimOwnerRequest(HttpContext context)

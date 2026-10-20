@@ -61,6 +61,9 @@ public interface IRegistrationRepository
         Guid eventId,
         CancellationToken cancellationToken = default);
 
+    Task<int> CountParticipantsAsync(
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<RegistrationEntity>> GetWithParticipantsAsync(
         Guid eventId,
         CancellationToken cancellationToken = default);

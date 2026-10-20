@@ -663,6 +663,30 @@ namespace EventFlow.Event.Infrastructure.Migrations
                             EventTypeId = new Guid("33333333-3333-3333-3333-333333333333"),
                             FeatureId = new Guid("10000000-0000-0000-0000-000000000008"),
                             IsEnabledByDefault = false
+                        },
+                        new
+                        {
+                            Id = new Guid("20000000-0000-0000-0000-000000000036"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            EventTypeId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            FeatureId = new Guid("10000000-0000-0000-0000-000000000010"),
+                            IsEnabledByDefault = false
+                        },
+                        new
+                        {
+                            Id = new Guid("20000000-0000-0000-0000-000000000037"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            EventTypeId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            FeatureId = new Guid("10000000-0000-0000-0000-000000000010"),
+                            IsEnabledByDefault = false
+                        },
+                        new
+                        {
+                            Id = new Guid("20000000-0000-0000-0000-000000000038"),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            EventTypeId = new Guid("55555555-5555-5555-5555-555555555555"),
+                            FeatureId = new Guid("10000000-0000-0000-0000-000000000010"),
+                            IsEnabledByDefault = false
                         });
                 });
 

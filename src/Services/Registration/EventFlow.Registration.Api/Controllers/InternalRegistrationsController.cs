@@ -1,4 +1,5 @@
 using EventFlow.Contracts.Common;
+using EventFlow.Registration.Application.Features.Registrations.Queries.GetParticipantCount;
 using EventFlow.Registration.Application.Features.Registrations.Queries.GetRegisteredEventIds;
 using EventFlow.Security.Authorization;
 using MediatR;
@@ -17,5 +18,14 @@ public sealed class InternalRegistrationsController(ISender sender) : Controller
         var dto = await sender.Send(new GetRegisteredEventIdsQuery(userId), cancellationToken);
 
         return Ok(ApiResponse<IReadOnlyList<Guid>>.Success(dto, "Registered event ids retrieved successfully."));
+    }
+
+    [InternalServiceOnly]
+    [HttpGet("participants/count")]
+    public async Task<IActionResult> GetParticipantCount(CancellationToken cancellationToken)
+    {
+        var count = await sender.Send(new GetParticipantCountQuery(), cancellationToken);
+
+        return Ok(ApiResponse<int>.Success(count, "Participant count retrieved successfully."));
     }
 }

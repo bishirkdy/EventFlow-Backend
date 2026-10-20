@@ -24,11 +24,18 @@ public class GetEventPhotosQueryHandler(
             ? request.VisibleOnly
             : true;
 
+        // "Mine" scopes the result to the caller's own uploads (photographer dashboard).
+        // Anonymous callers have no identity, so the filter falls back to every photo.
+        var photographerId = request.Mine && currentUser.IsAuthenticated
+            ? currentUser.UserId
+            : (Guid?)null;
+
         var paged = await photoRepository.GetPagedByEventIdAsync(
             request.EventId,
             request.Page,
             request.PageSize,
             visibleOnly,
+            photographerId,
             cancellationToken);
 
         return new PaginatedResponse<GetEventPhotosResponse>

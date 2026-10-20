@@ -35,6 +35,27 @@ public sealed class RegistrationClient(
         return envelope?.Data ?? [];
     }
 
+    public async Task<int> GetParticipantCountAsync(
+        CancellationToken cancellationToken = default)
+    {
+        using var request = new HttpRequestMessage(
+            HttpMethod.Get,
+            "api/v1/registrations/internal/participants/count");
+
+        request.Headers.Add("X-Internal-Service-Key", _serviceKey);
+
+        using var response = await httpClient.SendAsync(
+            request,
+            cancellationToken);
+
+        response.EnsureSuccessStatusCode();
+
+        var envelope = await response.Content.ReadFromJsonAsync<
+            ApiResponse<int>>(cancellationToken);
+
+        return envelope?.Data ?? 0;
+    }
+
     private sealed record ApiResponse<T>(
         bool IsSuccess,
         int StatusCode,

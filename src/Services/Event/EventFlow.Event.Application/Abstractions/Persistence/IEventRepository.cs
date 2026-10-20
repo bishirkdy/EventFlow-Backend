@@ -20,4 +20,6 @@ public interface IEventRepository : IRepository<EventEntity>
 
     // Get event counts grouped by status in a single query.
     Task<EventStatusCounts> GetStatusCountsAsync(CancellationToken cancellationToken);
+
+    Task<int> CountPublishedAsync(CancellationToken cancellationToken = default);
 }

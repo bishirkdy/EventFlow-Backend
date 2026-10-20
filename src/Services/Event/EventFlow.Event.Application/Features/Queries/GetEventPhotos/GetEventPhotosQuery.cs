@@ -7,5 +7,6 @@ public sealed record GetEventPhotosQuery(
     Guid EventId,
     int Page = 1,
     int PageSize = 20,
-    bool? VisibleOnly = null)
+    bool? VisibleOnly = null,
+    bool Mine = false)
     : IRequest<PaginatedResponse<GetEventPhotosResponse>>;

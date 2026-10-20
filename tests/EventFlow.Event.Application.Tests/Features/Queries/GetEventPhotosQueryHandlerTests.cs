@@ -9,6 +9,7 @@ namespace EventFlow.Event.Application.Tests.Features.Queries;
 public sealed class GetEventPhotosQueryHandlerTests
 {
     private static readonly Guid EventId = Guid.NewGuid();
+    private static readonly Guid UserId = Guid.NewGuid();
     private static readonly CancellationToken Token = CancellationToken.None;
 
     [Fact]
@@ -73,10 +74,52 @@ public sealed class GetEventPhotosQueryHandlerTests
         Assert.Null(repository.LastVisibleOnly);
     }
 
+    [Fact]
+    public async Task Authenticated_caller_with_mine_is_scoped_to_own_photos()
+    {
+        var repository = new FakeEventPhotoRepository();
+        var handler = new GetEventPhotosQueryHandler(
+            repository,
+            new FakeEventFeatureRepository(),
+            new FakeCurrentUserService { IsAuthenticated = true });
+
+        await handler.Handle(new GetEventPhotosQuery(EventId, Mine: true), Token);
+
+        Assert.Equal(UserId, repository.LastPhotographerId);
+    }
+
+    [Fact]
+    public async Task Anonymous_caller_with_mine_is_not_scoped()
+    {
+        var repository = new FakeEventPhotoRepository();
+        var handler = new GetEventPhotosQueryHandler(
+            repository,
+            new FakeEventFeatureRepository(),
+            new FakeCurrentUserService { IsAuthenticated = false });
+
+        await handler.Handle(new GetEventPhotosQuery(EventId, Mine: true), Token);
+
+        Assert.Null(repository.LastPhotographerId);
+    }
+
+    [Fact]
+    public async Task Mine_false_does_not_scope_the_result()
+    {
+        var repository = new FakeEventPhotoRepository();
+        var handler = new GetEventPhotosQueryHandler(
+            repository,
+            new FakeEventFeatureRepository(),
+            new FakeCurrentUserService { IsAuthenticated = true });
+
+        await handler.Handle(new GetEventPhotosQuery(EventId), Token);
+
+        Assert.Null(repository.LastPhotographerId);
+    }
+
     private sealed class FakeCurrentUserService : ICurrentUserService
     {
         public bool IsAuthenticated { get; init; }
-        public Guid UserId => Guid.NewGuid();
+        public Guid UserId => GetEventPhotosQueryHandlerTests.UserId;
         public bool IsPlatformAdmin => false;
     }
 
@@ -84,14 +127,18 @@ public sealed class GetEventPhotosQueryHandlerTests
     {
         public bool? LastVisibleOnly { get; private set; }
 
+        public Guid? LastPhotographerId { get; private set; }
+
         public Task<PaginatedResponse<EventPhoto>> GetPagedByEventIdAsync(
             Guid eventId,
             int page,
             int pageSize,
             bool? visibleOnly,
+            Guid? photographerId = null,
             CancellationToken cancellationToken = default)
         {
             LastVisibleOnly = visibleOnly;
+            LastPhotographerId = photographerId;
             return Task.FromResult(new PaginatedResponse<EventPhoto>
             {
                 Items = [],

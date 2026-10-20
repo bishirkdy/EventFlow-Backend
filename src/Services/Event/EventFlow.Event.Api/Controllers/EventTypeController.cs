@@ -11,6 +11,7 @@ namespace EventFlow.Event.Api.Controllers;
 [Authorize]
 public sealed class EventTypeController(ISender sender) : ControllerBase
 {
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> GetEventTypes(CancellationToken cancellationToken)
     {

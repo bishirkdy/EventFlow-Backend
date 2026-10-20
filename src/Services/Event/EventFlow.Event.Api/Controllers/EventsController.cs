@@ -11,6 +11,7 @@ using EventFlow.Event.Application.Features.Events.Commands.PublishEvent;
 using EventFlow.Event.Application.Features.Events.Commands.UpdateEvent;
 using EventFlow.Event.Application.Features.Events.Queries.GetEventById;
 using EventFlow.Event.Application.Features.Events.Queries.GetMyEvents;
+using EventFlow.Event.Application.Features.Events.Queries.GetPublicEventStats;
 using EventFlow.Event.Application.Features.Events.Queries.GetPublicEvents;
 using EventFlow.Security.Authentication;
 using MediatR;
@@ -175,6 +176,18 @@ public sealed class EventsController(
         return Ok(ApiResponse<IReadOnlyList<GetEventResponse>>.Success(
             mapper.Map<IReadOnlyList<GetEventResponse>>(result),
             "Public events retrieved successfully."));
+    }
+
+    [AllowAnonymous]
+    [HttpGet("public/stats")]
+    [ProducesResponseType(typeof(ApiResponse<GetPublicEventStatsResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPublicEventStats(CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(new GetPublicEventStatsQuery(), cancellationToken);
+
+        return Ok(ApiResponse<GetPublicEventStatsResponse>.Success(
+            result,
+            "Public event statistics retrieved successfully."));
     }
 
     [HttpGet("my-events")]

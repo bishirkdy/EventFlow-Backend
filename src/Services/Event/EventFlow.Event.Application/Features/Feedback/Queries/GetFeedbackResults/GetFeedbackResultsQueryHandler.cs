@@ -23,7 +23,8 @@ public sealed class GetFeedbackResultsQueryHandler(
         GetFeedbackResultsQuery request,
         CancellationToken cancellationToken)
     {
-        // Feedback results are organizer/owner only.
+        // Feedback results are organizer only. Organizers hold event.update; the
+        // event owner does not, so owners never see participant feedback.
         var canViewResults = await authorizationService.HasPermissionAsync(
             request.RequestedBy,
             request.EventId,

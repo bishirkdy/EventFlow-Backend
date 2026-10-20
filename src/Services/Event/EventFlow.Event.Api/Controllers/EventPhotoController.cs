@@ -41,7 +41,7 @@ public sealed class EventPhotoController(ISender sender, ICurrentUserService cur
     // so anonymous and authenticated non-members get the same empty result.
     [AllowAnonymous]
     [HttpGet]
-    public async Task<IActionResult> GetPhotos(Guid eventId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] bool? visibleOnly = null,
+    public async Task<IActionResult> GetPhotos(Guid eventId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] bool? visibleOnly = null, [FromQuery] bool mine = false,
         CancellationToken cancellationToken = default)
     {
         if (!await previewAccess.CanReadAsync(eventId, cancellationToken))
@@ -58,7 +58,7 @@ public sealed class EventPhotoController(ISender sender, ICurrentUserService cur
         }
 
         var response = await sender.Send(
-            new GetEventPhotosQuery(eventId, page, pageSize, visibleOnly),
+            new GetEventPhotosQuery(eventId, page, pageSize, visibleOnly, mine),
             cancellationToken);
 
         return Ok(ApiResponse<PaginatedResponse<GetEventPhotosResponse>>.Success(response, "Photos retrieved successfully."));

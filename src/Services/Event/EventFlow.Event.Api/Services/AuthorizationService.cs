@@ -3,7 +3,7 @@ using EventFlow.Event.Application.Abstractions.Authorization;
 
 namespace EventFlow.Event.Api.Services;
 
-public sealed class AuthorizationService(HttpClient httpClient, IConfiguration configuration) : IAuthorizationService
+public sealed class AuthorizationService(HttpClient httpClient, IConfiguration configuration ) : IAuthorizationService
 {
     public async Task<bool> HasPermissionAsync(Guid userId, Guid eventId, string permission, CancellationToken cancellationToken = default)
     {

@@ -49,7 +49,7 @@ public sealed class EventPhotoRepository(EventCoreDbContext context) : GenericRe
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<PaginatedResponse<EventPhoto>> GetPagedByEventIdAsync(Guid eventId, int page, int pageSize, bool? visibleOnly, CancellationToken cancellationToken = default)
+    public async Task<PaginatedResponse<EventPhoto>> GetPagedByEventIdAsync(Guid eventId, int page, int pageSize, bool? visibleOnly, Guid? photographerId = null, CancellationToken cancellationToken = default)
     {
         var query = DbSet.Where(x => x.EventId == eventId);
 
@@ -58,6 +58,11 @@ public sealed class EventPhotoRepository(EventCoreDbContext context) : GenericRe
         if (visibleOnly.HasValue)
         {
             query = query.Where(x => x.IsVisible == visibleOnly.Value);
+        }
+
+        if (photographerId.HasValue)
+        {
+            query = query.Where(x => x.PhotographerId == photographerId.Value);
         }
 
         var totalCount = await query.CountAsync(cancellationToken);

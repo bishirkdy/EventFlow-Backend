@@ -225,6 +225,14 @@ public sealed class RegistrationRepository(RegistrationDbContext db)
                 ActiveTickets: 0);
     }
 
+    public Task<int> CountParticipantsAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return db.Registrations.CountAsync(
+            x => x.Participant != null,
+            cancellationToken);
+    }
+
     public async Task<IReadOnlyList<RegistrationEntity>> GetWithParticipantsAsync(
         Guid eventId,
         CancellationToken cancellationToken = default)

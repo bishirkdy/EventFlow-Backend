@@ -147,4 +147,11 @@ public sealed class EventRepository : GenericRepository<EventEntity>, IEventRepo
 
         return counts ?? new EventStatusCounts(0, 0, 0, 0);
     }
+
+    public Task<int> CountPublishedAsync(CancellationToken cancellationToken = default)
+    {
+        return _context.EventEntities.CountAsync(
+            x => x.Status == EventStatus.Published,
+            cancellationToken);
+    }
 }

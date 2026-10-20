@@ -63,9 +63,6 @@ public class EventInvitation : Entity
 
     public void Revoke()
     {
-        if (Status == InvitationStatus.Accepted)
-            throw new InvalidOperationException("Cannot revoke an accepted invitation.");
-
         Status = InvitationStatus.Revoked;
         SetUpdatedAt();
     }
