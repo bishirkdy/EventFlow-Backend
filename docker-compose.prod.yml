@@ -1,0 +1,191 @@
+services:
+  gateway:
+    image: 730132962765.dkr.ecr.ap-southeast-2.amazonaws.com/eventflow-gateway:${IMAGE_TAG:-latest}
+    container_name: eventflow-gateway
+    restart: unless-stopped
+    init: true
+    ports:
+      # Host Nginx/HTTPS should proxy public requests to this local-only port.
+      - "127.0.0.1:5000:8080"
+    depends_on:
+      identity:
+        condition: service_started
+      event:
+        condition: service_started
+      registration:
+        condition: service_started
+      operations:
+        condition: service_started
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      Cors__AllowedOrigins__0: "${CORS_ORIGIN_0:?Set CORS_ORIGIN_0 in .env.prod}"
+      Cors__AllowedOrigins__1: "${CORS_ORIGIN_1:-}"
+      ReverseProxy__Clusters__identity-cluster__Destinations__identity-api__Address: "http://eventflow-identity:8080/"
+      ReverseProxy__Clusters__event-cluster__Destinations__event-api__Address: "http://eventflow-event:8080/"
+      ReverseProxy__Clusters__registration-cluster__Destinations__registration-api__Address: "http://eventflow-registration:8080/"
+      ReverseProxy__Clusters__operations-cluster__Destinations__operations-api__Address: "http://eventflow-operations:8080/"
+    networks: [eventflow-backend]
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  identity:
+    image: 730132962765.dkr.ecr.ap-southeast-2.amazonaws.com/eventflow-identity:${IMAGE_TAG:-latest}
+    container_name: eventflow-identity
+    restart: unless-stopped
+    init: true
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      Jwt__SecretKey: "${JWT_SECRET_KEY:?Set JWT_SECRET_KEY in .env.prod}"
+      InternalService__Key: "${INTERNAL_SERVICE_KEY:?Set INTERNAL_SERVICE_KEY in .env.prod}"
+      Cors__AllowedOrigins__0: "${CORS_ORIGIN_0:?Set CORS_ORIGIN_0 in .env.prod}"
+      Cors__AllowedOrigins__1: "${CORS_ORIGIN_1:-}"
+      ConnectionStrings__IdentityDatabase: "${IDENTITY_DATABASE_CONNECTION:?Set IDENTITY_DATABASE_CONNECTION to your RDS connection string}"
+      Kafka__BootstrapServers: "kafka:9092"
+    networks: [eventflow-backend]
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  event:
+    image: 730132962765.dkr.ecr.ap-southeast-2.amazonaws.com/eventflow-event:${IMAGE_TAG:-latest}
+    container_name: eventflow-event
+    restart: unless-stopped
+    init: true
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      InternalService__Key: "${INTERNAL_SERVICE_KEY:?Set INTERNAL_SERVICE_KEY in .env.prod}"
+      Cors__AllowedOrigins__0: "${CORS_ORIGIN_0:?Set CORS_ORIGIN_0 in .env.prod}"
+      Cors__AllowedOrigins__1: "${CORS_ORIGIN_1:-}"
+      ConnectionStrings__EventCoreDatabase: "${EVENT_DATABASE_CONNECTION:?Set EVENT_DATABASE_CONNECTION to your RDS connection string}"
+      Services__Identity__BaseUrl: "http://eventflow-identity:8080/"
+      Services__Registration__BaseUrl: "http://eventflow-registration:8080/"
+      Jwt__SecretKey: "${JWT_SECRET_KEY:?Set JWT_SECRET_KEY in .env.prod}"
+      Cloudinary__CloudName: "${CLOUDINARY_CLOUD_NAME:?Set CLOUDINARY_CLOUD_NAME in .env.prod}"
+      Cloudinary__ApiKey: "${CLOUDINARY_API_KEY:?Set CLOUDINARY_API_KEY in .env.prod}"
+      Cloudinary__ApiSecret: "${CLOUDINARY_API_SECRET:?Set CLOUDINARY_API_SECRET in .env.prod}"
+      Kafka__BootstrapServers: "kafka:9092"
+    networks: [eventflow-backend]
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  registration:
+    image: 730132962765.dkr.ecr.ap-southeast-2.amazonaws.com/eventflow-registration:${IMAGE_TAG:-latest}
+    container_name: eventflow-registration
+    restart: unless-stopped
+    init: true
+    depends_on:
+      event:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      Jwt__SecretKey: "${JWT_SECRET_KEY:?Set JWT_SECRET_KEY in .env.prod}"
+      InternalService__Key: "${INTERNAL_SERVICE_KEY:?Set INTERNAL_SERVICE_KEY in .env.prod}"
+      Cors__AllowedOrigins__0: "${CORS_ORIGIN_0:?Set CORS_ORIGIN_0 in .env.prod}"
+      Cors__AllowedOrigins__1: "${CORS_ORIGIN_1:-}"
+      ConnectionStrings__RegistrationDatabase: "${REGISTRATION_DATABASE_CONNECTION:?Set REGISTRATION_DATABASE_CONNECTION to your RDS connection string}"
+      Services__Event__BaseUrl: "http://eventflow-event:8080/"
+      Services__Operations__BaseUrl: "http://eventflow-operations:8080/"
+      Cloudinary__CloudName: "${CLOUDINARY_CLOUD_NAME:?Set CLOUDINARY_CLOUD_NAME in .env.prod}"
+      Cloudinary__ApiKey: "${CLOUDINARY_API_KEY:?Set CLOUDINARY_API_KEY in .env.prod}"
+      Cloudinary__ApiSecret: "${CLOUDINARY_API_SECRET:?Set CLOUDINARY_API_SECRET in .env.prod}"
+      Certificates__PublicBaseUrl: "${CERTIFICATES_PUBLIC_BASE_URL:?Set CERTIFICATES_PUBLIC_BASE_URL to your public HTTPS site URL}"
+      Certificates__StoragePath: "/var/certificates"
+    volumes:
+      - certificate-storage:/var/certificates
+    networks: [eventflow-backend]
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  operations:
+    image: 730132962765.dkr.ecr.ap-southeast-2.amazonaws.com/eventflow-operations:${IMAGE_TAG:-latest}
+    container_name: eventflow-operations
+    restart: unless-stopped
+    init: true
+    depends_on:
+      identity:
+        condition: service_started
+      registration:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      Jwt__SecretKey: "${JWT_SECRET_KEY:?Set JWT_SECRET_KEY in .env.prod}"
+      InternalService__Key: "${INTERNAL_SERVICE_KEY:?Set INTERNAL_SERVICE_KEY in .env.prod}"
+      Cors__AllowedOrigins__0: "${CORS_ORIGIN_0:?Set CORS_ORIGIN_0 in .env.prod}"
+      Cors__AllowedOrigins__1: "${CORS_ORIGIN_1:-}"
+      ConnectionStrings__OperationsDatabase: "${OPERATIONS_DATABASE_CONNECTION:?Set OPERATIONS_DATABASE_CONNECTION to your RDS connection string}"
+      Services__Identity__BaseUrl: "http://eventflow-identity:8080/"
+      Services__Event__BaseUrl: "http://eventflow-event:8080/"
+      Services__Registration__BaseUrl: "http://eventflow-registration:8080/"
+      Smtp__Host: "${SMTP_HOST:-}"
+      Smtp__Port: "${SMTP_PORT:-587}"
+      Smtp__UseSsl: "${SMTP_USE_SSL:-true}"
+      Smtp__Username: "${SMTP_USERNAME:-}"
+      Smtp__Password: "${SMTP_PASSWORD:-}"
+      Smtp__From: "${SMTP_FROM:-}"
+      Kafka__BootstrapServers: "kafka:9092"
+    networks: [eventflow-backend]
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  kafka:
+    # Pin the version for repeatable deployments; validate against your dev version.
+    image: apache/kafka:3.9.1
+    container_name: eventflow-kafka
+    restart: unless-stopped
+    init: true
+    # Kafka is internal only; do not publish 9092 to the EC2 host.
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 30s
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_HEAP_OPTS: "-Xms256m -Xmx512m"
+    networks: [eventflow-backend]
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  certificate-storage:
+  kafka-data:
+
+networks:
+  eventflow-backend:
+    name: eventflow-backend
+    driver: bridge
