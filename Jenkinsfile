@@ -73,11 +73,11 @@ pipeline {
                           "$BACKEND_USER@$BACKEND_HOST" \
                           "cd /opt/eventflow && \
                            export IMAGE_TAG=$BUILD_NUMBER && \
-                           docker compose \
+                           docker-compose \
                              --env-file /opt/eventflow/.env.prod \
                              -f /opt/eventflow/docker-compose.prod.yml \
                              pull gateway identity event registration operations && \
-                           docker compose \
+                           docker-compose \
                              --env-file /opt/eventflow/.env.prod \
                              -f /opt/eventflow/docker-compose.prod.yml \
                              up -d --no-build \
@@ -94,7 +94,7 @@ pipeline {
         }
 
         failure {
-            echo 'Pipeline failed. Check the Console Output for the failed stage.'
+            echo 'Pipeline failed. Check the stage logs in Console Output.'
         }
 
         always {
