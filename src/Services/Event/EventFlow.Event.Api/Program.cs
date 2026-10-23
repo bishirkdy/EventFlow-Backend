@@ -20,6 +20,7 @@ builder.Services.AddApplication()
     .AddJwtAuthentication(builder.Configuration);
 
 builder.Services.AddEventFlowMessaging(builder.Configuration);
+builder.Services.AddEventFlowMessaging(builder.Configuration);
 
 var app = builder.Build();
 

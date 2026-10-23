@@ -35,6 +35,7 @@ services:
 
       Cors__AllowedOrigins__0: "${CORS_ORIGIN_0:-http://localhost:4200}"
       Cors__AllowedOrigins__1: "${CORS_ORIGIN_1:-https://localhost:4200}"
+      Cors__AllowedOrigins__2: "${CORS_ORIGIN_2:-http://127.0.0.1:4200}"
 
       ReverseProxy__Clusters__identity-cluster__Destinations__identity-api__Address: "http://eventflow-identity:8080/"
       ReverseProxy__Clusters__event-cluster__Destinations__event-api__Address: "http://eventflow-event:8080/"
@@ -66,9 +67,6 @@ services:
       Jwt__SecretKey: "${JWT_SECRET_KEY}"
       InternalService__Key: "${INTERNAL_SERVICE_KEY}"
 
-      Cors__AllowedOrigins__0: "${CORS_ORIGIN_0:-http://localhost:4200}"
-      Cors__AllowedOrigins__1: "${CORS_ORIGIN_1:-https://localhost:4200}"
-
       ConnectionStrings__IdentityDatabase: "Host=postgres;Port=5432;Database=IdentityDatabase;Username=postgres;Password=${POSTGRES_PASSWORD}"
 
       Kafka__BootstrapServers: "kafka:9092"
@@ -96,9 +94,6 @@ services:
 
       InternalService__Key: "${INTERNAL_SERVICE_KEY}"
 
-      Cors__AllowedOrigins__0: "${CORS_ORIGIN_0:-http://localhost:4200}"
-      Cors__AllowedOrigins__1: "${CORS_ORIGIN_1:-https://localhost:4200}"
-
       ConnectionStrings__EventCoreDatabase: "Host=postgres;Port=5432;Database=EventCoreDatabase;Username=postgres;Password=${POSTGRES_PASSWORD}"
 
       Services__Identity__BaseUrl: "http://eventflow-identity:8080/"
@@ -120,13 +115,11 @@ services:
           path: ./src/BuildingBlocks
 
   kafka:
-    image: apache/kafka:latest
+    image: apache/kafka:3.9.1
     container_name: eventflow-kafka
     restart: unless-stopped
     ports:
       - "9092:9092"
-    extra_hosts:
-      - "kafka:127.0.0.1"
     volumes:
       - kafka-data:/var/lib/kafka/data
     healthcheck:
@@ -177,9 +170,6 @@ services:
       Jwt__SecretKey: "${JWT_SECRET_KEY}"
       InternalService__Key: "${INTERNAL_SERVICE_KEY}"
 
-      Cors__AllowedOrigins__0: "${CORS_ORIGIN_0:-http://localhost:4200}"
-      Cors__AllowedOrigins__1: "${CORS_ORIGIN_1:-https://localhost:4200}"
-
       ConnectionStrings__RegistrationDatabase: "Host=postgres;Port=5432;Database=RegistrationDatabase;Username=postgres;Password=${POSTGRES_PASSWORD}"
 
       Services__Event__BaseUrl: "http://eventflow-event:8080/"
@@ -224,14 +214,13 @@ services:
       Jwt__SecretKey: "${JWT_SECRET_KEY}"
       InternalService__Key: "${INTERNAL_SERVICE_KEY}"
 
-      Cors__AllowedOrigins__0: "${CORS_ORIGIN_0:-http://localhost:4200}"
-      Cors__AllowedOrigins__1: "${CORS_ORIGIN_1:-https://localhost:4200}"
-
       ConnectionStrings__OperationsDatabase: "Host=postgres;Port=5432;Database=OperationsDatabase;Username=postgres;Password=${POSTGRES_PASSWORD}"
 
       Services__Identity__BaseUrl: "http://eventflow-identity:8080/"
       Services__Event__BaseUrl: "http://eventflow-event:8080/"
       Services__Registration__BaseUrl: "http://eventflow-registration:8080/"
+
+      Frontend__BaseUrl: "${FRONTEND_BASE_URL:-http://localhost:4200}"
 
       Smtp__Host: "${SMTP_HOST:-}"
       Smtp__Port: "${SMTP_PORT:-587}"

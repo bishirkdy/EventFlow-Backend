@@ -15,8 +15,6 @@ namespace EventFlow.Api.Extensions;
 
 public static class ApiApplicationExtensions
 {
-    public const string CorsPolicy = "EventFlowCors";
-
     public static IServiceCollection AddEventFlowApiDefaults(this IServiceCollection services,
         string title,
         string version = "v1",
@@ -28,33 +26,6 @@ public static class ApiApplicationExtensions
 
         services.AddHttpContextAccessor();
         services.AddSingleton<ICorrelationIdProvider, HttpCorrelationIdProvider>();
-
-        var allowedOrigins = configuration?.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
-
-        services.AddCors(options =>
-        {
-            options.AddPolicy(CorsPolicy, policy =>
-            {
-                if (allowedOrigins.Length > 0)
-                {
-                    policy
-                        .WithOrigins(allowedOrigins)
-                        .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .AllowCredentials();
-                }
-                else
-                {
-                    policy
-                        .WithOrigins(
-                            "http://localhost:4200",
-                            "https://localhost:4200")
-                        .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .AllowCredentials();
-                }
-            });
-        });
 
         services.AddRateLimiter(options =>
         {
@@ -116,8 +87,6 @@ public static class ApiApplicationExtensions
 
         app.UseMiddleware<CorrelationIdMiddleware>();
         app.UseMiddleware<GlobalExceptionMiddleware>();
-
-        app.UseCors(CorsPolicy);
 
         if (app.Environment.IsDevelopment())
         {

@@ -19,7 +19,6 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       Cors__AllowedOrigins__0: "${CORS_ORIGIN_0:?Set CORS_ORIGIN_0 in .env.prod}"
-      Cors__AllowedOrigins__1: "${CORS_ORIGIN_1:-}"
       ReverseProxy__Clusters__identity-cluster__Destinations__identity-api__Address: "http://eventflow-identity:8080/"
       ReverseProxy__Clusters__event-cluster__Destinations__event-api__Address: "http://eventflow-event:8080/"
       ReverseProxy__Clusters__registration-cluster__Destinations__registration-api__Address: "http://eventflow-registration:8080/"
@@ -42,8 +41,6 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       Jwt__SecretKey: "${JWT_SECRET_KEY:?Set JWT_SECRET_KEY in .env.prod}"
       InternalService__Key: "${INTERNAL_SERVICE_KEY:?Set INTERNAL_SERVICE_KEY in .env.prod}"
-      Cors__AllowedOrigins__0: "${CORS_ORIGIN_0:?Set CORS_ORIGIN_0 in .env.prod}"
-      Cors__AllowedOrigins__1: "${CORS_ORIGIN_1:-}"
       ConnectionStrings__IdentityDatabase: "${IDENTITY_DATABASE_CONNECTION:?Set IDENTITY_DATABASE_CONNECTION to your RDS connection string}"
       Kafka__BootstrapServers: "kafka:9092"
     networks: [eventflow-backend]
@@ -63,8 +60,6 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       InternalService__Key: "${INTERNAL_SERVICE_KEY:?Set INTERNAL_SERVICE_KEY in .env.prod}"
-      Cors__AllowedOrigins__0: "${CORS_ORIGIN_0:?Set CORS_ORIGIN_0 in .env.prod}"
-      Cors__AllowedOrigins__1: "${CORS_ORIGIN_1:-}"
       ConnectionStrings__EventCoreDatabase: "${EVENT_DATABASE_CONNECTION:?Set EVENT_DATABASE_CONNECTION to your RDS connection string}"
       Services__Identity__BaseUrl: "http://eventflow-identity:8080/"
       Services__Registration__BaseUrl: "http://eventflow-registration:8080/"
@@ -93,8 +88,6 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       Jwt__SecretKey: "${JWT_SECRET_KEY:?Set JWT_SECRET_KEY in .env.prod}"
       InternalService__Key: "${INTERNAL_SERVICE_KEY:?Set INTERNAL_SERVICE_KEY in .env.prod}"
-      Cors__AllowedOrigins__0: "${CORS_ORIGIN_0:?Set CORS_ORIGIN_0 in .env.prod}"
-      Cors__AllowedOrigins__1: "${CORS_ORIGIN_1:-}"
       ConnectionStrings__RegistrationDatabase: "${REGISTRATION_DATABASE_CONNECTION:?Set REGISTRATION_DATABASE_CONNECTION to your RDS connection string}"
       Services__Event__BaseUrl: "http://eventflow-event:8080/"
       Services__Operations__BaseUrl: "http://eventflow-operations:8080/"
@@ -127,12 +120,11 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       Jwt__SecretKey: "${JWT_SECRET_KEY:?Set JWT_SECRET_KEY in .env.prod}"
       InternalService__Key: "${INTERNAL_SERVICE_KEY:?Set INTERNAL_SERVICE_KEY in .env.prod}"
-      Cors__AllowedOrigins__0: "${CORS_ORIGIN_0:?Set CORS_ORIGIN_0 in .env.prod}"
-      Cors__AllowedOrigins__1: "${CORS_ORIGIN_1:-}"
       ConnectionStrings__OperationsDatabase: "${OPERATIONS_DATABASE_CONNECTION:?Set OPERATIONS_DATABASE_CONNECTION to your RDS connection string}"
       Services__Identity__BaseUrl: "http://eventflow-identity:8080/"
       Services__Event__BaseUrl: "http://eventflow-event:8080/"
       Services__Registration__BaseUrl: "http://eventflow-registration:8080/"
+      Frontend__BaseUrl: "${FRONTEND_BASE_URL:?Set FRONTEND_BASE_URL in .env.prod}"
       Smtp__Host: "${SMTP_HOST:-}"
       Smtp__Port: "${SMTP_PORT:-587}"
       Smtp__UseSsl: "${SMTP_USE_SSL:-true}"
