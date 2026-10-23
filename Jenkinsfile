@@ -11,6 +11,8 @@ pipeline {
         AWS_REGION = 'ap-southeast-2'
         AWS_ACCOUNT_ID = '730132962765'
         ECR_REGISTRY = '730132962765.dkr.ecr.ap-southeast-2.amazonaws.com'
+        BACKEND_HOST = '54.252.176.37'
+        BACKEND_USER = 'ec2-user'
     }
 
     stages {
@@ -25,7 +27,8 @@ pipeline {
                 sh '''
                     set -eu
 
-                    aws ecr get-login-password --region "$AWS_REGION" \
+                    aws ecr get-login-password \
+                      --region "$AWS_REGION" \
                       | docker login \
                         --username AWS \
                         --password-stdin "$ECR_REGISTRY"
@@ -55,14 +58,47 @@ pipeline {
                 '''
             }
         }
+
+        stage('Deploy to Backend EC2') {
+            steps {
+                sshagent(credentials: ['eventflow-backend-ssh']) {
+                    sh '''
+                        set -eu
+
+                        echo "Deploying build $BUILD_NUMBER to backend EC2"
+
+                        ssh \
+                          -o StrictHostKeyChecking=accept-new \
+                          -o ConnectTimeout=15 \
+                          "$BACKEND_USER@$BACKEND_HOST" \
+                          "cd /opt/eventflow && \
+                           export IMAGE_TAG=$BUILD_NUMBER && \
+                           docker compose \
+                             --env-file /opt/eventflow/.env.prod \
+                             -f /opt/eventflow/docker-compose.prod.yml \
+                             pull gateway identity event registration operations && \
+                           docker compose \
+                             --env-file /opt/eventflow/.env.prod \
+                             -f /opt/eventflow/docker-compose.prod.yml \
+                             up -d --no-build \
+                             gateway identity event registration operations"
+                    '''
+                }
+            }
+        }
     }
 
     post {
         success {
-            echo 'All backend images built and pushed to ECR.'
+            echo 'All five backend images pushed to ECR and deployment completed.'
         }
+
         failure {
-            echo 'Pipeline failed. Check the stage logs.'
+            echo 'Pipeline failed. Check the Console Output for the failed stage.'
+        }
+
+        always {
+            echo 'EventFlow backend CI/CD pipeline finished.'
         }
     }
 }
