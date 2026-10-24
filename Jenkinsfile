@@ -11,7 +11,7 @@ pipeline {
         AWS_REGION = 'ap-southeast-2'
         AWS_ACCOUNT_ID = '730132962765'
         ECR_REGISTRY = '730132962765.dkr.ecr.ap-southeast-2.amazonaws.com'
-        BACKEND_HOST = '54.252.176.37'
+        BACKEND_HOST = '3.25.150.159'
         BACKEND_USER = 'ec2-user'
     }
 
