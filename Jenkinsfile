@@ -5,6 +5,11 @@ pipeline {
     options {
         disableConcurrentBuilds()
         timeout(time: 45, unit: 'MINUTES')
+        buildDiscarder(logRotator(
+            numToKeepStr: '10',
+            daysToKeepStr: '14',
+            artifactNumToKeepStr: '5'
+        ))
     }
 
     environment {
@@ -19,6 +24,27 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
+            }
+        }
+
+        stage('Check Jenkins Disk Space') {
+            steps {
+                sh '''
+                    set -eu
+
+                    AVAILABLE_KB=$(df -Pk / | awk 'NR==2 {print $4}')
+                    REQUIRED_KB=2097152
+
+                    echo "Available disk space: ${AVAILABLE_KB} KB"
+
+                    if [ "$AVAILABLE_KB" -lt "$REQUIRED_KB" ]; then
+                        echo "ERROR: Less than 2 GB free on Jenkins root disk."
+                        echo "Clean up disk space before building."
+                        exit 1
+                    fi
+
+                    docker info >/dev/null
+                '''
             }
         }
 
@@ -65,7 +91,7 @@ pipeline {
                     sh '''
                         set -eu
 
-                        echo "Deploying build $BUILD_NUMBER to backend EC2"
+                        echo "Deploying build $BUILD_NUMBER"
 
                         ssh \
                           -o StrictHostKeyChecking=accept-new \
@@ -86,19 +112,70 @@ pipeline {
                 }
             }
         }
+
+        stage('Verify Deployment') {
+            steps {
+                sshagent(credentials: ['eventflow-backend-ssh']) {
+                    sh '''
+                        set -eu
+
+                        ssh \
+                          -o StrictHostKeyChecking=accept-new \
+                          -o ConnectTimeout=15 \
+                          "$BACKEND_USER@$BACKEND_HOST" \
+                          "cd /opt/eventflow && \
+                           docker-compose \
+                             --env-file /opt/eventflow/.env.prod \
+                             -f /opt/eventflow/docker-compose.prod.yml \
+                             ps && \
+                           for i in 1 2 3 4 5 6; do \
+                             CODE=\\$(curl -sS -o /dev/null \
+                               -w '%{http_code}' \
+                               --max-time 10 \
+                               http://127.0.0.1:5000/api/v1/auth/profile) || CODE=000; \
+                             case \\$CODE in \
+                               200|401|403) \
+                                 echo 'Gateway responded successfully'; exit 0 ;; \
+                             esac; \
+                             echo \\\"Gateway not ready yet: HTTP \\$CODE\\\"; \
+                             sleep 10; \
+                           done; \
+                           echo 'ERROR: Gateway health verification failed'; exit 1"
+                    '''
+                }
+            }
+        }
     }
 
     post {
         success {
-            echo 'All five backend images pushed to ECR and deployment completed.'
+            echo 'Build, ECR push, deployment and gateway verification completed.'
         }
 
         failure {
-            echo 'Pipeline failed. Check the stage logs in Console Output.'
+            echo 'Pipeline failed. Check Console Output and verify backend service health.'
         }
 
         always {
-            echo 'EventFlow backend CI/CD pipeline finished.'
+            sh '''
+                set +e
+
+                echo "Docker usage before cleanup:"
+                docker system df
+
+                echo "Removing Docker build cache older than 3 days..."
+                docker builder prune -af --filter "until=72h"
+
+                echo "Removing unused images older than 7 days..."
+                docker image prune -af --filter "until=168h"
+
+                echo "Docker usage after cleanup:"
+                docker system df
+
+                echo "Disk usage:"
+                df -h /
+            '''
+            echo 'EventFlow CI/CD pipeline finished.'
         }
     }
 }
