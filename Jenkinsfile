@@ -1,11 +1,9 @@
-
 pipeline {
     agent any
 
     options {
         disableConcurrentBuilds()
         timeout(time: 45, unit: 'MINUTES')
-
         buildDiscarder(logRotator(
             numToKeepStr: '10',
             daysToKeepStr: '14',
@@ -14,9 +12,9 @@ pipeline {
     }
 
     environment {
-        AWS_REGION         = 'ap-southeast-2'
-        AWS_ACCOUNT_ID     = '730132962765'
-        ECR_REGISTRY       = '730132962765.dkr.ecr.ap-southeast-2.amazonaws.com'
+        AWS_REGION          = 'ap-southeast-2'
+        AWS_ACCOUNT_ID      = '730132962765'
+        ECR_REGISTRY        = '730132962765.dkr.ecr.ap-southeast-2.amazonaws.com'
         BACKEND_INSTANCE_ID = 'i-07736afe0c5fca9d1'
     }
 
@@ -27,24 +25,29 @@ pipeline {
             }
         }
 
-        stage('Check Jenkins Disk Space') {
+        stage('Preflight') {
             steps {
                 sh '''
                     set -eu
-
                     AVAILABLE_KB=$(df -Pk / | awk 'NR==2 {print $4}')
                     REQUIRED_KB=2097152
-
-                    echo "Available disk space: ${AVAILABLE_KB} KB"
+                    echo "Available Jenkins disk space: ${AVAILABLE_KB} KB"
 
                     if [ "$AVAILABLE_KB" -lt "$REQUIRED_KB" ]; then
-                        echo "ERROR: Less than 2 GB free on Jenkins root disk."
+                        echo "ERROR: Jenkins needs at least 2 GB free disk space."
                         exit 1
                     fi
 
                     docker info >/dev/null
                     aws --version
                     python3 --version
+
+                    for file in Dockerfile.gateway Dockerfile.identity Dockerfile.event Dockerfile.registration Dockerfile.operations docker-compose.prod.yml; do
+                        if [ ! -f "$file" ]; then
+                            echo "ERROR: Required repository file missing: $file"
+                            exit 1
+                        fi
+                    done
                 '''
             }
         }
@@ -53,34 +56,18 @@ pipeline {
             steps {
                 sh '''
                     set -eu
-
-                    echo "Authenticating Jenkins Docker client with ECR..."
-
-                    aws ecr get-login-password \
-                      --region "$AWS_REGION" \
-                      | docker login \
-                          --username AWS \
-                          --password-stdin "$ECR_REGISTRY"
+                    aws ecr get-login-password --region "$AWS_REGION" \
+                      | docker login --username AWS --password-stdin "$ECR_REGISTRY"
 
                     build_and_push() {
                         SERVICE="$1"
                         DOCKERFILE="$2"
                         IMAGE="$ECR_REGISTRY/eventflow-$SERVICE"
+                        echo "Building $IMAGE:$BUILD_NUMBER from $DOCKERFILE"
 
-                        if [ ! -f "$DOCKERFILE" ]; then
-                            echo "ERROR: Dockerfile not found: $DOCKERFILE"
-                            exit 1
-                        fi
-
-                        echo "Building eventflow-$SERVICE"
-
-                        docker build \
-                          --pull \
-                          -f "$DOCKERFILE" \
+                        docker build --pull -f "$DOCKERFILE" \
                           -t "$IMAGE:$BUILD_NUMBER" \
-                          -t "$IMAGE:latest" \
-                          .
-
+                          -t "$IMAGE:latest" .
                         docker push "$IMAGE:$BUILD_NUMBER"
                         docker push "$IMAGE:latest"
                     }
@@ -94,86 +81,96 @@ pipeline {
             }
         }
 
-        stage('Deploy to Backend via SSM') {
+        stage('Deploy via AWS Systems Manager') {
             steps {
                 sh '''
                     set -eu
+                    echo "Preparing deployment script for build $BUILD_NUMBER..."
 
-                    echo "Deploying EventFlow build $BUILD_NUMBER via SSM"
-                    echo "Backend instance: $BACKEND_INSTANCE_ID"
+                    COMPOSE_B64=$(base64 docker-compose.prod.yml | tr -d '\\n')
+                    export COMPOSE_B64 BUILD_NUMBER AWS_REGION ECR_REGISTRY
 
-                    COMPOSE_B64=$(base64 docker-compose.prod.yml | tr -d '\n')
-                    export COMPOSE_B64
+                    cat > remote-deploy.template.sh <<'REMOTE_SCRIPT'
+#!/bin/bash
+set -euo pipefail
 
-                    export REMOTE_SCRIPT
-                    REMOTE_SCRIPT=$(cat <<REMOTE
-set -eu
+AWS_REGION="__AWS_REGION__"
+ECR_REGISTRY="__ECR_REGISTRY__"
+IMAGE_TAG="__BUILD_NUMBER__"
+COMPOSE_B64="__COMPOSE_B64__"
 
-echo "Authenticating Docker with Amazon ECR..."
-aws ecr get-login-password --region ${AWS_REGION} \
-  | docker login \
-      --username AWS \
-      --password-stdin ${ECR_REGISTRY}
+echo "Logging in to Amazon ECR..."
+aws ecr get-login-password --region "$AWS_REGION" \
+  | docker login --username AWS --password-stdin "$ECR_REGISTRY"
 
-echo "Checking deployment directory..."
 cd /opt/eventflow
+if [ ! -f /opt/eventflow/.env.prod ]; then
+  echo "ERROR: /opt/eventflow/.env.prod was not found."
+  exit 1
+fi
 
-echo "Writing the repository compose file..."
-printf '%s' "$COMPOSE_B64" | base64 -d > /opt/eventflow/docker-compose.prod.yml
-
-echo "Validating production public URLs..."
+echo "Validating production frontend URL configuration..."
 if ! grep -Eq '^FRONTEND_BASE_URL=https://eventflow-web\.duckdns\.org/?$' /opt/eventflow/.env.prod; then
-  echo "ERROR: FRONTEND_BASE_URL in /opt/eventflow/.env.prod must be https://eventflow-web.duckdns.org."
+  echo "ERROR: FRONTEND_BASE_URL must be https://eventflow-web.duckdns.org"
   exit 1
 fi
 
 if ! grep -Eq '^CORS_ORIGIN_0=https://eventflow-web\.duckdns\.org/?$' /opt/eventflow/.env.prod; then
-  echo "ERROR: CORS_ORIGIN_0 in /opt/eventflow/.env.prod must be https://eventflow-web.duckdns.org."
+  echo "ERROR: CORS_ORIGIN_0 must be https://eventflow-web.duckdns.org"
   exit 1
 fi
 
-if docker-compose \
-  --env-file /opt/eventflow/.env.prod \
-  -f /opt/eventflow/docker-compose.prod.yml \
-  config | grep -Eq 'Frontend__BaseUrl:.*(localhost|127\.0\.0\.1)'; then
-  echo "ERROR: The resolved Frontend__BaseUrl points to localhost."
+echo "Updating docker-compose.prod.yml..."
+printf '%s' "$COMPOSE_B64" | base64 -d > /opt/eventflow/docker-compose.prod.yml
+
+if docker-compose --env-file /opt/eventflow/.env.prod \
+  -f /opt/eventflow/docker-compose.prod.yml config \
+  | grep -Eq 'Frontend__BaseUrl:.*(localhost|127\.0\.0\.1)'; then
+  echo "ERROR: Resolved Frontend__BaseUrl points to localhost."
   exit 1
 fi
 
-if docker-compose \
-  --env-file /opt/eventflow/.env.prod \
-  -f /opt/eventflow/docker-compose.prod.yml \
-  config | grep -Eq 'Cors__AllowedOrigins__[0-9]+:.*(localhost|127\.0\.0\.1)'; then
+if docker-compose --env-file /opt/eventflow/.env.prod \
+  -f /opt/eventflow/docker-compose.prod.yml config \
+  | grep -Eq 'Cors__AllowedOrigins__[0-9]+:.*(localhost|127\.0\.0\.1)'; then
   echo "ERROR: A resolved CORS origin points to localhost."
   exit 1
 fi
 
-export IMAGE_TAG=${BUILD_NUMBER}
-
-echo "Pulling build ${BUILD_NUMBER} images..."
-docker-compose \
-  --env-file /opt/eventflow/.env.prod \
+export IMAGE_TAG
+echo "Pulling images for build $IMAGE_TAG..."
+docker-compose --env-file /opt/eventflow/.env.prod \
   -f /opt/eventflow/docker-compose.prod.yml \
   pull gateway identity event registration operations
 
 echo "Starting updated services..."
-docker-compose \
-  --env-file /opt/eventflow/.env.prod \
+docker-compose --env-file /opt/eventflow/.env.prod \
   -f /opt/eventflow/docker-compose.prod.yml \
   up -d --no-build gateway identity event registration operations
 
-echo "Current container status:"
-docker-compose \
-  --env-file /opt/eventflow/.env.prod \
-  -f /opt/eventflow/docker-compose.prod.yml \
-  ps
-REMOTE
-)
+echo "Container status:"
+docker-compose --env-file /opt/eventflow/.env.prod \
+  -f /opt/eventflow/docker-compose.prod.yml ps
+REMOTE_SCRIPT
 
-                    python3 -c '
-import json, os
-print(json.dumps({"commands": [os.environ["REMOTE_SCRIPT"]]}))
-' > ssm-deploy-commands.json
+                    python3 - <<'PY'
+import json
+import os
+from pathlib import Path
+
+script = Path("remote-deploy.template.sh").read_text()
+for token, value in {
+    "__AWS_REGION__": os.environ["AWS_REGION"],
+    "__ECR_REGISTRY__": os.environ["ECR_REGISTRY"],
+    "__BUILD_NUMBER__": os.environ["BUILD_NUMBER"],
+    "__COMPOSE_B64__": os.environ["COMPOSE_B64"],
+}.items():
+    script = script.replace(token, value)
+
+Path("ssm-deploy-commands.json").write_text(
+    json.dumps({"commands": [script]})
+)
+PY
 
                     COMMAND_ID=$(aws ssm send-command \
                       --region "$AWS_REGION" \
@@ -181,46 +178,36 @@ print(json.dumps({"commands": [os.environ["REMOTE_SCRIPT"]]}))
                       --document-name "AWS-RunShellScript" \
                       --comment "EventFlow deployment build $BUILD_NUMBER" \
                       --parameters file://ssm-deploy-commands.json \
-                      --query 'Command.CommandId' \
-                      --output text)
+                      --query 'Command.CommandId' --output text)
 
-                    echo "SSM Command ID: $COMMAND_ID"
+                    echo "SSM deployment command: $COMMAND_ID"
 
                     for i in $(seq 1 60); do
                         STATUS=$(aws ssm get-command-invocation \
-                          --region "$AWS_REGION" \
-                          --command-id "$COMMAND_ID" \
+                          --region "$AWS_REGION" --command-id "$COMMAND_ID" \
                           --instance-id "$BACKEND_INSTANCE_ID" \
-                          --query 'Status' \
-                          --output text 2>/dev/null || true)
-
+                          --query 'Status' --output text 2>/dev/null || true)
                         STATUS="${STATUS:-Pending}"
                         echo "Deployment status: $STATUS"
 
                         case "$STATUS" in
                             Success)
                                 aws ssm get-command-invocation \
-                                  --region "$AWS_REGION" \
-                                  --command-id "$COMMAND_ID" \
+                                  --region "$AWS_REGION" --command-id "$COMMAND_ID" \
                                   --instance-id "$BACKEND_INSTANCE_ID" \
-                                  --query 'StandardOutputContent' \
-                                  --output text
-                                exit 0
-                                ;;
+                                  --query 'StandardOutputContent' --output text
+                                exit 0 ;;
                             Failed|Cancelled|TimedOut|Undeliverable|Terminated|InvalidPlatform)
                                 aws ssm get-command-invocation \
-                                  --region "$AWS_REGION" \
-                                  --command-id "$COMMAND_ID" \
+                                  --region "$AWS_REGION" --command-id "$COMMAND_ID" \
                                   --instance-id "$BACKEND_INSTANCE_ID" \
                                   --output json || true
-                                exit 1
-                                ;;
+                                exit 1 ;;
                         esac
-
                         sleep 5
                     done
 
-                    echo "ERROR: Timed out waiting for deployment."
+                    echo "ERROR: Timed out waiting for deployment command."
                     exit 1
                 '''
             }
@@ -231,59 +218,52 @@ print(json.dumps({"commands": [os.environ["REMOTE_SCRIPT"]]}))
                 sh '''
                     set -eu
 
-                    echo "Checking containers and gateway API response..."
-
-                    export REMOTE_SCRIPT
-                    REMOTE_SCRIPT=$(cat <<'REMOTE'
-set -eu
-
+                    cat > remote-verify.sh <<'REMOTE_SCRIPT'
+#!/bin/bash
+set -euo pipefail
 cd /opt/eventflow
 
-docker-compose \
-  --env-file /opt/eventflow/.env.prod \
-  -f /opt/eventflow/docker-compose.prod.yml \
-  ps
+docker-compose --env-file /opt/eventflow/.env.prod \
+  -f /opt/eventflow/docker-compose.prod.yml ps
 
 FRONTEND_ENV=$(docker inspect eventflow-operations \
   --format '{{range .Config.Env}}{{println .}}{{end}}' \
   | grep '^Frontend__BaseUrl=' || true)
-
-echo "Operations $FRONTEND_ENV"
+echo "Operations environment: ${FRONTEND_ENV:-not found}"
 
 case "$FRONTEND_ENV" in
-    Frontend__BaseUrl=https://eventflow-web.duckdns.org|Frontend__BaseUrl=https://eventflow-web.duckdns.org/)
-        ;;
-    *)
-        echo "ERROR: Operations Frontend__BaseUrl is missing or incorrect."
-        exit 1
-        ;;
+  Frontend__BaseUrl=https://eventflow-web.duckdns.org|Frontend__BaseUrl=https://eventflow-web.duckdns.org/)
+    ;;
+  *)
+    echo "ERROR: Operations Frontend__BaseUrl is missing or incorrect."
+    exit 1
+    ;;
 esac
 
-for i in 1 2 3 4 5 6; do
-    CODE=$(curl -sS -o /dev/null -w '%{http_code}' \
-        --max-time 10 \
-        http://127.0.0.1:5000/api/v1/auth/profile) || CODE=000
-
-    case "$CODE" in
-        200|401|403)
-            echo "Gateway responded successfully with HTTP $CODE"
-            exit 0
-            ;;
-    esac
-
-    echo "Gateway not ready: HTTP $CODE"
-    sleep 10
+for attempt in 1 2 3 4 5 6; do
+  CODE=$(curl -sS -o /dev/null -w '%{http_code}' \
+    --max-time 10 http://127.0.0.1:5000/api/v1/auth/profile) || CODE=000
+  case "$CODE" in
+    200|401|403)
+      echo "Gateway verification succeeded with HTTP $CODE."
+      exit 0 ;;
+  esac
+  echo "Gateway not ready: HTTP $CODE (attempt $attempt/6)"
+  sleep 10
 done
 
-echo "ERROR: Gateway health verification failed."
+echo "ERROR: Gateway verification failed. Check gateway and downstream service logs."
 exit 1
-REMOTE
-)
+REMOTE_SCRIPT
 
-                    python3 -c '
-import json, os
-print(json.dumps({"commands": [os.environ["REMOTE_SCRIPT"]]}))
-' > ssm-verify-commands.json
+                    python3 - <<'PY'
+import json
+from pathlib import Path
+
+Path("ssm-verify-commands.json").write_text(
+    json.dumps({"commands": [Path("remote-verify.sh").read_text()]})
+)
+PY
 
                     COMMAND_ID=$(aws ssm send-command \
                       --region "$AWS_REGION" \
@@ -291,46 +271,36 @@ print(json.dumps({"commands": [os.environ["REMOTE_SCRIPT"]]}))
                       --document-name "AWS-RunShellScript" \
                       --comment "Verify EventFlow build $BUILD_NUMBER" \
                       --parameters file://ssm-verify-commands.json \
-                      --query 'Command.CommandId' \
-                      --output text)
+                      --query 'Command.CommandId' --output text)
 
-                    echo "Verification Command ID: $COMMAND_ID"
+                    echo "SSM verification command: $COMMAND_ID"
 
                     for i in $(seq 1 30); do
                         STATUS=$(aws ssm get-command-invocation \
-                          --region "$AWS_REGION" \
-                          --command-id "$COMMAND_ID" \
+                          --region "$AWS_REGION" --command-id "$COMMAND_ID" \
                           --instance-id "$BACKEND_INSTANCE_ID" \
-                          --query 'Status' \
-                          --output text 2>/dev/null || true)
-
+                          --query 'Status' --output text 2>/dev/null || true)
                         STATUS="${STATUS:-Pending}"
                         echo "Verification status: $STATUS"
 
                         case "$STATUS" in
                             Success)
                                 aws ssm get-command-invocation \
-                                  --region "$AWS_REGION" \
-                                  --command-id "$COMMAND_ID" \
+                                  --region "$AWS_REGION" --command-id "$COMMAND_ID" \
                                   --instance-id "$BACKEND_INSTANCE_ID" \
-                                  --query 'StandardOutputContent' \
-                                  --output text
-                                exit 0
-                                ;;
+                                  --query 'StandardOutputContent' --output text
+                                exit 0 ;;
                             Failed|Cancelled|TimedOut|Undeliverable|Terminated|InvalidPlatform)
                                 aws ssm get-command-invocation \
-                                  --region "$AWS_REGION" \
-                                  --command-id "$COMMAND_ID" \
+                                  --region "$AWS_REGION" --command-id "$COMMAND_ID" \
                                   --instance-id "$BACKEND_INSTANCE_ID" \
                                   --output json || true
-                                exit 1
-                                ;;
+                                exit 1 ;;
                         esac
-
                         sleep 5
                     done
 
-                    echo "ERROR: Timed out waiting for verification."
+                    echo "ERROR: Timed out waiting for verification command."
                     exit 1
                 '''
             }
@@ -341,31 +311,21 @@ print(json.dumps({"commands": [os.environ["REMOTE_SCRIPT"]]}))
         success {
             echo 'EventFlow images pushed, backend deployed, and gateway verified.'
         }
-
         failure {
-            echo 'Pipeline failed. Check Console Output and the associated SSM command output.'
+            echo 'Pipeline failed. Review Console Output and the relevant SSM command output.'
         }
-
         always {
             sh '''
                 set +e
-
                 echo "Docker usage before cleanup:"
                 docker system df
-
-                echo "Removing unused Docker build cache..."
                 docker builder prune -af
-
-                echo "Removing unused Docker images..."
                 docker image prune -af
-
                 echo "Docker usage after cleanup:"
                 docker system df
-
                 echo "Jenkins disk usage:"
                 df -h /
             '''
-
             echo 'EventFlow CI/CD pipeline finished.'
         }
     }
