@@ -1,3 +1,4 @@
+
 pipeline {
     agent any
 
@@ -13,11 +14,9 @@ pipeline {
     }
 
     environment {
-        AWS_REGION     = 'ap-southeast-2'
-        AWS_ACCOUNT_ID = '730132962765'
-        ECR_REGISTRY   = '730132962765.dkr.ecr.ap-southeast-2.amazonaws.com'
-
-        // Verify this is your BACKEND EC2 instance ID.
+        AWS_REGION         = 'ap-southeast-2'
+        AWS_ACCOUNT_ID     = '730132962765'
+        ECR_REGISTRY       = '730132962765.dkr.ecr.ap-southeast-2.amazonaws.com'
         BACKEND_INSTANCE_ID = 'i-07736afe0c5fca9d1'
     }
 
@@ -45,6 +44,7 @@ pipeline {
 
                     docker info >/dev/null
                     aws --version
+                    python3 --version
                 '''
             }
         }
@@ -54,20 +54,28 @@ pipeline {
                 sh '''
                     set -eu
 
+                    echo "Authenticating Jenkins Docker client with ECR..."
+
                     aws ecr get-login-password \
                       --region "$AWS_REGION" \
                       | docker login \
-                        --username AWS \
-                        --password-stdin "$ECR_REGISTRY"
+                          --username AWS \
+                          --password-stdin "$ECR_REGISTRY"
 
                     build_and_push() {
                         SERVICE="$1"
                         DOCKERFILE="$2"
                         IMAGE="$ECR_REGISTRY/eventflow-$SERVICE"
 
+                        if [ ! -f "$DOCKERFILE" ]; then
+                            echo "ERROR: Dockerfile not found: $DOCKERFILE"
+                            exit 1
+                        fi
+
                         echo "Building eventflow-$SERVICE"
 
                         docker build \
+                          --pull \
                           -f "$DOCKERFILE" \
                           -t "$IMAGE:$BUILD_NUMBER" \
                           -t "$IMAGE:latest" \
@@ -94,12 +102,52 @@ pipeline {
                     echo "Deploying EventFlow build $BUILD_NUMBER via SSM"
                     echo "Backend instance: $BACKEND_INSTANCE_ID"
 
+                    export REMOTE_SCRIPT
+                    REMOTE_SCRIPT=$(cat <<REMOTE
+set -eu
+
+echo "Authenticating Docker with Amazon ECR..."
+aws ecr get-login-password --region ${AWS_REGION} \
+  | docker login \
+      --username AWS \
+      --password-stdin ${ECR_REGISTRY}
+
+echo "Checking deployment directory..."
+cd /opt/eventflow
+
+export IMAGE_TAG=${BUILD_NUMBER}
+
+echo "Pulling build ${BUILD_NUMBER} images..."
+docker-compose \
+  --env-file /opt/eventflow/.env.prod \
+  -f /opt/eventflow/docker-compose.prod.yml \
+  pull gateway identity event registration operations
+
+echo "Starting updated services..."
+docker-compose \
+  --env-file /opt/eventflow/.env.prod \
+  -f /opt/eventflow/docker-compose.prod.yml \
+  up -d --no-build gateway identity event registration operations
+
+echo "Current container status:"
+docker-compose \
+  --env-file /opt/eventflow/.env.prod \
+  -f /opt/eventflow/docker-compose.prod.yml \
+  ps
+REMOTE
+)
+
+                    python3 -c '
+import json, os
+print(json.dumps({"commands": [os.environ["REMOTE_SCRIPT"]]}))
+' > ssm-deploy-commands.json
+
                     COMMAND_ID=$(aws ssm send-command \
                       --region "$AWS_REGION" \
                       --instance-ids "$BACKEND_INSTANCE_ID" \
                       --document-name "AWS-RunShellScript" \
                       --comment "EventFlow deployment build $BUILD_NUMBER" \
-                      --parameters "commands=[\\"set -eu; cd /opt/eventflow && export IMAGE_TAG=$BUILD_NUMBER && docker-compose --env-file /opt/eventflow/.env.prod -f /opt/eventflow/docker-compose.prod.yml pull gateway identity event registration operations && docker-compose --env-file /opt/eventflow/.env.prod -f /opt/eventflow/docker-compose.prod.yml up -d --no-build gateway identity event registration operations\\"]" \
+                      --parameters file://ssm-deploy-commands.json \
                       --query 'Command.CommandId' \
                       --output text)
 
@@ -150,14 +198,51 @@ pipeline {
                 sh '''
                     set -eu
 
-                    echo "Checking backend containers and gateway health"
+                    echo "Checking containers and gateway API response..."
+
+                    export REMOTE_SCRIPT
+                    REMOTE_SCRIPT=$(cat <<'REMOTE'
+set -eu
+
+cd /opt/eventflow
+
+docker-compose \
+  --env-file /opt/eventflow/.env.prod \
+  -f /opt/eventflow/docker-compose.prod.yml \
+  ps
+
+for i in 1 2 3 4 5 6; do
+    CODE=$(curl -sS -o /dev/null -w '%{http_code}' \
+        --max-time 10 \
+        http://127.0.0.1:5000/api/v1/auth/profile) || CODE=000
+
+    case "$CODE" in
+        200|401|403)
+            echo "Gateway responded successfully with HTTP $CODE"
+            exit 0
+            ;;
+    esac
+
+    echo "Gateway not ready: HTTP $CODE"
+    sleep 10
+done
+
+echo "ERROR: Gateway health verification failed."
+exit 1
+REMOTE
+)
+
+                    python3 -c '
+import json, os
+print(json.dumps({"commands": [os.environ["REMOTE_SCRIPT"]]}))
+' > ssm-verify-commands.json
 
                     COMMAND_ID=$(aws ssm send-command \
                       --region "$AWS_REGION" \
                       --instance-ids "$BACKEND_INSTANCE_ID" \
                       --document-name "AWS-RunShellScript" \
                       --comment "Verify EventFlow build $BUILD_NUMBER" \
-                      --parameters "commands=[\\"set -eu; cd /opt/eventflow && docker-compose --env-file /opt/eventflow/.env.prod -f /opt/eventflow/docker-compose.prod.yml ps && for i in 1 2 3 4 5 6; do CODE=\\\\\\$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 http://127.0.0.1:5000/api/v1/auth/profile) || CODE=000; case \\\\\\${CODE} in 200|401|403) echo Gateway responded successfully; exit 0 ;; esac; echo Gateway not ready: HTTP \\\\\\${CODE}; sleep 10; done; echo Gateway health verification failed; exit 1\\"]" \
+                      --parameters file://ssm-verify-commands.json \
                       --query 'Command.CommandId' \
                       --output text)
 
@@ -206,11 +291,11 @@ pipeline {
 
     post {
         success {
-            echo 'Build, ECR push, SSM deployment and gateway verification completed.'
+            echo 'EventFlow images pushed, backend deployed, and gateway verified.'
         }
 
         failure {
-            echo 'Pipeline failed. Check Console Output and inspect the SSM command results.'
+            echo 'Pipeline failed. Check Console Output and the associated SSM command output.'
         }
 
         always {
@@ -220,7 +305,7 @@ pipeline {
                 echo "Docker usage before cleanup:"
                 docker system df
 
-                echo "Removing Docker build cache..."
+                echo "Removing unused Docker build cache..."
                 docker builder prune -af
 
                 echo "Removing unused Docker images..."
@@ -229,7 +314,7 @@ pipeline {
                 echo "Docker usage after cleanup:"
                 docker system df
 
-                echo "Disk usage:"
+                echo "Jenkins disk usage:"
                 df -h /
             '''
 
