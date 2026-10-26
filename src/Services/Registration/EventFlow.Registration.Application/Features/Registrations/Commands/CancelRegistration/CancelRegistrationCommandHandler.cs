@@ -1,4 +1,5 @@
 using AutoMapper;
+using EventFlow.Registration.Application.Abstractions.Services;
 using EventFlow.Security.Authentication;
 using EventFlow.SharedKernel.Exceptions;
 
@@ -9,15 +10,21 @@ public sealed class CancelRegistrationCommandHandler(
     IUnitOfWork unitOfWork,
     IWaitlistPromotionService promotions,
     ICurrentUserService user,
+    IEventRegistrationAccessService access,
     IMapper mapper)
     : IRequestHandler<CancelRegistrationCommand, RegistrationDto>
 {
     public async Task<RegistrationDto> Handle(CancelRegistrationCommand command, CancellationToken cancellationToken)
     {
+        var canManage = await access.CanManageRegistrationAsync(
+            command.EventId,
+            user.UserId,
+            cancellationToken);
+
         var registration = await registrations.GetByIdAsync(
             command.EventId,
             command.RegistrationId,
-            userId: user.UserId,
+            userId: canManage ? null : user.UserId,
             includeParticipant: true,
             includeTicket: true,
             cancellationToken: cancellationToken);
