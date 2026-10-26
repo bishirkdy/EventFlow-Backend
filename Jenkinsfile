@@ -110,12 +110,12 @@ if [ ! -f /opt/eventflow/.env.prod ]; then
 fi
 
 echo "Validating production frontend URL configuration..."
-if ! grep -Eq '^FRONTEND_BASE_URL=https://eventflow-web\.duckdns\.org/?$' /opt/eventflow/.env.prod; then
+if ! grep -Eq '^FRONTEND_BASE_URL=https://eventflow-web[.]duckdns[.]org/?$' /opt/eventflow/.env.prod; then
   echo "ERROR: FRONTEND_BASE_URL must be https://eventflow-web.duckdns.org"
   exit 1
 fi
 
-if ! grep -Eq '^CORS_ORIGIN_0=https://eventflow-web\.duckdns\.org/?$' /opt/eventflow/.env.prod; then
+if ! grep -Eq '^CORS_ORIGIN_0=https://eventflow-web[.]duckdns[.]org/?$' /opt/eventflow/.env.prod; then
   echo "ERROR: CORS_ORIGIN_0 must be https://eventflow-web.duckdns.org"
   exit 1
 fi
@@ -125,14 +125,14 @@ printf '%s' "$COMPOSE_B64" | base64 -d > /opt/eventflow/docker-compose.prod.yml
 
 if docker-compose --env-file /opt/eventflow/.env.prod \
   -f /opt/eventflow/docker-compose.prod.yml config \
-  | grep -Eq 'Frontend__BaseUrl:.*(localhost|127\.0\.0\.1)'; then
+  | grep -Eq 'Frontend__BaseUrl:.*(localhost|127[.]0[.]0[.]1)'; then
   echo "ERROR: Resolved Frontend__BaseUrl points to localhost."
   exit 1
 fi
 
 if docker-compose --env-file /opt/eventflow/.env.prod \
   -f /opt/eventflow/docker-compose.prod.yml config \
-  | grep -Eq 'Cors__AllowedOrigins__[0-9]+:.*(localhost|127\.0\.0\.1)'; then
+  | grep -Eq 'Cors__AllowedOrigins__[0-9]+:.*(localhost|127[.]0[.]0[.]1)'; then
   echo "ERROR: A resolved CORS origin points to localhost."
   exit 1
 fi
