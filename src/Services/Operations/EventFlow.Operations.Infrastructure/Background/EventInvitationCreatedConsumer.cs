@@ -4,6 +4,7 @@ using EventFlow.Operations.Application.Abstractions;
 using EventFlow.Operations.Domain.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -23,11 +24,39 @@ public sealed class EventInvitationCreatedConsumer : KafkaConsumerBase<EventInvi
         IOptions<KafkaOptions> kafkaOptions,
         IKafkaProducer producer,
         ILoggerFactory loggerFactory,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IHostEnvironment environment)
         : base(scopeFactory, kafkaOptions, producer, loggerFactory)
     {
-        _frontendBaseUrl = configuration["Frontend:BaseUrl"]
-            ?? throw new InvalidOperationException("Frontend:BaseUrl is not configured.");
+        _frontendBaseUrl = ResolveFrontendBaseUrl(
+            configuration["Frontend:BaseUrl"],
+            environment.IsDevelopment());
+
+        loggerFactory
+            .CreateLogger<EventInvitationCreatedConsumer>()
+            .LogInformation(
+                "Invitation links will use frontend base URL {FrontendBaseUrl}.",
+                _frontendBaseUrl);
+    }
+
+    internal static string ResolveFrontendBaseUrl(string? configuredBaseUrl, bool isDevelopment)
+    {
+        if (string.IsNullOrWhiteSpace(configuredBaseUrl) ||
+            !Uri.TryCreate(configuredBaseUrl.Trim(), UriKind.Absolute, out var frontendUri) ||
+            (frontendUri.Scheme != Uri.UriSchemeHttp && frontendUri.Scheme != Uri.UriSchemeHttps))
+        {
+            throw new InvalidOperationException(
+                "Frontend:BaseUrl must be configured as an absolute HTTP or HTTPS URL.");
+        }
+
+        if (!isDevelopment &&
+            (frontendUri.Scheme != Uri.UriSchemeHttps || frontendUri.IsLoopback))
+        {
+            throw new InvalidOperationException(
+                "Frontend:BaseUrl must be a public HTTPS URL outside Development.");
+        }
+
+        return configuredBaseUrl.Trim().TrimEnd('/');
     }
 
     protected override string Topic => "event-invitation-created";
