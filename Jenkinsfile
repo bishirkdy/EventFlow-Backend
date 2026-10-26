@@ -1,10 +1,10 @@
-
 pipeline {
     agent any
 
     options {
         disableConcurrentBuilds()
         timeout(time: 45, unit: 'MINUTES')
+
         buildDiscarder(logRotator(
             numToKeepStr: '10',
             daysToKeepStr: '14',
@@ -13,11 +13,12 @@ pipeline {
     }
 
     environment {
-        AWS_REGION = 'ap-southeast-2'
+        AWS_REGION     = 'ap-southeast-2'
         AWS_ACCOUNT_ID = '730132962765'
-        ECR_REGISTRY = '730132962765.dkr.ecr.ap-southeast-2.amazonaws.com'
-        BACKEND_HOST = '3.25.150.159'
-        BACKEND_USER = 'ec2-user'
+        ECR_REGISTRY   = '730132962765.dkr.ecr.ap-southeast-2.amazonaws.com'
+
+        // Verify this is your BACKEND EC2 instance ID.
+        BACKEND_INSTANCE_ID = 'i-07736afe0c5fca9d1'
     }
 
     stages {
@@ -39,11 +40,11 @@ pipeline {
 
                     if [ "$AVAILABLE_KB" -lt "$REQUIRED_KB" ]; then
                         echo "ERROR: Less than 2 GB free on Jenkins root disk."
-                        echo "Clean up disk space before building."
                         exit 1
                     fi
 
                     docker info >/dev/null
+                    aws --version
                 '''
             }
         }
@@ -85,75 +86,131 @@ pipeline {
             }
         }
 
-        stage('Deploy to Backend EC2') {
+        stage('Deploy to Backend via SSM') {
             steps {
-                sshagent(credentials: ['eventflow-backend-ssh']) {
-                    sh '''
-                        set -eu
+                sh '''
+                    set -eu
 
-                        echo "Deploying build $BUILD_NUMBER"
+                    echo "Deploying EventFlow build $BUILD_NUMBER via SSM"
+                    echo "Backend instance: $BACKEND_INSTANCE_ID"
 
-                        ssh \
-                          -o StrictHostKeyChecking=accept-new \
-                          -o ConnectTimeout=15 \
-                          "$BACKEND_USER@$BACKEND_HOST" \
-                          "cd /opt/eventflow && \
-                           export IMAGE_TAG=$BUILD_NUMBER && \
-                           docker-compose \
-                             --env-file /opt/eventflow/.env.prod \
-                             -f /opt/eventflow/docker-compose.prod.yml \
-                             pull gateway identity event registration operations && \
-                           docker-compose \
-                             --env-file /opt/eventflow/.env.prod \
-                             -f /opt/eventflow/docker-compose.prod.yml \
-                             up -d --no-build \
-                             gateway identity event registration operations"
-                    '''
-                }
+                    COMMAND_ID=$(aws ssm send-command \
+                      --region "$AWS_REGION" \
+                      --instance-ids "$BACKEND_INSTANCE_ID" \
+                      --document-name "AWS-RunShellScript" \
+                      --comment "EventFlow deployment build $BUILD_NUMBER" \
+                      --parameters "commands=[\\"set -eu; cd /opt/eventflow && export IMAGE_TAG=$BUILD_NUMBER && docker-compose --env-file /opt/eventflow/.env.prod -f /opt/eventflow/docker-compose.prod.yml pull gateway identity event registration operations && docker-compose --env-file /opt/eventflow/.env.prod -f /opt/eventflow/docker-compose.prod.yml up -d --no-build gateway identity event registration operations\\"]" \
+                      --query 'Command.CommandId' \
+                      --output text)
+
+                    echo "SSM Command ID: $COMMAND_ID"
+
+                    for i in $(seq 1 60); do
+                        STATUS=$(aws ssm get-command-invocation \
+                          --region "$AWS_REGION" \
+                          --command-id "$COMMAND_ID" \
+                          --instance-id "$BACKEND_INSTANCE_ID" \
+                          --query 'Status' \
+                          --output text 2>/dev/null || true)
+
+                        STATUS="${STATUS:-Pending}"
+                        echo "Deployment status: $STATUS"
+
+                        case "$STATUS" in
+                            Success)
+                                aws ssm get-command-invocation \
+                                  --region "$AWS_REGION" \
+                                  --command-id "$COMMAND_ID" \
+                                  --instance-id "$BACKEND_INSTANCE_ID" \
+                                  --query 'StandardOutputContent' \
+                                  --output text
+                                exit 0
+                                ;;
+                            Failed|Cancelled|TimedOut|Undeliverable|Terminated|InvalidPlatform)
+                                aws ssm get-command-invocation \
+                                  --region "$AWS_REGION" \
+                                  --command-id "$COMMAND_ID" \
+                                  --instance-id "$BACKEND_INSTANCE_ID" \
+                                  --output json || true
+                                exit 1
+                                ;;
+                        esac
+
+                        sleep 5
+                    done
+
+                    echo "ERROR: Timed out waiting for deployment."
+                    exit 1
+                '''
             }
         }
 
         stage('Verify Deployment') {
             steps {
-                sshagent(credentials: ['eventflow-backend-ssh']) {
-                    sh '''
-                        set -eu
+                sh '''
+                    set -eu
 
-                        ssh \
-                          -o StrictHostKeyChecking=accept-new \
-                          -o ConnectTimeout=15 \
-                          "$BACKEND_USER@$BACKEND_HOST" \
-                          "cd /opt/eventflow && \
-                           docker-compose \
-                             --env-file /opt/eventflow/.env.prod \
-                             -f /opt/eventflow/docker-compose.prod.yml \
-                             ps && \
-                           for i in 1 2 3 4 5 6; do \
-                             CODE=\\$(curl -sS -o /dev/null \
-                               -w '%{http_code}' \
-                               --max-time 10 \
-                               http://127.0.0.1:5000/api/v1/auth/profile) || CODE=000; \
-                             case \\$CODE in \
-                               200|401|403) \
-                                 echo 'Gateway responded successfully'; exit 0 ;; \
-                             esac; \
-                             echo \\\"Gateway not ready yet: HTTP \\$CODE\\\"; \
-                             sleep 10; \
-                           done; \
-                           echo 'ERROR: Gateway health verification failed'; exit 1"
-                    '''
-                }
+                    echo "Checking backend containers and gateway health"
+
+                    COMMAND_ID=$(aws ssm send-command \
+                      --region "$AWS_REGION" \
+                      --instance-ids "$BACKEND_INSTANCE_ID" \
+                      --document-name "AWS-RunShellScript" \
+                      --comment "Verify EventFlow build $BUILD_NUMBER" \
+                      --parameters "commands=[\\"set -eu; cd /opt/eventflow && docker-compose --env-file /opt/eventflow/.env.prod -f /opt/eventflow/docker-compose.prod.yml ps && for i in 1 2 3 4 5 6; do CODE=\\\\\\$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 http://127.0.0.1:5000/api/v1/auth/profile) || CODE=000; case \\\\\\${CODE} in 200|401|403) echo Gateway responded successfully; exit 0 ;; esac; echo Gateway not ready: HTTP \\\\\\${CODE}; sleep 10; done; echo Gateway health verification failed; exit 1\\"]" \
+                      --query 'Command.CommandId' \
+                      --output text)
+
+                    echo "Verification Command ID: $COMMAND_ID"
+
+                    for i in $(seq 1 30); do
+                        STATUS=$(aws ssm get-command-invocation \
+                          --region "$AWS_REGION" \
+                          --command-id "$COMMAND_ID" \
+                          --instance-id "$BACKEND_INSTANCE_ID" \
+                          --query 'Status' \
+                          --output text 2>/dev/null || true)
+
+                        STATUS="${STATUS:-Pending}"
+                        echo "Verification status: $STATUS"
+
+                        case "$STATUS" in
+                            Success)
+                                aws ssm get-command-invocation \
+                                  --region "$AWS_REGION" \
+                                  --command-id "$COMMAND_ID" \
+                                  --instance-id "$BACKEND_INSTANCE_ID" \
+                                  --query 'StandardOutputContent' \
+                                  --output text
+                                exit 0
+                                ;;
+                            Failed|Cancelled|TimedOut|Undeliverable|Terminated|InvalidPlatform)
+                                aws ssm get-command-invocation \
+                                  --region "$AWS_REGION" \
+                                  --command-id "$COMMAND_ID" \
+                                  --instance-id "$BACKEND_INSTANCE_ID" \
+                                  --output json || true
+                                exit 1
+                                ;;
+                        esac
+
+                        sleep 5
+                    done
+
+                    echo "ERROR: Timed out waiting for verification."
+                    exit 1
+                '''
             }
         }
     }
 
     post {
         success {
-            echo 'Build, ECR push, deployment and gateway verification completed.'
+            echo 'Build, ECR push, SSM deployment and gateway verification completed.'
         }
 
         failure {
-            echo 'Pipeline failed. Check Console Output and verify backend service health.'
+            echo 'Pipeline failed. Check Console Output and inspect the SSM command results.'
         }
 
         always {
@@ -163,11 +220,11 @@ pipeline {
                 echo "Docker usage before cleanup:"
                 docker system df
 
-                echo "Removing Docker build cache older than 3 days..."
-                docker builder prune -af --filter "until=72h"
+                echo "Removing Docker build cache..."
+                docker builder prune -af
 
-                echo "Removing unused images older than 7 days..."
-                docker image prune -af --filter "until=168h"
+                echo "Removing unused Docker images..."
+                docker image prune -af
 
                 echo "Docker usage after cleanup:"
                 docker system df
@@ -175,6 +232,7 @@ pipeline {
                 echo "Disk usage:"
                 df -h /
             '''
+
             echo 'EventFlow CI/CD pipeline finished.'
         }
     }
