@@ -11,13 +11,6 @@ pipeline {
         ))
     }
 
-    environment {
-        AWS_REGION          = 'ap-southeast-2'
-        AWS_ACCOUNT_ID      = '730132962765'
-        ECR_REGISTRY        = '730132962765.dkr.ecr.ap-southeast-2.amazonaws.com'
-        BACKEND_INSTANCE_ID = 'i-07736afe0c5fca9d1'
-    }
-
     stages {
         stage('Checkout') {
             steps {
